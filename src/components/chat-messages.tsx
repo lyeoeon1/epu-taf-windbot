@@ -73,13 +73,13 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
         >
           {msg.role === "user" ? (
-            <div className="max-w-[80%] rounded-2xl bg-[#303030] px-4 py-3 text-white">
+            <div className="max-w-[80%] rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
               <p className="whitespace-pre-wrap">{msg.content}</p>
             </div>
           ) : (
             <div className="max-w-[80%]">
               {msg.content ? (
-                <div className="prose prose-invert max-w-none text-white leading-relaxed">
+                <div className="prose max-w-none text-foreground leading-relaxed dark:prose-invert dark:text-white">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
