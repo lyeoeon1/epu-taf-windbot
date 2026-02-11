@@ -1,4 +1,4 @@
-# BotAI Houston
+# WINDBOT
 
 AI Chatbot hỗ trợ kiến thức tuabin gió, sử dụng RAG (Retrieval-Augmented Generation) với hỗ trợ song ngữ Tiếng Việt & English.
 
