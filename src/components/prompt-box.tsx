@@ -357,11 +357,15 @@ const toolsList = [
 ];
 
 // --- The PromptBox Component ---
-export const PromptBox = React.forwardRef<
-  HTMLTextAreaElement,
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>
->(({ className, ...props }, ref) => {
-  const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
+interface PromptBoxProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  onSend?: (message: string) => void;
+  disabled?: boolean;
+}
+
+export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
+  ({ className, onSend, disabled, ...props }, ref) => {
+    const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [value, setValue] = React.useState("");
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
@@ -406,6 +410,21 @@ export const PromptBox = React.forwardRef<
     setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSend = () => {
+    const trimmed = value.trim();
+    if ((!trimmed && !imagePreview) || disabled) return;
+    onSend?.(trimmed);
+    setValue("");
+    setImagePreview(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
@@ -467,8 +486,10 @@ export const PromptBox = React.forwardRef<
         rows={1}
         value={value}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         placeholder="Message..."
-        className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-300 focus:ring-0 focus-visible:outline-none min-h-12"
+        disabled={disabled}
+        className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-300 focus:ring-0 focus-visible:outline-none min-h-12 disabled:opacity-50"
         {...props}
       />
 
@@ -565,8 +586,9 @@ export const PromptBox = React.forwardRef<
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    type="submit"
-                    disabled={!hasValue}
+                    type="button"
+                    onClick={handleSend}
+                    disabled={!hasValue || disabled}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 disabled:bg-black/40 dark:disabled:bg-[#515151]"
                   >
                     <SendIcon className="h-6 w-6" />
