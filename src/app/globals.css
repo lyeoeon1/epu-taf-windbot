@@ -147,20 +147,20 @@ body {
   display: block;
 }
 .prose thead {
-  border-bottom: 2px solid #555;
+  border-bottom: 2px solid var(--border);
 }
 .prose th {
   font-weight: 600;
   text-align: left;
   padding: 0.5em 0.75em;
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
 }
 .prose td {
   padding: 0.5em 0.75em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 .prose tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
 }
 
 /* Inline code */
@@ -207,8 +207,8 @@ body {
 
 /* KaTeX overrides for dark mode */
 .prose .katex {
-  font-size: 1em;
-  color: #e2e8f0;
+  font-size: 1.15em;
+  color: inherit;
 }
 .prose .katex-display {
   margin: 1.2em 0;
@@ -217,5 +217,5 @@ body {
   text-align: center;
 }
 .prose .katex-display > .katex {
-  font-size: 1.1em;
+  font-size: 1.3em;
 }
