@@ -6,8 +6,14 @@ import { PromptBox } from "@/components/prompt-box";
 import { useChat } from "@/hooks/use-chat";
 import { useLanguage } from "@/contexts/language-context";
 
+const labels = {
+  vi: { greeting: "Tôi có thể giúp gì cho bạn?" },
+  en: { greeting: "What can I help with?" },
+};
+
 export default function Home() {
   const { language } = useLanguage();
+  const t = labels[language];
   const { messages, isLoading, sendMessage, clearChat } = useChat(language);
 
   if (messages.length === 0) {
@@ -18,7 +24,7 @@ export default function Home() {
           <div className="flex w-full max-w-2xl flex-col items-center gap-8">
             <div className="text-center">
               <h1 className="text-3xl font-semibold text-foreground dark:text-white">
-                What can I help with?
+                {t.greeting}
               </h1>
             </div>
             <div className="w-full">
