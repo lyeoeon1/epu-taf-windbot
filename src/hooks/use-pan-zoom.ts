@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 4;
@@ -174,7 +174,7 @@ export function usePanZoom() {
     }
   }, []);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
+  const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     const container = containerRef.current;
     if (!container) return;
@@ -186,7 +186,6 @@ export function usePanZoom() {
     setState((prev) => {
       const direction = e.deltaY > 0 ? -1 : 1;
       const newScale = clampScale(prev.scale + direction * ZOOM_STEP);
-      const scaleFactor = newScale / prev.scale;
 
       // Zoom toward cursor: adjust translate so cursor point stays fixed
       const newTx = cursorX / newScale - cursorX / prev.scale + prev.translateX;
@@ -195,6 +194,18 @@ export function usePanZoom() {
       return { scale: newScale, translateX: newTx, translateY: newTy };
     });
   }, []);
+
+  // Attach wheel listener imperatively with { passive: false } so preventDefault() works.
+  // React 19 registers onWheel JSX props as passive, which throws on preventDefault().
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      container.removeEventListener("wheel", onWheel);
+    };
+  }, [onWheel]);
 
   return {
     containerRef,
@@ -210,7 +221,6 @@ export function usePanZoom() {
       onPointerMove,
       onPointerUp,
       onPointerLeave: onPointerUp,
-      onWheel,
     },
   };
 }

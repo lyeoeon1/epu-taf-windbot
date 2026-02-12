@@ -9,6 +9,7 @@ import remarkMath from "remark-math";
 import type { Message } from "@/hooks/use-chat";
 import { useLanguage } from "@/contexts/language-context";
 import { MermaidBlock } from "./mermaid-block";
+import { MermaidErrorBoundary } from "./mermaid-error-boundary";
 import "katex/dist/katex.min.css";
 
 const labels = {
@@ -158,7 +159,11 @@ const markdownComponents: Components = {
     // Mermaid blocks: render as visual diagram
     // Primary: explicit ```mermaid tag; Fallback: heuristic detection for block code
     if (lang === "mermaid" || (!lang && codeText.includes("\n") && isMermaidCode(codeText))) {
-      return <MermaidBlock code={codeText} />;
+      return (
+        <MermaidErrorBoundary code={codeText}>
+          <MermaidBlock code={codeText} />
+        </MermaidErrorBoundary>
+      );
     }
 
     // Inline code (no language class, not inside <pre>)
