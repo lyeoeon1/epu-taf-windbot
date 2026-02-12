@@ -4,14 +4,16 @@ import { ChatMessages } from "@/components/chat-messages";
 import { Header } from "@/components/header";
 import { PromptBox } from "@/components/prompt-box";
 import { useChat } from "@/hooks/use-chat";
+import { useLanguage } from "@/contexts/language-context";
 
 export default function Home() {
-  const { messages, isLoading, sendMessage } = useChat();
+  const { language } = useLanguage();
+  const { messages, isLoading, sendMessage, clearChat } = useChat(language);
 
   if (messages.length === 0) {
     return (
       <div className="flex min-h-svh flex-col bg-background dark:bg-[#212121]">
-        <Header />
+        <Header onClearChat={clearChat} />
         <div className="flex flex-1 flex-col items-center justify-center px-4">
           <div className="flex w-full max-w-2xl flex-col items-center gap-8">
             <div className="text-center">
@@ -30,7 +32,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-svh flex-col bg-background dark:bg-[#212121]">
-      <Header />
+      <Header onClearChat={clearChat} />
       <div className="flex-1 overflow-y-auto px-4">
         <div className="mx-auto max-w-2xl py-8">
           <ChatMessages messages={messages} isLoading={isLoading} onSendMessage={sendMessage} />

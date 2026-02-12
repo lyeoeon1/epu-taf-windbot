@@ -13,6 +13,7 @@ export interface UseChatReturn {
   messages: Message[];
   isLoading: boolean;
   sendMessage: (content: string) => Promise<void>;
+  clearChat: () => void;
 }
 
 export function useChat(language: string = "vi"): UseChatReturn {
@@ -143,5 +144,10 @@ export function useChat(language: string = "vi"): UseChatReturn {
     [isLoading, language, ensureSession]
   );
 
-  return { messages, isLoading, sendMessage };
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    sessionIdRef.current = null;
+  }, []);
+
+  return { messages, isLoading, sendMessage, clearChat };
 }
