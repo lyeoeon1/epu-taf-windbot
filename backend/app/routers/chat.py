@@ -1,14 +1,19 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from llama_index.core.llms import ChatMessage, MessageRole
+from openai import OpenAI
 from supabase import Client
 
 from app.dependencies import get_index, get_supabase
 from app.models.schemas import ChatRequest
+from app.prompts.system import get_suggestion_prompt
 from app.services.chat_history import get_session_messages, save_message
 from app.services.rag import get_chat_engine
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -61,6 +66,26 @@ async def chat(
             full_response,
             metadata={"language": request.language},
         )
+
+        # Generate follow-up suggestions
+        try:
+            prompt = get_suggestion_prompt(request.language).format(
+                user_message=request.message,
+                assistant_answer=full_response[:500],
+            )
+            client = OpenAI()
+            completion = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=300,
+            )
+            raw = completion.choices[0].message.content.strip()
+            suggestions = json.loads(raw)
+            if isinstance(suggestions, list) and len(suggestions) >= 3:
+                yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
+        except Exception as e:
+            logger.warning("Failed to generate suggestions: %s", e)
 
         yield f"data: {json.dumps({'done': True})}\n\n"
 

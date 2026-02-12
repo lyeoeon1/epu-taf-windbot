@@ -128,18 +128,23 @@ function CopyButton({ text }: { text: string }) {
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
+  onSendMessage?: (content: string) => void;
 }
 
-export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const lastAssistantIndex = messages.findLastIndex(
+    (m) => m.role === "assistant"
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      {messages.map((msg) => (
+      {messages.map((msg, index) => (
         <div
           key={msg.id}
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -174,6 +179,22 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
                   <MessageLoading />
                 )
               )}
+              {msg.suggestions &&
+                msg.suggestions.length > 0 &&
+                index === lastAssistantIndex &&
+                !isLoading && (
+                  <div className="mt-4 flex flex-col gap-2">
+                    {msg.suggestions.map((suggestion, i) => (
+                      <button
+                        key={i}
+                        onClick={() => onSendMessage?.(suggestion)}
+                        className="w-fit rounded-full border border-gray-300 px-4 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-gray-100 dark:border-[#515151] dark:text-white dark:hover:bg-[#303030]"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
             </div>
           )}
         </div>

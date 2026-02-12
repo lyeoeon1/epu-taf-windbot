@@ -52,3 +52,36 @@ _PROMPTS = {
 def get_system_prompt(language: str = "en") -> str:
     """Get the system prompt for the given language."""
     return _PROMPTS.get(language, SYSTEM_PROMPT_EN)
+
+
+SUGGESTION_PROMPT_EN = """\
+Based on the following conversation, generate exactly 3 short follow-up questions \
+that the user might want to ask next. Each question should be concise (under 80 characters), \
+relevant to the topic, and help the user explore the subject further.
+
+User question: {user_message}
+Assistant answer: {assistant_answer}
+
+Return ONLY a JSON array of 3 strings, nothing else. Example:
+["Question 1?", "Question 2?", "Question 3?"]"""
+
+SUGGESTION_PROMPT_VI = """\
+Dựa trên cuộc hội thoại sau, hãy tạo chính xác 3 câu hỏi gợi ý ngắn gọn \
+mà người dùng có thể muốn hỏi tiếp. Mỗi câu hỏi nên ngắn gọn (dưới 80 ký tự), \
+liên quan đến chủ đề, và giúp người dùng tìm hiểu sâu hơn.
+
+Câu hỏi người dùng: {user_message}
+Câu trả lời trợ lý: {assistant_answer}
+
+Chỉ trả về một mảng JSON gồm 3 chuỗi, không thêm gì khác. Ví dụ:
+["Câu hỏi 1?", "Câu hỏi 2?", "Câu hỏi 3?"]"""
+
+_SUGGESTION_PROMPTS = {
+    "en": SUGGESTION_PROMPT_EN,
+    "vi": SUGGESTION_PROMPT_VI,
+}
+
+
+def get_suggestion_prompt(language: str = "en") -> str:
+    """Get the suggestion generation prompt for the given language."""
+    return _SUGGESTION_PROMPTS.get(language, SUGGESTION_PROMPT_EN)

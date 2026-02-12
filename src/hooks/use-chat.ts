@@ -6,6 +6,7 @@ export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  suggestions?: string[];
 }
 
 export interface UseChatReturn {
@@ -100,6 +101,15 @@ export function useChat(language: string = "vi"): UseChatReturn {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.done) break;
+              if (data.suggestions) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMessage.id
+                      ? { ...m, suggestions: data.suggestions }
+                      : m
+                  )
+                );
+              }
               if (data.token) {
                 setMessages((prev) =>
                   prev.map((m) =>
