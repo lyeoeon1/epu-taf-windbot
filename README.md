@@ -20,15 +20,23 @@ Wind turbine knowledge AI Chatbot powered by RAG (Retrieval-Augmented Generation
 - Nạp tài liệu: PDF, DOCX, PPTX, XLSX, TXT, MD, CSV / Document ingestion
 - Quản lý phiên chat với lịch sử lưu trữ / Session management with persistent history
 - Hiển thị Markdown, bảng, công thức toán (LaTeX/KaTeX) / Markdown, tables, math rendering
+- Hiển thị sơ đồ Mermaid tương tác (zoom, kéo thả, thu phóng) / Interactive Mermaid diagram rendering (zoom, pan, drag)
 
 ## Cấu trúc dự án / Project Structure
 
 ```
-houston-v1/
+marseille/
 ├── src/                        # Frontend (Next.js)
 │   ├── app/                    # Pages & layouts
 │   ├── components/             # Chat UI components
+│   │   ├── chat-messages.tsx   # Message list & Markdown rendering
+│   │   ├── header.tsx          # App header & settings
+│   │   ├── mermaid-block.tsx   # Interactive Mermaid diagrams
+│   │   └── prompt-box.tsx      # Chat input
 │   └── hooks/                  # Custom React hooks
+│       ├── use-chat.ts         # Chat logic & streaming
+│       ├── use-pan-zoom.ts     # Diagram zoom/pan/drag
+│       └── use-scroll.ts       # Auto-scroll behavior
 ├── backend/                    # Backend (FastAPI)
 │   ├── app/
 │   │   ├── routers/            # API endpoints (chat, sessions, ingest, health)
