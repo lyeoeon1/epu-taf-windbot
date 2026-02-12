@@ -140,6 +140,15 @@ function CopyButton({ text, copyLabel, copiedLabel }: { text: string; copyLabel:
   );
 }
 
+/**
+ * Heuristic detection for Mermaid diagram syntax.
+ * Checks if the first non-empty line matches a known Mermaid diagram declaration.
+ */
+function isMermaidCode(code: string): boolean {
+  const firstLine = code.trimStart().split("\n")[0].trim();
+  return /^(graph\s+(TB|BT|TD|LR|RL)|flowchart\s+(TB|BT|TD|LR|RL)|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitgraph|mindmap|timeline|quadrantChart|sankey|xychart|block-beta)/i.test(firstLine);
+}
+
 const markdownComponents: Components = {
   code({ className, children, ...props }) {
     const match = /language-(\w+)/.exec(className || "");
@@ -147,7 +156,8 @@ const markdownComponents: Components = {
     const codeText = String(children).replace(/\n$/, "");
 
     // Mermaid blocks: render as visual diagram
-    if (lang === "mermaid") {
+    // Primary: explicit ```mermaid tag; Fallback: heuristic detection for block code
+    if (lang === "mermaid" || (!lang && codeText.includes("\n") && isMermaidCode(codeText))) {
       return <MermaidBlock code={codeText} />;
     }
 
