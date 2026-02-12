@@ -139,7 +139,7 @@ export function Header({ onClearChat }: HeaderProps) {
             <Popover.Content
               align="end"
               sideOffset={8}
-              className="z-50 w-52 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+              className="z-50 w-52 rounded-xl border border-border bg-popover dark:bg-[#303030] p-1.5 text-popover-foreground dark:text-white shadow-lg animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
             >
               {/* Theme toggle */}
               <button
