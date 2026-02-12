@@ -5,6 +5,7 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 // --- Radix Primitives ---
 const TooltipProvider = TooltipPrimitive.Provider;
@@ -316,40 +317,57 @@ const MicIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// --- Tools List ---
-const toolsList = [
-  {
-    id: "createImage",
-    name: "Create an image",
-    shortName: "Image",
-    icon: PaintBrushIcon,
+// --- i18n Labels ---
+const promptLabels = {
+  vi: {
+    messagePlaceholder: "Tin nhắn...",
+    attachImage: "Đính kèm hình ảnh",
+    recordVoice: "Ghi âm giọng nói",
+    send: "Gửi",
+    tools: "Công cụ",
+    exploreTools: "Khám phá công cụ",
+    createImage: "Tạo hình ảnh",
+    searchWeb: "Tìm kiếm trên web",
+    writeCode: "Viết hoặc lập trình",
+    deepResearch: "Nghiên cứu chuyên sâu",
+    thinkLonger: "Suy nghĩ lâu hơn",
+    imageShort: "Hình ảnh",
+    searchShort: "Tìm kiếm",
+    writeShort: "Viết",
+    deepSearchShort: "Nghiên cứu",
+    thinkShort: "Suy nghĩ",
+    left: "còn lại",
   },
-  {
-    id: "searchWeb",
-    name: "Search the web",
-    shortName: "Search",
-    icon: GlobeIcon,
+  en: {
+    messagePlaceholder: "Message...",
+    attachImage: "Attach image",
+    recordVoice: "Record voice",
+    send: "Send",
+    tools: "Tools",
+    exploreTools: "Explore Tools",
+    createImage: "Create an image",
+    searchWeb: "Search the web",
+    writeCode: "Write or code",
+    deepResearch: "Run deep research",
+    thinkLonger: "Think for longer",
+    imageShort: "Image",
+    searchShort: "Search",
+    writeShort: "Write",
+    deepSearchShort: "Deep Search",
+    thinkShort: "Think",
+    left: "left",
   },
-  {
-    id: "writeCode",
-    name: "Write or code",
-    shortName: "Write",
-    icon: PencilIcon,
-  },
-  {
-    id: "deepResearch",
-    name: "Run deep research",
-    shortName: "Deep Search",
-    icon: TelescopeIcon,
-    extra: "5 left",
-  },
-  {
-    id: "thinkLonger",
-    name: "Think for longer",
-    shortName: "Think",
-    icon: LightbulbIcon,
-  },
-];
+};
+
+function getToolsList(t: (typeof promptLabels)["en"]) {
+  return [
+    { id: "createImage", name: t.createImage, shortName: t.imageShort, icon: PaintBrushIcon },
+    { id: "searchWeb", name: t.searchWeb, shortName: t.searchShort, icon: GlobeIcon },
+    { id: "writeCode", name: t.writeCode, shortName: t.writeShort, icon: PencilIcon },
+    { id: "deepResearch", name: t.deepResearch, shortName: t.deepSearchShort, icon: TelescopeIcon, extra: `5 ${t.left}` },
+    { id: "thinkLonger", name: t.thinkLonger, shortName: t.thinkShort, icon: LightbulbIcon },
+  ];
+}
 
 // --- The PromptBox Component ---
 interface PromptBoxProps
@@ -360,6 +378,9 @@ interface PromptBoxProps
 
 export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
   ({ className, onSend, disabled, ...props }, ref) => {
+    const { language } = useLanguage();
+    const t = promptLabels[language];
+    const toolsList = getToolsList(t);
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [value, setValue] = React.useState("");
@@ -482,7 +503,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
         value={value}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        placeholder="Message..."
+        placeholder={t.messagePlaceholder}
         disabled={disabled}
         className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-300 focus:ring-0 focus-visible:outline-none min-h-12 disabled:opacity-50"
         {...props}
@@ -499,11 +520,11 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                   className="flex h-8 w-8 items-center justify-center rounded-full text-foreground dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none"
                 >
                   <PlusIcon className="h-6 w-6" />
-                  <span className="sr-only">Attach image</span>
+                  <span className="sr-only">{t.attachImage}</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="top" showArrow={true}>
-                <p>Attach image</p>
+                <p>{t.attachImage}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -516,12 +537,12 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                       className="flex h-8 items-center gap-2 rounded-full p-2 text-sm text-foreground dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none focus-visible:ring-ring"
                     >
                       <Settings2Icon className="h-4 w-4" />
-                      {!selectedTool && "Tools"}
+                      {!selectedTool && t.tools}
                     </button>
                   </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="top" showArrow={true}>
-                  <p>Explore Tools</p>
+                  <p>{t.exploreTools}</p>
                 </TooltipContent>
               </Tooltip>
               <PopoverContent side="top" align="start">
@@ -570,11 +591,11 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                     className="flex h-8 w-8 items-center justify-center rounded-full text-foreground dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none"
                   >
                     <MicIcon className="h-5 w-5" />
-                    <span className="sr-only">Record voice</span>
+                    <span className="sr-only">{t.recordVoice}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" showArrow={true}>
-                  <p>Record voice</p>
+                  <p>{t.recordVoice}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -587,11 +608,11 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                     className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none bg-black text-white hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 disabled:bg-black/40 dark:disabled:bg-[#515151]"
                   >
                     <SendIcon className="h-6 w-6" />
-                    <span className="sr-only">Send message</span>
+                    <span className="sr-only">{t.send}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" showArrow={true}>
-                  <p>Send</p>
+                  <p>{t.send}</p>
                 </TooltipContent>
               </Tooltip>
             </div>

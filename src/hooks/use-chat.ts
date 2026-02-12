@@ -7,6 +7,7 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
+  timestamp: number;
 }
 
 export interface UseChatReturn {
@@ -15,6 +16,11 @@ export interface UseChatReturn {
   sendMessage: (content: string) => Promise<void>;
   clearChat: () => void;
 }
+
+const errorLabels = {
+  vi: { genericError: "Xin lỗi, đã xảy ra lỗi. Vui lòng kiểm tra backend đang chạy." },
+  en: { genericError: "Sorry, an error occurred. Please check that the backend is running." },
+};
 
 export function useChat(language: string = "vi"): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,12 +53,14 @@ export function useChat(language: string = "vi"): UseChatReturn {
         id: crypto.randomUUID(),
         role: "user",
         content: content.trim(),
+        timestamp: Date.now(),
       };
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
         content: "",
+        timestamp: Date.now(),
       };
 
       setMessages((prev) => [...prev, userMessage, assistantMessage]);
@@ -101,7 +109,6 @@ export function useChat(language: string = "vi"): UseChatReturn {
 
             try {
               const data = JSON.parse(line.slice(6));
-              if (data.done) break;
               if (data.suggestions) {
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -120,9 +127,28 @@ export function useChat(language: string = "vi"): UseChatReturn {
                   )
                 );
               }
+              if (data.done) break;
             } catch {
               // Skip malformed SSE lines
             }
+          }
+        }
+
+        // Process any remaining data in the buffer
+        if (buffer.trim().startsWith("data: ")) {
+          try {
+            const data = JSON.parse(buffer.trim().slice(6));
+            if (data.suggestions) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessage.id
+                    ? { ...m, suggestions: data.suggestions }
+                    : m
+                )
+              );
+            }
+          } catch {
+            // Skip malformed data
           }
         }
       } catch (err) {
@@ -132,7 +158,7 @@ export function useChat(language: string = "vi"): UseChatReturn {
               ? {
                   ...m,
                   content:
-                    "Sorry, an error occurred. Please check that the backend is running.",
+                    errorLabels[language as keyof typeof errorLabels]?.genericError || errorLabels.en.genericError,
                 }
               : m
           )

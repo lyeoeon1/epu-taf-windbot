@@ -85,7 +85,7 @@ async def chat(
             if isinstance(suggestions, list) and len(suggestions) >= 3:
                 yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
         except Exception as e:
-            logger.warning("Failed to generate suggestions: %s", e)
+            logger.warning("Failed to generate suggestions: %s", e, exc_info=True)
 
         yield f"data: {json.dumps({'done': True})}\n\n"
 

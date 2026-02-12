@@ -6,7 +6,20 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import type { Message } from "@/hooks/use-chat";
+import { useLanguage } from "@/contexts/language-context";
 import "katex/dist/katex.min.css";
+
+const labels = {
+  vi: { copy: "Sao chép", copied: "Đã sao chép!" },
+  en: { copy: "Copy", copied: "Copied!" },
+};
+
+function formatTime(timestamp: number): string {
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function MessageLoading() {
   return (
@@ -92,7 +105,7 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, copyLabel, copiedLabel }: { text: string; copyLabel: string; copiedLabel: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -118,7 +131,7 @@ function CopyButton({ text }: { text: string }) {
       type="button"
       onClick={handleCopy}
       className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#414141] dark:hover:text-white"
-      title={copied ? "Copied!" : "Copy"}
+      title={copied ? copiedLabel : copyLabel}
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
     </button>
@@ -132,6 +145,8 @@ interface ChatMessagesProps {
 }
 
 export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessagesProps) {
+  const { language } = useLanguage();
+  const t = labels[language];
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -152,10 +167,13 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
           {msg.role === "user" ? (
             <div className="group/msg flex flex-col items-end gap-1">
               <div className="max-w-[80%] rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                <p className="whitespace-pre-wrap text-center">{msg.content}</p>
               </div>
-              <div className="flex opacity-0 transition-opacity group-hover/msg:opacity-100">
-                <CopyButton text={msg.content} />
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">
+                  {formatTime(msg.timestamp)}
+                </span>
+                <CopyButton text={msg.content} copyLabel={t.copy} copiedLabel={t.copied} />
               </div>
             </div>
           ) : (
@@ -170,8 +188,11 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
                       {msg.content}
                     </ReactMarkdown>
                   </div>
-                  <div className="mt-1 flex opacity-0 transition-opacity group-hover/msg:opacity-100">
-                    <CopyButton text={msg.content} />
+                  <div className="mt-1 flex items-center gap-1">
+                    <CopyButton text={msg.content} copyLabel={t.copy} copiedLabel={t.copied} />
+                    <span className="text-xs text-muted-foreground">
+                      {formatTime(msg.timestamp)}
+                    </span>
                   </div>
                 </>
               ) : (
