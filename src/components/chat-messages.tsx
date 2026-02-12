@@ -188,8 +188,8 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
         >
           {msg.role === "user" ? (
-            <div className="group/msg flex flex-col items-end gap-1">
-              <div className="max-w-[80%] rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
+            <div className="group/msg flex flex-col items-end gap-1 max-w-[80%]">
+              <div className="rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
                 <p className="whitespace-pre-wrap break-words text-left">{msg.content}</p>
               </div>
               <div className="flex items-center gap-1">
