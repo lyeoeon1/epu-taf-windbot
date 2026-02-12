@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import type { Message } from "@/hooks/use-chat";
 import { useLanguage } from "@/contexts/language-context";
+import { MermaidBlock } from "./mermaid-block";
 import "katex/dist/katex.min.css";
 
 const labels = {
@@ -138,6 +140,27 @@ function CopyButton({ text, copyLabel, copiedLabel }: { text: string; copyLabel:
   );
 }
 
+const markdownComponents: Components = {
+  code({ className, children, ...props }) {
+    const match = /language-(\w+)/.exec(className || "");
+    const lang = match?.[1];
+    const codeText = String(children).replace(/\n$/, "");
+
+    // Mermaid blocks: render as visual diagram
+    if (lang === "mermaid") {
+      return <MermaidBlock code={codeText} />;
+    }
+
+    // Inline code (no language class, not inside <pre>)
+    if (!className) {
+      return <code className={className} {...props}>{children}</code>;
+    }
+
+    // Block code: render normally
+    return <code className={className} {...props}>{children}</code>;
+  },
+};
+
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
@@ -184,6 +207,7 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm, remarkMath]}
                       rehypePlugins={[rehypeKatex]}
+                      components={markdownComponents}
                     >
                       {msg.content}
                     </ReactMarkdown>
