@@ -128,7 +128,7 @@ export function Header({ onClearChat }: HeaderProps) {
           <Popover.Trigger asChild>
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent dark:hover:bg-[#515151]"
               aria-label="More options"
             >
               <EllipsisIcon className="h-5 w-5" />
@@ -148,7 +148,7 @@ export function Header({ onClearChat }: HeaderProps) {
                   toggleTheme();
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-accent"
+                className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-accent dark:hover:bg-[#515151]"
               >
                 {theme === "dark" ? (
                   <SunIcon className="h-4 w-4 shrink-0" />
@@ -165,7 +165,7 @@ export function Header({ onClearChat }: HeaderProps) {
                   toggleLanguage();
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-accent"
+                className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-accent dark:hover:bg-[#515151]"
               >
                 <GlobeIcon className="h-4 w-4 shrink-0" />
                 <span>{t.language}</span>
@@ -184,7 +184,7 @@ export function Header({ onClearChat }: HeaderProps) {
                   onClearChat?.();
                   setOpen(false);
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
+                className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
               >
                 <TrashIcon className="h-4 w-4 shrink-0" />
                 <span>{t.clearChat}</span>
