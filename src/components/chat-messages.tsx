@@ -130,7 +130,7 @@ function CopyButton({ text, copyLabel, copiedLabel }: { text: string; copyLabel:
     <button
       type="button"
       onClick={handleCopy}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#414141] dark:hover:text-white"
+      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
       title={copied ? copiedLabel : copyLabel}
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
@@ -167,7 +167,7 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
           {msg.role === "user" ? (
             <div className="group/msg flex flex-col items-end gap-1">
               <div className="max-w-[80%] rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
-                <p className="whitespace-pre-wrap text-center">{msg.content}</p>
+                <p className="whitespace-pre-wrap break-words text-left">{msg.content}</p>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground">
@@ -209,7 +209,7 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
                       <button
                         key={i}
                         onClick={() => onSendMessage?.(suggestion)}
-                        className="w-fit rounded-full border border-gray-300 px-4 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-gray-100 dark:border-[#515151] dark:text-white dark:hover:bg-[#303030]"
+                        className="w-fit cursor-pointer rounded-full border border-gray-300 px-4 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-accent dark:border-[#515151] dark:text-white dark:hover:bg-[#515151]"
                       >
                         {suggestion}
                       </button>
