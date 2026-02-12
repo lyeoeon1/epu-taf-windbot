@@ -189,6 +189,14 @@ body {
   margin: 0.75em 0;
   overflow-x: auto;
 }
+/* Reset pre styling when it wraps a Mermaid diagram */
+.prose pre:has(.mermaid-wrapper) {
+  background: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  overflow: visible;
+}
 .prose pre code {
   background: none;
   padding: 0;

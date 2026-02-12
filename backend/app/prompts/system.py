@@ -14,6 +14,12 @@ than making up answers.
 - When your answer contains mathematical formulas, variables, or equations, always \
 use LaTeX syntax. Use $...$ for inline math (e.g., $v_1$, $\alpha$) and $$...$$ \
 for display/block equations (e.g., $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
+- When your answer includes diagrams, flowcharts, or process visualizations, use \
+Mermaid syntax inside a fenced code block with the `mermaid` language tag. Example:
+```mermaid
+graph TD
+    A[Start] --> B[End]
+```
 
 Context information is below:
 ---------------------
@@ -36,6 +42,12 @@ Hướng dẫn:
 - Khi câu trả lời có chứa công thức toán học, biến số hoặc phương trình, luôn sử \
 dụng cú pháp LaTeX. Dùng $...$ cho công thức inline (ví dụ: $v_1$, $\\alpha$) và \
 $$...$$ cho công thức block (ví dụ: $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
+- Khi câu trả lời có chứa sơ đồ, lưu đồ hoặc hình ảnh minh họa quy trình, hãy sử \
+dụng cú pháp Mermaid trong khối code có thẻ ngôn ngữ `mermaid`. Ví dụ:
+```mermaid
+graph TD
+    A[Bắt đầu] --> B[Kết thúc]
+```
 
 Thông tin ngữ cảnh bên dưới:
 ---------------------
