@@ -24,4 +24,8 @@ def get_vector_store():
 
 
 def get_supabase() -> Client:
-    return create_client(settings.supabase_url, settings.supabase_service_key)
+    if "supabase" not in app_state:
+        app_state["supabase"] = create_client(
+            settings.supabase_url, settings.supabase_service_key
+        )
+    return app_state["supabase"]

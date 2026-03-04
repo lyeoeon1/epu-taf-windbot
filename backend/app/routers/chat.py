@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
+# Cached OpenAI client for suggestions
+_openai_client = OpenAI()
+
 
 @router.post("/chat")
 async def chat(
@@ -31,15 +35,21 @@ async def chat(
     - data: {"token": "..."}\n\n
     - data: {"done": true}\n\n
     """
-    # Save user message
-    await save_message(supabase, request.session_id, "user", request.message)
+    # Save user message and load history in parallel
+    _, history = await asyncio.gather(
+        save_message(supabase, request.session_id, "user", request.message),
+        get_session_messages(supabase, request.session_id),
+    )
 
-    # Load conversation history
-    history = await get_session_messages(supabase, request.session_id)
+    # Determine if there's prior history (exclude the message we just saved)
+    prior_history = history[:-1] if history else []
+    has_history = len(prior_history) > 0
 
-    # Create chat engine and pre-load history
-    chat_engine = get_chat_engine(index, language=request.language)
-    for msg in history[:-1]:  # exclude the message we just saved
+    # Create chat engine with appropriate mode
+    chat_engine = get_chat_engine(
+        index, language=request.language, has_history=has_history
+    )
+    for msg in prior_history:
         role = (
             MessageRole.USER
             if msg["role"] == "user"
@@ -49,8 +59,10 @@ async def chat(
             ChatMessage(role=role, content=msg["content"])
         )
 
-    # Stream the response
-    streaming_response = chat_engine.stream_chat(request.message)
+    # Stream the response (run blocking call on thread pool)
+    streaming_response = await asyncio.to_thread(
+        chat_engine.stream_chat, request.message
+    )
 
     async def event_generator():
         full_response = ""
@@ -67,14 +79,16 @@ async def chat(
             metadata={"language": request.language},
         )
 
-        # Generate follow-up suggestions
+        # Send done signal immediately so user sees complete response
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+        # Generate follow-up suggestions after done signal
         try:
             prompt = get_suggestion_prompt(request.language).format(
                 user_message=request.message,
                 assistant_answer=full_response[:500],
             )
-            client = OpenAI()
-            completion = client.chat.completions.create(
+            completion = _openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
@@ -86,8 +100,6 @@ async def chat(
                 yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
         except Exception as e:
             logger.warning("Failed to generate suggestions: %s", e, exc_info=True)
-
-        yield f"data: {json.dumps({'done': True})}\n\n"
 
     return StreamingResponse(
         event_generator(),
