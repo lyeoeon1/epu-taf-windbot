@@ -127,7 +127,7 @@ export function useChat(language: string = "vi"): UseChatReturn {
                   )
                 );
               }
-              if (data.done) break;
+              // Continue reading after "done" to receive suggestions
             } catch {
               // Skip malformed SSE lines
             }
