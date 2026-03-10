@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import threading
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -18,8 +19,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
-# Cached OpenAI client for suggestions
-_openai_client = OpenAI()
+# Cached OpenAI client for suggestions (lazy-initialized)
+_openai_client = None
+
+
+def get_openai_client():
+    global _openai_client
+    if _openai_client is None:
+        _openai_client = OpenAI()
+    return _openai_client
 
 
 @router.post("/chat")
@@ -36,9 +44,10 @@ async def chat(
     - data: {"done": true}\n\n
     """
     # Save user message and load history in parallel
+    session_id = str(request.session_id)
     _, history = await asyncio.gather(
-        save_message(supabase, request.session_id, "user", request.message),
-        get_session_messages(supabase, request.session_id),
+        save_message(supabase, session_id, "user", request.message),
+        get_session_messages(supabase, session_id),
     )
 
     # Determine if there's prior history (exclude the message we just saved)
@@ -66,14 +75,34 @@ async def chat(
 
     async def event_generator():
         full_response = ""
-        for token in streaming_response.response_gen:
+
+        # Bridge the blocking sync token generator to async using a Queue + Thread.
+        # This prevents the event loop from being blocked while waiting for each LLM token.
+        loop = asyncio.get_running_loop()
+        queue: asyncio.Queue = asyncio.Queue()
+
+        def produce_tokens():
+            try:
+                for token in streaming_response.response_gen:
+                    loop.call_soon_threadsafe(queue.put_nowait, token)
+            except Exception as e:
+                logger.error("Error during token streaming: %s", e)
+            finally:
+                loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel
+
+        threading.Thread(target=produce_tokens, daemon=True).start()
+
+        while True:
+            token = await queue.get()
+            if token is None:
+                break
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
         # Save complete assistant response
         await save_message(
             supabase,
-            request.session_id,
+            session_id,
             "assistant",
             full_response,
             metadata={"language": request.language},
@@ -82,19 +111,23 @@ async def chat(
         # Send done signal immediately so user sees complete response
         yield f"data: {json.dumps({'done': True})}\n\n"
 
-        # Generate follow-up suggestions after done signal
+        # Generate follow-up suggestions after done signal (non-blocking)
         try:
             prompt = get_suggestion_prompt(request.language).format(
                 user_message=request.message,
                 assistant_answer=full_response[:500],
             )
-            completion = _openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=300,
-            )
-            raw = completion.choices[0].message.content.strip()
+
+            def fetch_suggestions():
+                completion = get_openai_client().chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=300,
+                )
+                return completion.choices[0].message.content.strip()
+
+            raw = await asyncio.to_thread(fetch_suggestions)
             suggestions = json.loads(raw)
             if isinstance(suggestions, list) and len(suggestions) >= 3:
                 yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
