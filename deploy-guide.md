@@ -1,6 +1,85 @@
-# Hướng dẫn Triển khai: Vercel Frontend + Local Backend
+# Hướng dẫn Triển khai BotAI
 
-Tài liệu này sẽ hướng dẫn bạn cách chạy backend trên máy tính cá nhân và kết nối nó với frontend được deploy trên Vercel.
+Tài liệu này hướng dẫn cách triển khai BotAI backend lên VPS production và cách chạy local cho development.
+
+---
+
+## Production: Deploy lên VPS
+
+### Kiến trúc
+
+```
+Vercel (Frontend Next.js) → Cloudflare Tunnel / Ngrok → VPS (port 8000)
+                                                         ├── botai-backend.service (gunicorn + uvicorn workers)
+                                                         └── soop-backend.service  (port 8001, app khác)
+```
+
+### Thông tin VPS
+
+| Thành phần | Chi tiết |
+|---|---|
+| VPS | Contabo, Ubuntu 24.04, 4 CPU, 8GB RAM |
+| User | `botai` (user riêng, không dùng root) |
+| Repo | `/home/botai/botai-backend/repo/` |
+| Port | 8000 |
+| Process | gunicorn + UvicornWorker (multi-worker) |
+| Service | `botai-backend.service` (systemd) |
+
+### Setup lần đầu
+
+```bash
+# SSH vào VPS
+ssh root@<VPS_IP>
+
+# Clone repo và chạy setup script
+git clone https://github.com/lyeoeon1/botai.git /tmp/botai-setup
+sudo bash /tmp/botai-setup/deploy/setup-vps.sh
+rm -rf /tmp/botai-setup
+```
+
+Script sẽ tự động: tạo user `botai`, clone repo, tạo venv, cài dependencies, cài systemd service, và khởi động.
+
+### Deploy/Update code mới
+
+```bash
+sudo bash /home/botai/botai-backend/repo/deploy/deploy.sh
+```
+
+### Quản lý service
+
+```bash
+# Xem trạng thái
+sudo systemctl status botai-backend
+
+# Xem logs
+sudo journalctl -u botai-backend -f
+
+# Restart
+sudo systemctl restart botai-backend
+
+# Stop
+sudo systemctl stop botai-backend
+```
+
+### Cấu hình .env
+
+File `.env` tại `/home/botai/botai-backend/repo/backend/.env` cần các biến sau:
+
+```env
+OPENAI_API_KEY=sk-...
+LLAMA_CLOUD_API_KEY=llx-...
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=eyJ...
+SUPABASE_CONNECTION_STRING=postgresql://...
+FRONTEND_URL=https://your-frontend.vercel.app
+BACKEND_PORT=8000
+```
+
+---
+
+## Development: Vercel Frontend + Local Backend
+
+Hướng dẫn chạy local cho development.
 
 ## 1. Chuẩn bị Backend (Local)
 

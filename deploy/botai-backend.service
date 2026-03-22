@@ -1,0 +1,16 @@
+[Unit]
+Description=BotAI FastAPI Backend
+After=network.target
+
+[Service]
+User=botai
+Group=botai
+WorkingDirectory=/home/botai/botai-backend/repo/backend
+EnvironmentFile=/home/botai/botai-backend/repo/backend/.env
+Environment="PATH=/home/botai/botai-backend/repo/backend/venv/bin"
+ExecStart=/home/botai/botai-backend/repo/backend/venv/bin/gunicorn app.main:app -c gunicorn.conf.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
