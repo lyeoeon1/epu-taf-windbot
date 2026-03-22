@@ -5,8 +5,8 @@ Run: gunicorn app.main:app -c gunicorn.conf.py
 import multiprocessing
 import os
 
-# Socket — localhost only, reverse proxy in front
-bind = "127.0.0.1:" + os.getenv("BACKEND_PORT", "8000")
+# Socket — bind all interfaces for direct access
+bind = "0.0.0.0:" + os.getenv("BACKEND_PORT", "8000")
 backlog = 2048
 
 # Workers — use CPU count for async workers
