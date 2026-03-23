@@ -89,12 +89,43 @@ def collect_corrections_from_history(history: list[dict]) -> list[dict]:
     return corrections
 
 
-def format_corrections_block(corrections: list[dict]) -> str:
+def detect_input_language(message: str) -> str:
+    """Detect if message is primarily English or Vietnamese.
+
+    Returns "English", "Vietnamese", or "" (unknown).
+    """
+    vi_chars = set(
+        "àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệ"
+        "ìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụ"
+        "ưứừửữựỳýỷỹỵđ"
+    )
+    has_vi = any(c in vi_chars for c in message.lower())
+    if has_vi:
+        return "Vietnamese"
+    alpha_count = sum(1 for c in message if c.isascii() and c.isalpha())
+    total = max(len(message), 1)
+    if alpha_count / total > 0.7:
+        return "English"
+    return ""
+
+
+def format_corrections_block(
+    corrections: list[dict], user_language_hint: str = ""
+) -> str:
     """Format corrections list into a text block for system prompt injection."""
-    if not corrections:
+    if not corrections and not user_language_hint:
         return ""
-    lines = [
-        "\n[USER CORRECTIONS — ƯU TIÊN TỐI ĐA / HIGHEST PRIORITY]",
+    lines = []
+    if user_language_hint:
+        lines.append(
+            f"\n[RESPOND IN: {user_language_hint.upper()}. "
+            f"You MUST write your entire response in {user_language_hint}.]"
+        )
+    if not corrections:
+        return "\n".join(lines)
+    lines.append(
+        "\n[USER CORRECTIONS — ƯU TIÊN TỐI ĐA / HIGHEST PRIORITY]"
+    )
         "The following facts were provided/corrected by the user in this session.",
         "These ARE your context — using them is NOT fabrication.",
         "Always attribute as 'theo thông tin bạn cung cấp' / 'as you mentioned'.",

@@ -41,14 +41,23 @@ class CorrectionOverridePostprocessor(BaseNodePostprocessor):
                 old_val = (corr.get("old_value") or "").lower().strip()
                 attr = (corr.get("attribute") or "").lower().strip()
                 new_val = (corr.get("new_value") or "").lower().strip()
-                # Match if node has the old value, or mentions the attribute
-                # with a different value than the correction
-                if (old_val and old_val in text) or (
-                    attr and attr in text and new_val and new_val not in text
-                ):
+                entity = (corr.get("entity") or "").lower().strip()
+
+                # Match on: old_value, attribute with different value,
+                # OR entity name appearing in this chunk
+                matched = False
+                if old_val and old_val in text:
+                    matched = True
+                elif attr and attr in text and new_val and new_val not in text:
+                    matched = True
+                elif entity and entity in text:
+                    matched = True
+
+                if matched:
                     prefix = (
-                        f"[USER CORRECTED: {corr.get('attribute')}="
-                        f"{corr.get('new_value')}. "
+                        f"[USER CORRECTED: {corr.get('entity', '?')} — "
+                        f"{corr.get('attribute', '?')}="
+                        f"{corr.get('new_value', '?')}. "
                         f"IGNORE conflicting values below.]\n"
                     )
                     node_ws.node.set_content(
