@@ -123,14 +123,13 @@ def format_corrections_block(
         )
     if not corrections:
         return "\n".join(lines)
-    lines.append(
-        "\n[USER CORRECTIONS — ƯU TIÊN TỐI ĐA / HIGHEST PRIORITY]"
-    )
+    lines.extend([
+        "\n[USER CORRECTIONS — ƯU TIÊN TỐI ĐA / HIGHEST PRIORITY]",
         "The following facts were provided/corrected by the user in this session.",
         "These ARE your context — using them is NOT fabrication.",
         "Always attribute as 'theo thông tin bạn cung cấp' / 'as you mentioned'.",
         "",
-    ]
+    ])
     for i, c in enumerate(corrections, 1):
         entity = c.get("entity", "?")
         attr = c.get("attribute", "?")
