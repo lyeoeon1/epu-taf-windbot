@@ -36,7 +36,8 @@ Chuyển BotAI backend từ chạy dưới root (single uvicorn + pm2) sang user
 ### Kết quả
 - ✅ **Thành công**
 - Service `botai-backend` chạy ổn định dưới user `botai`
-- Gunicorn 1 master + 4 workers trên `localhost:8000`
+- Gunicorn 1 master + 4 workers trên `0.0.0.0:8000`
+- Frontend windbot.vercel.app kết nối backend qua `http://62.146.236.156:8000` — hoạt động OK
 - Warning `Could not create vector index: replace is set to False` — không ảnh hưởng (index đã tồn tại)
 
 ### Vấn đề gặp phải
@@ -44,12 +45,14 @@ Chuyển BotAI backend từ chạy dưới root (single uvicorn + pm2) sang user
 2. **Gunicorn chưa cài** → service lỗi `status=203/EXEC`. Giải pháp: cài thêm `pip install gunicorn`
 3. **Uvicorn root cũ tự restart** → pm2 đang quản lý, kill process không đủ. Giải pháp: `pm2 stop/delete backend`
 4. **Copy .env cần quyền root** → user botai không đọc được `/root/`. Giải pháp: chạy `cp` từ root
+5. **Gunicorn bind 127.0.0.1** → frontend Vercel không kết nối được (NEXT_PUBLIC_API_URL trỏ trực tiếp vào IP VPS). Giải pháp: đổi bind sang `0.0.0.0:8000`
 
 ### Bài học rút ra
 1. Thêm `gunicorn` vào `requirements.txt` để không phải cài tay
 2. Kiểm tra pm2/supervisor/systemd trước khi kill process — process có thể tự restart
 3. Phân biệt rõ lệnh nào chạy ở root, lệnh nào ở user botai
 4. Repo private cần setup GitHub token hoặc SSH key cho user mới
+5. Kiểm tra cách frontend kết nối backend (IP trực tiếp vs ngrok vs tunnel) trước khi quyết định bind address
 
 ---
 
