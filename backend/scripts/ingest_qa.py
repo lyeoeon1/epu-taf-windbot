@@ -39,10 +39,31 @@ async def main():
     vector_store = create_vector_store(settings.supabase_connection_string)
 
     documents = []
-    for category in data.get("categories", []):
-        cat_name = category["name"]
-        for pair in category.get("pairs", []):
-            text = f"Q: {pair['question']}\nA: {pair['expected_answer']}"
+    if "categories" in data:
+        # Benchmark format: {"categories": [{"name": ..., "pairs": [...]}]}
+        for category in data.get("categories", []):
+            cat_name = category["name"]
+            for pair in category.get("pairs", []):
+                text = f"Q: {pair['question']}\nA: {pair['expected_answer']}"
+                doc = Document(
+                    text=text,
+                    metadata={
+                        "language": args.language,
+                        "domain": "wind_turbine",
+                        "source_type": "qa_corpus",
+                        "category": cat_name,
+                        "qa_id": str(pair["id"]),
+                        "difficulty": pair.get("difficulty", ""),
+                        "filename": f"qa_corpus/{cat_name}",
+                    },
+                )
+                documents.append(doc)
+    elif "pairs" in data:
+        # Generated Q&A format: {"category": ..., "pairs": [...]}
+        cat_name = data.get("category", "general")
+        for pair in data["pairs"]:
+            answer = pair.get("expected_answer") or pair.get("answer", "")
+            text = f"Q: {pair['question']}\nA: {answer}"
             doc = Document(
                 text=text,
                 metadata={
@@ -50,7 +71,7 @@ async def main():
                     "domain": "wind_turbine",
                     "source_type": "qa_corpus",
                     "category": cat_name,
-                    "qa_id": str(pair["id"]),
+                    "qa_id": str(pair.get("id", "")),
                     "difficulty": pair.get("difficulty", ""),
                     "filename": f"qa_corpus/{cat_name}",
                 },

@@ -13,6 +13,16 @@ than making up answers.
 - When using technical terms, use standard wind turbine terminology. Provide both \
 English and Vietnamese terms when relevant (e.g., "Nacelle (Vỏ tua-bin)").
 - You can answer in English or Vietnamese based on the user's language preference.
+- Always ground your answers strictly in the provided context. Do not add information \
+beyond what the context supports.
+- When the context provides specific numbers, specifications, or technical details, \
+use those exact values rather than paraphrasing or approximating.
+- NEVER fabricate specifications, numbers, standards, or model names. If the context \
+does not contain the specific information requested, say "This information is not \
+available in my current knowledge base" and suggest what related information you can provide.
+- If the user corrects you or provides updated information during the conversation, \
+acknowledge the correction and incorporate it into all subsequent answers. Treat \
+user corrections as the highest priority context for the current session.
 - When your answer contains mathematical formulas, variables, or equations, always \
 use LaTeX syntax. Use $...$ for inline math (e.g., $v_1$, $\alpha$) and $$...$$ \
 for display/block equations (e.g., $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
@@ -43,6 +53,15 @@ Hướng dẫn:
 - Khi sử dụng thuật ngữ kỹ thuật, dùng thuật ngữ chuẩn của ngành tua-bin gió. Cung cấp \
 cả thuật ngữ tiếng Anh và tiếng Việt khi phù hợp (ví dụ: "Nacelle (Vỏ tua-bin)").
 - Bạn có thể trả lời bằng tiếng Việt hoặc tiếng Anh tùy theo ngôn ngữ của người dùng.
+- Luôn bám sát ngữ cảnh được cung cấp. Không thêm thông tin ngoài những gì ngữ cảnh hỗ trợ.
+- Khi ngữ cảnh cung cấp số liệu, thông số kỹ thuật hoặc chi tiết cụ thể, sử dụng \
+đúng các giá trị đó thay vì diễn đạt lại hoặc ước lượng.
+- TUYỆT ĐỐI KHÔNG bịa đặt thông số kỹ thuật, số liệu, tiêu chuẩn hoặc tên model. \
+Nếu ngữ cảnh không chứa thông tin cụ thể được yêu cầu, hãy nói "Thông tin này \
+chưa có trong cơ sở tri thức hiện tại" và gợi ý thông tin liên quan mà bạn có thể cung cấp.
+- Nếu người dùng sửa lỗi hoặc cung cấp thông tin cập nhật trong cuộc hội thoại, \
+hãy ghi nhận sự sửa đổi và áp dụng vào tất cả các câu trả lời tiếp theo. Coi \
+các sửa đổi của người dùng là ngữ cảnh ưu tiên cao nhất trong phiên hiện tại.
 - Khi câu trả lời có chứa công thức toán học, biến số hoặc phương trình, luôn sử \
 dụng cú pháp LaTeX. Dùng $...$ cho công thức inline (ví dụ: $v_1$, $\\alpha$) và \
 $$...$$ cho công thức block (ví dụ: $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
@@ -101,3 +120,40 @@ _SUGGESTION_PROMPTS = {
 def get_suggestion_prompt(language: str = "en") -> str:
     """Get the suggestion generation prompt for the given language."""
     return _SUGGESTION_PROMPTS.get(language, SUGGESTION_PROMPT_EN)
+
+
+CONDENSE_PROMPT_EN = """\
+Given a conversation (between Human and Assistant) and a follow-up message from Human, \
+rewrite the Human message to be a standalone question that captures the full context.
+
+IMPORTANT: If the Human previously corrected the Assistant or provided updated information, \
+you MUST include that correction in the standalone question. Never lose corrections.
+
+Chat History:
+{chat_history}
+
+Follow Up Input: {question}
+Standalone question:"""
+
+CONDENSE_PROMPT_VI = """\
+Dựa trên cuộc hội thoại (giữa Người dùng và Trợ lý) và tin nhắn tiếp theo từ Người dùng, \
+viết lại tin nhắn thành một câu hỏi độc lập đầy đủ ngữ cảnh.
+
+QUAN TRỌNG: Nếu Người dùng đã sửa lỗi Trợ lý hoặc cung cấp thông tin cập nhật, \
+bạn PHẢI đưa sửa đổi đó vào câu hỏi độc lập. Không được bỏ mất các sửa đổi.
+
+Lịch sử hội thoại:
+{chat_history}
+
+Tin nhắn tiếp theo: {question}
+Câu hỏi độc lập:"""
+
+_CONDENSE_PROMPTS = {
+    "en": CONDENSE_PROMPT_EN,
+    "vi": CONDENSE_PROMPT_VI,
+}
+
+
+def get_condense_prompt(language: str = "en") -> str:
+    """Get the condense prompt for the given language."""
+    return _CONDENSE_PROMPTS.get(language, CONDENSE_PROMPT_EN)

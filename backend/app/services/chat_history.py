@@ -31,7 +31,7 @@ async def save_message(
 
 
 async def get_session_messages(
-    supabase: Client, session_id: str, limit: int = 20
+    supabase: Client, session_id: str, limit: int = 40
 ) -> list[dict]:
     """Get recent messages for a chat session, ordered by creation time."""
 
