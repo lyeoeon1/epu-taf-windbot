@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import chat, health, ingest, sessions
+from app.routers import chat, glossary, health, ingest, sessions
 from app.services.rag import configure_settings, create_index, create_vector_store
 from app.state import app_state
 
@@ -49,3 +49,4 @@ app.include_router(health.router)
 app.include_router(sessions.router)
 app.include_router(ingest.router)
 app.include_router(chat.router)
+app.include_router(glossary.router)

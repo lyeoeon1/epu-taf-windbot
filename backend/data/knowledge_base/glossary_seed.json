@@ -1,0 +1,1169 @@
+[
+  {
+    "term_en": "Nacelle",
+    "term_vi": "Vỏ tua-bin",
+    "definition_en": "The housing at the top of the tower containing the drivetrain, generator, and control systems.",
+    "definition_vi": "Vỏ bọc ở đỉnh tháp chứa hệ truyền động, máy phát điện và hệ thống điều khiển.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Tower",
+      "Drivetrain",
+      "Yaw system"
+    ]
+  },
+  {
+    "term_en": "Tower",
+    "term_vi": "Tháp",
+    "definition_en": "The tall tubular steel or concrete structure that supports the nacelle and rotor at the required height above ground.",
+    "definition_vi": "Kết cấu hình ống cao bằng thép hoặc bê tông nâng đỡ vỏ tua-bin và rô-to ở độ cao cần thiết so với mặt đất.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Foundation",
+      "Nacelle",
+      "Tower flange"
+    ]
+  },
+  {
+    "term_en": "Foundation",
+    "term_vi": "Móng",
+    "definition_en": "The base structure that anchors the wind turbine to the ground or seabed, transferring loads from the tower into the earth.",
+    "definition_vi": "Kết cấu nền neo giữ tua-bin gió vào mặt đất hoặc đáy biển, truyền tải trọng từ tháp xuống đất.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Tower",
+      "Monopile",
+      "Gravity base"
+    ]
+  },
+  {
+    "term_en": "Hub",
+    "term_vi": "Bầu rô-to",
+    "definition_en": "The central component connecting the rotor blades to the main shaft, transmitting rotational energy to the drivetrain.",
+    "definition_vi": "Bộ phận trung tâm kết nối các cánh rô-to với trục chính, truyền năng lượng quay tới hệ truyền động.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Rotor",
+      "Blade",
+      "Main shaft"
+    ]
+  },
+  {
+    "term_en": "Rotor",
+    "term_vi": "Rô-to",
+    "definition_en": "The rotating assembly consisting of the hub and blades that captures kinetic energy from the wind.",
+    "definition_vi": "Cụm quay bao gồm bầu rô-to và các cánh, thu năng lượng động học từ gió.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Hub",
+      "Blade",
+      "Rotor diameter"
+    ]
+  },
+  {
+    "term_en": "Blade",
+    "term_vi": "Cánh tua-bin",
+    "definition_en": "An aerodynamic component attached to the hub that converts wind energy into rotational mechanical energy through lift forces.",
+    "definition_vi": "Bộ phận khí động học gắn vào bầu rô-to, chuyển đổi năng lượng gió thành năng lượng cơ học quay thông qua lực nâng.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Rotor",
+      "Pitch system",
+      "Leading edge"
+    ]
+  },
+  {
+    "term_en": "Tower flange",
+    "term_vi": "Mặt bích tháp",
+    "definition_en": "The bolted connection joint between tower sections, designed to transfer bending moments and axial loads.",
+    "definition_vi": "Mối nối bu-lông giữa các đoạn tháp, được thiết kế để truyền mô-men uốn và tải trọng dọc trục.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Tower",
+      "Bolt torque",
+      "Foundation"
+    ]
+  },
+  {
+    "term_en": "Monopile",
+    "term_vi": "Cọc đơn",
+    "definition_en": "A single large-diameter steel pile driven into the seabed, commonly used as the foundation for offshore wind turbines.",
+    "definition_vi": "Một cọc thép đường kính lớn đóng xuống đáy biển, thường được sử dụng làm móng cho tua-bin gió ngoài khơi.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Foundation",
+      "Offshore",
+      "Transition piece"
+    ]
+  },
+  {
+    "term_en": "Transition piece",
+    "term_vi": "Đoạn chuyển tiếp",
+    "definition_en": "The structural element connecting the foundation (e.g., monopile) to the tower base, providing a level interface.",
+    "definition_vi": "Phần tử kết cấu nối móng (ví dụ: cọc đơn) với chân tháp, tạo bề mặt tiếp xúc phẳng.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Monopile",
+      "Tower",
+      "Foundation"
+    ]
+  },
+  {
+    "term_en": "Nose cone",
+    "term_vi": "Chóp mũi",
+    "definition_en": "The aerodynamic cover placed over the front of the hub to reduce drag and protect internal components.",
+    "definition_vi": "Nắp che khí động học đặt trước bầu rô-to để giảm lực cản và bảo vệ các bộ phận bên trong.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Hub",
+      "Rotor"
+    ]
+  },
+  {
+    "term_en": "Leading edge",
+    "term_vi": "Mép trước cánh",
+    "definition_en": "The front edge of the blade airfoil that first contacts incoming wind, prone to erosion from rain, sand, and debris.",
+    "definition_vi": "Mép trước của biên dạng cánh tiếp xúc gió đầu tiên, dễ bị mài mòn bởi mưa, cát và mảnh vụn.",
+    "category": "structure",
+    "abbreviation": "LEE",
+    "related_terms": [
+      "Blade",
+      "Trailing edge",
+      "Leading edge erosion"
+    ]
+  },
+  {
+    "term_en": "Trailing edge",
+    "term_vi": "Mép sau cánh",
+    "definition_en": "The rear edge of the blade airfoil where airflow from the pressure and suction sides converges.",
+    "definition_vi": "Mép sau của biên dạng cánh nơi dòng khí từ mặt áp suất và mặt hút hội tụ.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Blade",
+      "Leading edge"
+    ]
+  },
+  {
+    "term_en": "Blade root",
+    "term_vi": "Gốc cánh",
+    "definition_en": "The thick, cylindrical end of the blade that bolts to the hub, designed to withstand maximum bending loads.",
+    "definition_vi": "Đầu dày hình trụ của cánh được bắt bu-lông vào bầu rô-to, được thiết kế để chịu tải trọng uốn lớn nhất.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Blade",
+      "Hub",
+      "Pitch bearing"
+    ]
+  },
+  {
+    "term_en": "Gravity base foundation",
+    "term_vi": "Móng trọng lực",
+    "definition_en": "A heavy concrete foundation that relies on its own weight to resist overturning moments from the turbine.",
+    "definition_vi": "Móng bê tông nặng dựa vào trọng lượng bản thân để chống lại mô-men lật từ tua-bin.",
+    "category": "structure",
+    "abbreviation": "GBF",
+    "related_terms": [
+      "Foundation",
+      "Offshore",
+      "Monopile"
+    ]
+  },
+  {
+    "term_en": "Rotor diameter",
+    "term_vi": "Đường kính rô-to",
+    "definition_en": "The diameter of the circle swept by the blade tips, a key parameter determining the swept area and energy capture.",
+    "definition_vi": "Đường kính vòng tròn quét bởi đầu cánh, thông số quan trọng xác định diện tích quét và khả năng thu năng lượng.",
+    "category": "structure",
+    "abbreviation": null,
+    "related_terms": [
+      "Rotor",
+      "Swept area",
+      "Blade"
+    ]
+  },
+  {
+    "term_en": "Gearbox",
+    "term_vi": "Hộp số",
+    "definition_en": "A mechanical transmission that increases the low rotational speed of the rotor to the higher speed required by the generator.",
+    "definition_vi": "Bộ truyền động cơ khí tăng tốc độ quay thấp của rô-to lên tốc độ cao hơn theo yêu cầu của máy phát điện.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Drivetrain",
+      "Generator",
+      "Main shaft"
+    ]
+  },
+  {
+    "term_en": "Generator",
+    "term_vi": "Máy phát điện",
+    "definition_en": "The electromechanical device that converts the rotational mechanical energy from the drivetrain into electrical energy.",
+    "definition_vi": "Thiết bị cơ điện chuyển đổi năng lượng cơ học quay từ hệ truyền động thành năng lượng điện.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Gearbox",
+      "Drivetrain",
+      "Power converter"
+    ]
+  },
+  {
+    "term_en": "Yaw system",
+    "term_vi": "Hệ thống xoay hướng",
+    "definition_en": "The motorized mechanism that rotates the nacelle on the tower to align the rotor with the wind direction.",
+    "definition_vi": "Cơ cấu có động cơ xoay vỏ tua-bin trên tháp để căn chỉnh rô-to theo hướng gió.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Nacelle",
+      "Yaw bearing",
+      "Wind vane"
+    ]
+  },
+  {
+    "term_en": "Pitch system",
+    "term_vi": "Hệ thống điều chỉnh góc cánh",
+    "definition_en": "The mechanism that rotates each blade around its longitudinal axis to control rotor speed, power output, and aerodynamic loads.",
+    "definition_vi": "Cơ cấu xoay từng cánh quanh trục dọc để kiểm soát tốc độ rô-to, công suất đầu ra và tải khí động học.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Blade",
+      "Pitch bearing",
+      "Pitch angle"
+    ]
+  },
+  {
+    "term_en": "Brake system",
+    "term_vi": "Hệ thống phanh",
+    "definition_en": "Mechanical and/or aerodynamic braking systems used to stop or slow the rotor during maintenance, emergency, or high wind conditions.",
+    "definition_vi": "Hệ thống phanh cơ khí và/hoặc khí động học dùng để dừng hoặc giảm tốc rô-to trong bảo trì, khẩn cấp hoặc gió mạnh.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Pitch system",
+      "Emergency stop",
+      "Rotor"
+    ]
+  },
+  {
+    "term_en": "Main bearing",
+    "term_vi": "Ổ bi chính",
+    "definition_en": "The large bearing supporting the main shaft, designed to handle both radial and axial loads from the rotor.",
+    "definition_vi": "Ổ bi lớn đỡ trục chính, được thiết kế để chịu cả tải trọng hướng tâm và dọc trục từ rô-to.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Main shaft",
+      "Drivetrain",
+      "Lubrication"
+    ]
+  },
+  {
+    "term_en": "Main shaft",
+    "term_vi": "Trục chính",
+    "definition_en": "The low-speed shaft connecting the hub to the gearbox (or directly to the generator in direct-drive turbines).",
+    "definition_vi": "Trục tốc độ thấp nối bầu rô-to với hộp số (hoặc trực tiếp với máy phát trong tua-bin truyền động trực tiếp).",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Hub",
+      "Gearbox",
+      "Main bearing"
+    ]
+  },
+  {
+    "term_en": "Power converter",
+    "term_vi": "Bộ chuyển đổi công suất",
+    "definition_en": "Electronic equipment that converts variable-frequency AC from the generator to fixed-frequency AC suitable for grid connection.",
+    "definition_vi": "Thiết bị điện tử chuyển đổi dòng xoay chiều tần số thay đổi từ máy phát thành dòng xoay chiều tần số cố định phù hợp cho kết nối lưới.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Generator",
+      "Grid connection",
+      "Transformer"
+    ]
+  },
+  {
+    "term_en": "Transformer",
+    "term_vi": "Máy biến áp",
+    "definition_en": "A device that steps up the generator output voltage to the higher voltage level required for transmission to the grid.",
+    "definition_vi": "Thiết bị tăng điện áp đầu ra máy phát lên mức điện áp cao hơn cần thiết để truyền tải lên lưới điện.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Power converter",
+      "Grid connection",
+      "Substation"
+    ]
+  },
+  {
+    "term_en": "Yaw bearing",
+    "term_vi": "Ổ bi xoay hướng",
+    "definition_en": "The large slewing bearing between the nacelle and tower top that allows the nacelle to rotate for wind alignment.",
+    "definition_vi": "Ổ bi quay lớn giữa vỏ tua-bin và đỉnh tháp cho phép vỏ tua-bin xoay để căn hướng gió.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Yaw system",
+      "Nacelle",
+      "Tower"
+    ]
+  },
+  {
+    "term_en": "Pitch bearing",
+    "term_vi": "Ổ bi điều chỉnh góc cánh",
+    "definition_en": "The bearing at the blade root that allows each blade to rotate about its longitudinal axis for pitch control.",
+    "definition_vi": "Ổ bi ở gốc cánh cho phép mỗi cánh xoay quanh trục dọc để điều chỉnh góc cánh.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Pitch system",
+      "Blade root",
+      "Hub"
+    ]
+  },
+  {
+    "term_en": "Anemometer",
+    "term_vi": "Máy đo tốc độ gió",
+    "definition_en": "A sensor mounted on the nacelle that measures wind speed, providing input to the turbine control system.",
+    "definition_vi": "Cảm biến gắn trên vỏ tua-bin đo tốc độ gió, cung cấp dữ liệu đầu vào cho hệ thống điều khiển tua-bin.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Wind vane",
+      "SCADA",
+      "Nacelle"
+    ]
+  },
+  {
+    "term_en": "Wind vane",
+    "term_vi": "Thiết bị đo hướng gió",
+    "definition_en": "A sensor mounted on the nacelle that measures wind direction, used by the yaw system to orient the rotor.",
+    "definition_vi": "Cảm biến gắn trên vỏ tua-bin đo hướng gió, được hệ thống xoay hướng sử dụng để định hướng rô-to.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Anemometer",
+      "Yaw system",
+      "Nacelle"
+    ]
+  },
+  {
+    "term_en": "Drivetrain",
+    "term_vi": "Hệ truyền động",
+    "definition_en": "The complete mechanical power transmission system from the rotor to the generator, including shaft, gearbox, couplings, and bearings.",
+    "definition_vi": "Toàn bộ hệ thống truyền động cơ khí từ rô-to đến máy phát điện, bao gồm trục, hộp số, khớp nối và ổ bi.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Gearbox",
+      "Main shaft",
+      "Generator"
+    ]
+  },
+  {
+    "term_en": "Hydraulic system",
+    "term_vi": "Hệ thống thủy lực",
+    "definition_en": "The fluid power system used to actuate pitch control, yaw brakes, rotor locks, and other mechanical functions in the turbine.",
+    "definition_vi": "Hệ thống truyền động bằng chất lỏng dùng để vận hành điều chỉnh góc cánh, phanh xoay hướng, khóa rô-to và các chức năng cơ khí khác.",
+    "category": "components",
+    "abbreviation": null,
+    "related_terms": [
+      "Pitch system",
+      "Brake system",
+      "Yaw system"
+    ]
+  },
+  {
+    "term_en": "Cut-in speed",
+    "term_vi": "Tốc độ gió khởi động",
+    "definition_en": "The minimum wind speed at which the turbine begins to generate power, typically around 3-4 m/s.",
+    "definition_vi": "Tốc độ gió tối thiểu mà tại đó tua-bin bắt đầu phát điện, thường khoảng 3-4 m/s.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Cut-out speed",
+      "Power curve",
+      "Rated wind speed"
+    ]
+  },
+  {
+    "term_en": "Cut-out speed",
+    "term_vi": "Tốc độ gió ngắt",
+    "definition_en": "The maximum wind speed at which the turbine shuts down to prevent structural damage, typically around 25 m/s.",
+    "definition_vi": "Tốc độ gió tối đa mà tại đó tua-bin ngừng hoạt động để tránh hư hại kết cấu, thường khoảng 25 m/s.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Cut-in speed",
+      "Power curve",
+      "Emergency stop"
+    ]
+  },
+  {
+    "term_en": "Rated power",
+    "term_vi": "Công suất định mức",
+    "definition_en": "The maximum continuous electrical power output a turbine is designed to produce at the rated wind speed.",
+    "definition_vi": "Công suất điện đầu ra liên tục tối đa mà tua-bin được thiết kế để sản xuất tại tốc độ gió định mức.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Rated wind speed",
+      "Power curve",
+      "Capacity factor"
+    ]
+  },
+  {
+    "term_en": "Rated wind speed",
+    "term_vi": "Tốc độ gió định mức",
+    "definition_en": "The wind speed at which the turbine first reaches its rated power output, typically between 11-15 m/s.",
+    "definition_vi": "Tốc độ gió mà tại đó tua-bin đạt công suất định mức lần đầu, thường trong khoảng 11-15 m/s.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Rated power",
+      "Cut-in speed",
+      "Cut-out speed"
+    ]
+  },
+  {
+    "term_en": "Capacity factor",
+    "term_vi": "Hệ số công suất",
+    "definition_en": "The ratio of actual energy produced over a period to the maximum possible energy if the turbine ran at rated power continuously.",
+    "definition_vi": "Tỷ lệ giữa năng lượng thực tế sản xuất trong một khoảng thời gian so với năng lượng tối đa nếu tua-bin chạy ở công suất định mức liên tục.",
+    "category": "operations",
+    "abbreviation": "CF",
+    "related_terms": [
+      "Rated power",
+      "Availability",
+      "Annual energy production"
+    ]
+  },
+  {
+    "term_en": "Power curve",
+    "term_vi": "Đường cong công suất",
+    "definition_en": "A graph showing the relationship between wind speed and the electrical power output of a turbine.",
+    "definition_vi": "Đồ thị thể hiện mối quan hệ giữa tốc độ gió và công suất điện đầu ra của tua-bin.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Cut-in speed",
+      "Cut-out speed",
+      "Rated power"
+    ]
+  },
+  {
+    "term_en": "Grid connection",
+    "term_vi": "Kết nối lưới điện",
+    "definition_en": "The electrical interface between the wind turbine or wind farm and the utility power grid, including switchgear and protection systems.",
+    "definition_vi": "Giao diện điện giữa tua-bin gió hoặc trang trại gió và lưới điện, bao gồm thiết bị đóng cắt và hệ thống bảo vệ.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Transformer",
+      "Substation",
+      "Power converter"
+    ]
+  },
+  {
+    "term_en": "Availability",
+    "term_vi": "Độ sẵn sàng",
+    "definition_en": "The percentage of time a turbine is operational and able to produce power when wind conditions are suitable.",
+    "definition_vi": "Phần trăm thời gian tua-bin hoạt động và có khả năng phát điện khi điều kiện gió phù hợp.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Capacity factor",
+      "Downtime",
+      "Reliability"
+    ]
+  },
+  {
+    "term_en": "Annual energy production",
+    "term_vi": "Sản lượng điện hàng năm",
+    "definition_en": "The total electrical energy generated by a turbine over one year, typically expressed in megawatt-hours (MWh).",
+    "definition_vi": "Tổng năng lượng điện do tua-bin tạo ra trong một năm, thường được biểu thị bằng megawatt-giờ (MWh).",
+    "category": "operations",
+    "abbreviation": "AEP",
+    "related_terms": [
+      "Capacity factor",
+      "Power curve",
+      "Rated power"
+    ]
+  },
+  {
+    "term_en": "Pitch angle",
+    "term_vi": "Góc cánh",
+    "definition_en": "The angle of the blade relative to the plane of rotation, adjusted by the pitch system to regulate power and loads.",
+    "definition_vi": "Góc của cánh so với mặt phẳng quay, được điều chỉnh bởi hệ thống pitch để điều tiết công suất và tải trọng.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Pitch system",
+      "Blade",
+      "Feathering"
+    ]
+  },
+  {
+    "term_en": "Feathering",
+    "term_vi": "Xoay cánh xuôi gió",
+    "definition_en": "Rotating the blades to a 90-degree pitch angle to minimize aerodynamic forces, used for shutdown or storm protection.",
+    "definition_vi": "Xoay cánh đến góc pitch 90 độ để giảm thiểu lực khí động học, dùng khi dừng máy hoặc bảo vệ trong bão.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Pitch system",
+      "Pitch angle",
+      "Cut-out speed"
+    ]
+  },
+  {
+    "term_en": "Swept area",
+    "term_vi": "Diện tích quét",
+    "definition_en": "The circular area covered by the rotating blades, calculated as pi times the square of the rotor radius; determines energy capture potential.",
+    "definition_vi": "Diện tích hình tròn bao phủ bởi các cánh quay, tính bằng pi nhân bình phương bán kính rô-to; xác định khả năng thu năng lượng.",
+    "category": "operations",
+    "abbreviation": null,
+    "related_terms": [
+      "Rotor diameter",
+      "Blade",
+      "Rated power"
+    ]
+  },
+  {
+    "term_en": "Preventive maintenance",
+    "term_vi": "Bảo trì phòng ngừa",
+    "definition_en": "Scheduled maintenance activities performed at regular intervals to reduce the likelihood of equipment failure.",
+    "definition_vi": "Hoạt động bảo trì theo lịch trình được thực hiện định kỳ để giảm khả năng hỏng hóc thiết bị.",
+    "category": "maintenance",
+    "abbreviation": "PM",
+    "related_terms": [
+      "Corrective maintenance",
+      "Condition monitoring",
+      "Inspection"
+    ]
+  },
+  {
+    "term_en": "Corrective maintenance",
+    "term_vi": "Bảo trì sửa chữa",
+    "definition_en": "Unplanned maintenance performed to restore equipment to operational condition after a failure has occurred.",
+    "definition_vi": "Bảo trì không theo kế hoạch được thực hiện để khôi phục thiết bị về trạng thái hoạt động sau khi xảy ra hỏng hóc.",
+    "category": "maintenance",
+    "abbreviation": "CM",
+    "related_terms": [
+      "Preventive maintenance",
+      "Downtime",
+      "Troubleshooting"
+    ]
+  },
+  {
+    "term_en": "Condition monitoring system",
+    "term_vi": "Hệ thống giám sát tình trạng",
+    "definition_en": "An integrated system using sensors and data analysis to continuously monitor the health of critical turbine components such as bearings, gearbox, and generator.",
+    "definition_vi": "Hệ thống tích hợp sử dụng cảm biến và phân tích dữ liệu để giám sát liên tục tình trạng các bộ phận quan trọng như ổ bi, hộp số và máy phát.",
+    "category": "maintenance",
+    "abbreviation": "CMS",
+    "related_terms": [
+      "Vibration analysis",
+      "Oil analysis",
+      "SCADA"
+    ]
+  },
+  {
+    "term_en": "Lubrication",
+    "term_vi": "Bôi trơn",
+    "definition_en": "The application of grease or oil to bearings, gears, and other moving parts to reduce friction, wear, and heat generation.",
+    "definition_vi": "Việc bôi mỡ hoặc dầu vào ổ bi, bánh răng và các bộ phận chuyển động khác để giảm ma sát, mài mòn và sinh nhiệt.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Main bearing",
+      "Gearbox",
+      "Oil analysis"
+    ]
+  },
+  {
+    "term_en": "Inspection",
+    "term_vi": "Kiểm tra",
+    "definition_en": "Systematic visual or instrument-based examination of turbine components to identify wear, damage, or deterioration.",
+    "definition_vi": "Kiểm tra có hệ thống bằng mắt hoặc bằng thiết bị đối với các bộ phận tua-bin để phát hiện mài mòn, hư hỏng hoặc xuống cấp.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Preventive maintenance",
+      "Blade inspection",
+      "Non-destructive testing"
+    ]
+  },
+  {
+    "term_en": "Blade inspection",
+    "term_vi": "Kiểm tra cánh",
+    "definition_en": "Examination of blade surfaces for cracks, erosion, delamination, and lightning damage, performed via rope access, drones, or platform.",
+    "definition_vi": "Kiểm tra bề mặt cánh để phát hiện vết nứt, mài mòn, bong tách và hư hại do sét, thực hiện bằng dây thừng, drone hoặc sàn thao tác.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Blade",
+      "Leading edge erosion",
+      "Non-destructive testing"
+    ]
+  },
+  {
+    "term_en": "Bolt torque check",
+    "term_vi": "Kiểm tra mô-men bu-lông",
+    "definition_en": "Verification that bolted connections (tower flanges, blade roots, foundation) maintain their specified tightening torque.",
+    "definition_vi": "Xác minh rằng các mối nối bu-lông (mặt bích tháp, gốc cánh, móng) duy trì mô-men siết theo quy định.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Tower flange",
+      "Blade root",
+      "Preventive maintenance"
+    ]
+  },
+  {
+    "term_en": "Gearbox oil change",
+    "term_vi": "Thay dầu hộp số",
+    "definition_en": "The periodic replacement of gearbox lubricating oil to maintain proper lubrication and remove contaminants.",
+    "definition_vi": "Việc thay thế định kỳ dầu bôi trơn hộp số để duy trì bôi trơn đúng cách và loại bỏ tạp chất.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Gearbox",
+      "Lubrication",
+      "Oil analysis"
+    ]
+  },
+  {
+    "term_en": "Non-destructive testing",
+    "term_vi": "Kiểm tra không phá hủy",
+    "definition_en": "Testing methods such as ultrasonic, magnetic particle, and radiographic inspection used to detect internal flaws without damaging the component.",
+    "definition_vi": "Các phương pháp kiểm tra như siêu âm, hạt từ tính và chụp X-quang dùng để phát hiện khuyết tật bên trong mà không làm hỏng bộ phận.",
+    "category": "maintenance",
+    "abbreviation": "NDT",
+    "related_terms": [
+      "Inspection",
+      "Blade inspection",
+      "Ultrasonic testing"
+    ]
+  },
+  {
+    "term_en": "Downtime",
+    "term_vi": "Thời gian ngừng hoạt động",
+    "definition_en": "The period during which a turbine is not operational due to maintenance, failure, or external factors.",
+    "definition_vi": "Khoảng thời gian tua-bin không hoạt động do bảo trì, hỏng hóc hoặc yếu tố bên ngoài.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Availability",
+      "Corrective maintenance",
+      "Mean time to repair"
+    ]
+  },
+  {
+    "term_en": "Mean time between failures",
+    "term_vi": "Thời gian trung bình giữa các lần hỏng",
+    "definition_en": "The average operating time between consecutive failures of a component or system, used as a reliability metric.",
+    "definition_vi": "Thời gian vận hành trung bình giữa các lần hỏng liên tiếp của một bộ phận hoặc hệ thống, dùng làm chỉ số độ tin cậy.",
+    "category": "maintenance",
+    "abbreviation": "MTBF",
+    "related_terms": [
+      "Mean time to repair",
+      "Reliability",
+      "Availability"
+    ]
+  },
+  {
+    "term_en": "Mean time to repair",
+    "term_vi": "Thời gian trung bình để sửa chữa",
+    "definition_en": "The average time required to repair a failed component and restore the turbine to operational status.",
+    "definition_vi": "Thời gian trung bình cần thiết để sửa chữa bộ phận hỏng và đưa tua-bin trở lại trạng thái hoạt động.",
+    "category": "maintenance",
+    "abbreviation": "MTTR",
+    "related_terms": [
+      "Mean time between failures",
+      "Downtime",
+      "Corrective maintenance"
+    ]
+  },
+  {
+    "term_en": "Crane operation",
+    "term_vi": "Vận hành cần cẩu",
+    "definition_en": "The use of heavy lifting cranes for major component replacements such as blades, gearboxes, or generators.",
+    "definition_vi": "Việc sử dụng cần cẩu nâng hạ nặng cho các công việc thay thế bộ phận lớn như cánh, hộp số hoặc máy phát điện.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Corrective maintenance",
+      "Blade",
+      "Gearbox"
+    ]
+  },
+  {
+    "term_en": "Leading edge erosion repair",
+    "term_vi": "Sửa chữa mài mòn mép trước",
+    "definition_en": "Restoration of the blade leading edge surface using filling compounds, coatings, or protective shields to recover aerodynamic performance.",
+    "definition_vi": "Phục hồi bề mặt mép trước cánh bằng vật liệu trám, lớp phủ hoặc tấm bảo vệ để khôi phục hiệu suất khí động học.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Leading edge",
+      "Blade inspection",
+      "Blade"
+    ]
+  },
+  {
+    "term_en": "Alignment check",
+    "term_vi": "Kiểm tra đồng tâm",
+    "definition_en": "Measurement and adjustment of the alignment between drivetrain components (shaft, gearbox, generator) to prevent excessive vibration and wear.",
+    "definition_vi": "Đo lường và điều chỉnh độ đồng tâm giữa các bộ phận hệ truyền động (trục, hộp số, máy phát) để ngăn rung động và mài mòn quá mức.",
+    "category": "maintenance",
+    "abbreviation": null,
+    "related_terms": [
+      "Drivetrain",
+      "Vibration analysis",
+      "Gearbox"
+    ]
+  },
+  {
+    "term_en": "Lockout/Tagout",
+    "term_vi": "Khóa/Gắn thẻ an toàn",
+    "definition_en": "A safety procedure to ensure that hazardous energy sources are isolated and cannot be re-energized before maintenance work is completed.",
+    "definition_vi": "Quy trình an toàn đảm bảo các nguồn năng lượng nguy hiểm được cô lập và không thể được kích hoạt lại trước khi hoàn thành công việc bảo trì.",
+    "category": "safety",
+    "abbreviation": "LOTO",
+    "related_terms": [
+      "Electrical safety",
+      "Maintenance",
+      "Permit to work"
+    ]
+  },
+  {
+    "term_en": "Personal protective equipment",
+    "term_vi": "Thiết bị bảo hộ cá nhân",
+    "definition_en": "Safety gear worn by technicians including helmets, harnesses, gloves, safety glasses, and steel-toed boots.",
+    "definition_vi": "Trang thiết bị an toàn mà kỹ thuật viên phải mang gồm mũ bảo hộ, dây đai an toàn, găng tay, kính bảo hộ và giày mũi thép.",
+    "category": "safety",
+    "abbreviation": "PPE",
+    "related_terms": [
+      "Fall protection",
+      "Safety harness",
+      "Hard hat"
+    ]
+  },
+  {
+    "term_en": "Fall protection",
+    "term_vi": "Bảo vệ chống rơi",
+    "definition_en": "Systems and equipment designed to prevent or arrest falls when working at height inside the tower or on the nacelle, including harnesses, lanyards, and anchor points.",
+    "definition_vi": "Hệ thống và thiết bị được thiết kế để ngăn chặn hoặc giữ lại khi rơi khi làm việc trên cao trong tháp hoặc trên vỏ tua-bin, bao gồm dây đai, dây giảm chấn và điểm neo.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "PPE",
+      "Safety harness",
+      "Tower climbing"
+    ]
+  },
+  {
+    "term_en": "Electrical safety",
+    "term_vi": "An toàn điện",
+    "definition_en": "Procedures and precautions to protect personnel from electrical hazards including arc flash, electrocution, and stored energy in capacitors.",
+    "definition_vi": "Quy trình và biện pháp phòng ngừa để bảo vệ nhân viên khỏi các nguy hiểm về điện bao gồm hồ quang điện, điện giật và năng lượng tích trữ trong tụ điện.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "Lockout/Tagout",
+      "Arc flash",
+      "Power converter"
+    ]
+  },
+  {
+    "term_en": "Safety harness",
+    "term_vi": "Dây đai an toàn",
+    "definition_en": "A full-body harness worn by technicians to connect to fall arrest systems when working at height on wind turbines.",
+    "definition_vi": "Dây đai toàn thân mà kỹ thuật viên mang để kết nối với hệ thống chống rơi khi làm việc trên cao ở tua-bin gió.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "Fall protection",
+      "PPE",
+      "Tower climbing"
+    ]
+  },
+  {
+    "term_en": "Permit to work",
+    "term_vi": "Giấy phép làm việc",
+    "definition_en": "A formal written authorization system that ensures safety checks and risk assessments are completed before hazardous work begins.",
+    "definition_vi": "Hệ thống ủy quyền bằng văn bản chính thức đảm bảo các kiểm tra an toàn và đánh giá rủi ro được hoàn thành trước khi bắt đầu công việc nguy hiểm.",
+    "category": "safety",
+    "abbreviation": "PTW",
+    "related_terms": [
+      "Lockout/Tagout",
+      "Risk assessment",
+      "Safety"
+    ]
+  },
+  {
+    "term_en": "Emergency stop",
+    "term_vi": "Dừng khẩn cấp",
+    "definition_en": "A safety function that immediately halts turbine operation by activating brakes and feathering blades in response to a critical fault or manual trigger.",
+    "definition_vi": "Chức năng an toàn dừng ngay lập tức hoạt động tua-bin bằng cách kích hoạt phanh và xoay cánh xuôi gió khi có lỗi nghiêm trọng hoặc kích hoạt thủ công.",
+    "category": "safety",
+    "abbreviation": "E-stop",
+    "related_terms": [
+      "Brake system",
+      "Feathering",
+      "SCADA"
+    ]
+  },
+  {
+    "term_en": "Arc flash",
+    "term_vi": "Hồ quang điện",
+    "definition_en": "A dangerous release of energy caused by an electrical fault, producing intense heat, light, and pressure that can cause severe burns and injuries.",
+    "definition_vi": "Sự giải phóng năng lượng nguy hiểm do lỗi điện, tạo ra nhiệt, ánh sáng và áp suất cường độ cao có thể gây bỏng nặng và chấn thương.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "Electrical safety",
+      "PPE",
+      "Power converter"
+    ]
+  },
+  {
+    "term_en": "Risk assessment",
+    "term_vi": "Đánh giá rủi ro",
+    "definition_en": "A systematic process of identifying hazards, evaluating risks, and implementing control measures before performing work activities.",
+    "definition_vi": "Quy trình có hệ thống nhận diện mối nguy, đánh giá rủi ro và triển khai biện pháp kiểm soát trước khi thực hiện các hoạt động công việc.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "Permit to work",
+      "Safety",
+      "Hazard"
+    ]
+  },
+  {
+    "term_en": "Tower climbing",
+    "term_vi": "Leo tháp",
+    "definition_en": "The activity of ascending the wind turbine tower using internal ladders or service lifts, requiring fall protection equipment.",
+    "definition_vi": "Hoạt động leo lên tháp tua-bin gió bằng thang nội bộ hoặc thang máy dịch vụ, yêu cầu thiết bị bảo vệ chống rơi.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "Fall protection",
+      "Safety harness",
+      "Tower"
+    ]
+  },
+  {
+    "term_en": "Confined space entry",
+    "term_vi": "Vào không gian hạn chế",
+    "definition_en": "Procedures for safely entering enclosed areas within the turbine (hub, blade interior, tower base) that may have limited ventilation or access.",
+    "definition_vi": "Quy trình vào an toàn các khu vực kín trong tua-bin (bầu rô-to, bên trong cánh, chân tháp) có thể bị hạn chế thông gió hoặc lối vào.",
+    "category": "safety",
+    "abbreviation": null,
+    "related_terms": [
+      "PPE",
+      "Risk assessment",
+      "Hub"
+    ]
+  },
+  {
+    "term_en": "Lightning protection system",
+    "term_vi": "Hệ thống chống sét",
+    "definition_en": "An integrated system of receptors, down-conductors, and grounding designed to safely conduct lightning strikes from blade tips to ground.",
+    "definition_vi": "Hệ thống tích hợp gồm đầu thu sét, dây dẫn xuống và tiếp địa được thiết kế để dẫn sét an toàn từ đầu cánh xuống đất.",
+    "category": "safety",
+    "abbreviation": "LPS",
+    "related_terms": [
+      "Blade",
+      "Grounding",
+      "Blade inspection"
+    ]
+  },
+  {
+    "term_en": "Vibration analysis",
+    "term_vi": "Phân tích rung động",
+    "definition_en": "A diagnostic technique that measures vibration signatures of rotating components to detect imbalance, misalignment, bearing defects, and gear damage.",
+    "definition_vi": "Kỹ thuật chẩn đoán đo đặc trưng rung động của các bộ phận quay để phát hiện mất cân bằng, lệch tâm, khuyết tật ổ bi và hư hại bánh răng.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Condition monitoring system",
+      "Main bearing",
+      "Gearbox"
+    ]
+  },
+  {
+    "term_en": "Oil analysis",
+    "term_vi": "Phân tích dầu",
+    "definition_en": "Laboratory testing of lubricating oil samples to detect wear particles, contamination, and chemical degradation indicating component deterioration.",
+    "definition_vi": "Kiểm tra mẫu dầu bôi trơn trong phòng thí nghiệm để phát hiện các hạt mài mòn, tạp chất và suy thoái hóa học cho thấy bộ phận xuống cấp.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Gearbox",
+      "Lubrication",
+      "Condition monitoring system"
+    ]
+  },
+  {
+    "term_en": "Thermal imaging",
+    "term_vi": "Chụp ảnh nhiệt",
+    "definition_en": "The use of infrared cameras to detect abnormal temperature patterns in electrical connections, bearings, and other components indicating potential faults.",
+    "definition_vi": "Sử dụng camera hồng ngoại để phát hiện các mẫu nhiệt độ bất thường trong kết nối điện, ổ bi và các bộ phận khác cho thấy lỗi tiềm ẩn.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Electrical safety",
+      "Inspection",
+      "Condition monitoring system"
+    ]
+  },
+  {
+    "term_en": "SCADA",
+    "term_vi": "Hệ thống SCADA",
+    "definition_en": "Supervisory Control and Data Acquisition system that remotely monitors and controls wind turbine operations, collecting real-time performance data.",
+    "definition_vi": "Hệ thống Giám sát Điều khiển và Thu thập Dữ liệu giám sát và điều khiển từ xa hoạt động tua-bin gió, thu thập dữ liệu hiệu suất thời gian thực.",
+    "category": "troubleshooting",
+    "abbreviation": "SCADA",
+    "related_terms": [
+      "Condition monitoring system",
+      "Alarm",
+      "Remote monitoring"
+    ]
+  },
+  {
+    "term_en": "SCADA alarm",
+    "term_vi": "Cảnh báo SCADA",
+    "definition_en": "Automated notifications generated by the SCADA system when operating parameters exceed predefined thresholds, indicating potential issues.",
+    "definition_vi": "Thông báo tự động do hệ thống SCADA tạo ra khi các thông số vận hành vượt quá ngưỡng đặt trước, cho thấy các vấn đề tiềm ẩn.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "SCADA",
+      "Fault code",
+      "Remote monitoring"
+    ]
+  },
+  {
+    "term_en": "Fault code",
+    "term_vi": "Mã lỗi",
+    "definition_en": "A diagnostic code generated by the turbine controller identifying a specific error condition or equipment malfunction.",
+    "definition_vi": "Mã chẩn đoán do bộ điều khiển tua-bin tạo ra xác định tình trạng lỗi cụ thể hoặc trục trặc thiết bị.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "SCADA alarm",
+      "Troubleshooting",
+      "Controller"
+    ]
+  },
+  {
+    "term_en": "Root cause analysis",
+    "term_vi": "Phân tích nguyên nhân gốc",
+    "definition_en": "A systematic investigation method used to identify the fundamental cause of a failure or problem, rather than just addressing symptoms.",
+    "definition_vi": "Phương pháp điều tra có hệ thống dùng để xác định nguyên nhân cơ bản của hỏng hóc hoặc vấn đề, thay vì chỉ xử lý triệu chứng.",
+    "category": "troubleshooting",
+    "abbreviation": "RCA",
+    "related_terms": [
+      "Corrective maintenance",
+      "Fault code",
+      "Failure mode"
+    ]
+  },
+  {
+    "term_en": "Ultrasonic testing",
+    "term_vi": "Kiểm tra siêu âm",
+    "definition_en": "A non-destructive testing method using high-frequency sound waves to detect internal cracks, voids, and delamination in blades and structural components.",
+    "definition_vi": "Phương pháp kiểm tra không phá hủy sử dụng sóng âm tần số cao để phát hiện vết nứt, lỗ rỗng và bong tách bên trong cánh và bộ phận kết cấu.",
+    "category": "troubleshooting",
+    "abbreviation": "UT",
+    "related_terms": [
+      "Non-destructive testing",
+      "Blade inspection",
+      "Inspection"
+    ]
+  },
+  {
+    "term_en": "Power curve deviation",
+    "term_vi": "Sai lệch đường cong công suất",
+    "definition_en": "A measurable difference between actual turbine power output and the expected power curve, indicating degraded performance or sensor errors.",
+    "definition_vi": "Sự chênh lệch đo được giữa công suất thực tế của tua-bin và đường cong công suất kỳ vọng, cho thấy hiệu suất suy giảm hoặc lỗi cảm biến.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Power curve",
+      "SCADA",
+      "Blade"
+    ]
+  },
+  {
+    "term_en": "Yaw misalignment",
+    "term_vi": "Lệch hướng xoay",
+    "definition_en": "A condition where the nacelle is not properly aligned with the wind direction, causing reduced energy capture and increased structural loads.",
+    "definition_vi": "Tình trạng vỏ tua-bin không được căn chỉnh đúng hướng gió, gây giảm hiệu suất thu năng lượng và tăng tải kết cấu.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Yaw system",
+      "Wind vane",
+      "Power curve deviation"
+    ]
+  },
+  {
+    "term_en": "Blade imbalance",
+    "term_vi": "Mất cân bằng cánh",
+    "definition_en": "An uneven mass or aerodynamic distribution across the rotor blades, causing vibration and increased fatigue loading on the drivetrain.",
+    "definition_vi": "Sự phân bố khối lượng hoặc khí động học không đồng đều giữa các cánh rô-to, gây rung động và tăng tải trọng mỏi lên hệ truyền động.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Vibration analysis",
+      "Blade",
+      "Rotor"
+    ]
+  },
+  {
+    "term_en": "Failure mode",
+    "term_vi": "Chế độ hỏng hóc",
+    "definition_en": "The specific way in which a component or system can fail, used in reliability analysis to predict and prevent failures.",
+    "definition_vi": "Cách thức cụ thể mà một bộ phận hoặc hệ thống có thể hỏng, dùng trong phân tích độ tin cậy để dự đoán và ngăn ngừa hỏng hóc.",
+    "category": "troubleshooting",
+    "abbreviation": null,
+    "related_terms": [
+      "Root cause analysis",
+      "MTBF",
+      "Reliability"
+    ]
+  },
+  {
+    "term_en": "Wind farm",
+    "term_vi": "Trang trại gió",
+    "definition_en": "A group of wind turbines installed at the same location and connected to the electrical grid, operated as a single power plant.",
+    "definition_vi": "Nhóm các tua-bin gió được lắp đặt tại cùng một vị trí và kết nối với lưới điện, vận hành như một nhà máy điện duy nhất.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Offshore",
+      "Onshore",
+      "Grid connection"
+    ]
+  },
+  {
+    "term_en": "Offshore wind",
+    "term_vi": "Gió ngoài khơi",
+    "definition_en": "Wind energy harnessed from turbines installed in bodies of water, typically oceans or large lakes, benefiting from stronger and more consistent winds.",
+    "definition_vi": "Năng lượng gió khai thác từ các tua-bin lắp đặt trên mặt nước, thường là đại dương hoặc hồ lớn, hưởng lợi từ gió mạnh và ổn định hơn.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Onshore",
+      "Wind farm",
+      "Monopile"
+    ]
+  },
+  {
+    "term_en": "Onshore wind",
+    "term_vi": "Gió trên bờ",
+    "definition_en": "Wind energy generated from turbines installed on land, typically in open areas with favorable wind resources.",
+    "definition_vi": "Năng lượng gió tạo ra từ các tua-bin lắp đặt trên đất liền, thường ở các khu vực trống có nguồn gió thuận lợi.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Offshore wind",
+      "Wind farm",
+      "Foundation"
+    ]
+  },
+  {
+    "term_en": "Renewable energy",
+    "term_vi": "Năng lượng tái tạo",
+    "definition_en": "Energy derived from naturally replenishing sources such as wind, solar, hydro, and geothermal that are virtually inexhaustible.",
+    "definition_vi": "Năng lượng có nguồn gốc từ các nguồn tự nhiên tái tạo như gió, mặt trời, thủy điện và địa nhiệt, gần như không bao giờ cạn kiệt.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Wind farm",
+      "Sustainability",
+      "Carbon footprint"
+    ]
+  },
+  {
+    "term_en": "Horizontal axis wind turbine",
+    "term_vi": "Tua-bin gió trục ngang",
+    "definition_en": "The most common type of wind turbine where the rotor shaft is oriented horizontally, parallel to the ground, with blades rotating in a vertical plane.",
+    "definition_vi": "Loại tua-bin gió phổ biến nhất với trục rô-to định hướng nằm ngang, song song với mặt đất, cánh quay trong mặt phẳng thẳng đứng.",
+    "category": "general",
+    "abbreviation": "HAWT",
+    "related_terms": [
+      "Vertical axis wind turbine",
+      "Rotor",
+      "Nacelle"
+    ]
+  },
+  {
+    "term_en": "Vertical axis wind turbine",
+    "term_vi": "Tua-bin gió trục đứng",
+    "definition_en": "A type of wind turbine where the rotor shaft is oriented vertically, capable of receiving wind from any direction without yaw adjustment.",
+    "definition_vi": "Loại tua-bin gió có trục rô-to định hướng thẳng đứng, có khả năng nhận gió từ mọi hướng mà không cần điều chỉnh xoay hướng.",
+    "category": "general",
+    "abbreviation": "VAWT",
+    "related_terms": [
+      "Horizontal axis wind turbine",
+      "Rotor"
+    ]
+  },
+  {
+    "term_en": "Substation",
+    "term_vi": "Trạm biến áp",
+    "definition_en": "An electrical facility within a wind farm that collects power from individual turbines, steps up the voltage, and transmits it to the utility grid.",
+    "definition_vi": "Cơ sở điện trong trang trại gió thu gom điện từ các tua-bin riêng lẻ, tăng điện áp và truyền lên lưới điện.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Transformer",
+      "Grid connection",
+      "Wind farm"
+    ]
+  },
+  {
+    "term_en": "Wake effect",
+    "term_vi": "Hiệu ứng vệt gió",
+    "definition_en": "The reduction in wind speed and increase in turbulence downstream of a turbine, affecting the performance of adjacent turbines in a wind farm.",
+    "definition_vi": "Sự giảm tốc độ gió và tăng nhiễu loạn phía sau tua-bin, ảnh hưởng đến hiệu suất của các tua-bin lân cận trong trang trại gió.",
+    "category": "general",
+    "abbreviation": null,
+    "related_terms": [
+      "Wind farm",
+      "Turbulence",
+      "Capacity factor"
+    ]
+  },
+  {
+    "term_en": "Wind resource assessment",
+    "term_vi": "Đánh giá tài nguyên gió",
+    "definition_en": "The process of measuring and analyzing wind conditions at a potential site to determine its suitability and expected energy yield for wind power development.",
+    "definition_vi": "Quá trình đo lường và phân tích điều kiện gió tại một địa điểm tiềm năng để xác định tính phù hợp và sản lượng năng lượng dự kiến cho phát triển điện gió.",
+    "category": "general",
+    "abbreviation": "WRA",
+    "related_terms": [
+      "Anemometer",
+      "Wind farm",
+      "Annual energy production"
+    ]
+  }
+]
