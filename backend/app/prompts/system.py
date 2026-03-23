@@ -112,15 +112,15 @@ _PROMPTS = {
 
 
 def get_system_prompt(language: str = "en", corrections_block: str = "") -> str:
-    """Get the system prompt, optionally with corrections injected."""
+    """Get the system prompt, optionally with corrections injected.
+
+    Corrections are appended AFTER the context block (end of prompt)
+    so they benefit from LLM recency bias and are closest to the
+    user's question.
+    """
     prompt = _PROMPTS.get(language, SYSTEM_PROMPT_EN)
     if corrections_block:
-        marker = (
-            "Context information is below:"
-            if language == "en"
-            else "Thông tin ngữ cảnh bên dưới:"
-        )
-        prompt = prompt.replace(marker, corrections_block + "\n\n" + marker)
+        prompt = prompt + "\n\n" + corrections_block
     return prompt
 
 
