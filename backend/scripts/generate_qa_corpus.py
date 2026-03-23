@@ -134,8 +134,23 @@ async def main():
         content = response.choices[0].message.content
         try:
             parsed = json.loads(content)
-            # Handle both array and object with "pairs" key
-            pairs = parsed if isinstance(parsed, list) else parsed.get("pairs", parsed.get("questions", []))
+            if isinstance(parsed, list):
+                pairs = parsed
+            elif isinstance(parsed, dict):
+                # GPT may wrap array under any key — find the first list value
+                pairs = []
+                for key in ["pairs", "questions", "qa_pairs", "data"]:
+                    if key in parsed and isinstance(parsed[key], list):
+                        pairs = parsed[key]
+                        break
+                if not pairs:
+                    # Fallback: use the first list value found in the dict
+                    for val in parsed.values():
+                        if isinstance(val, list) and len(val) > 0:
+                            pairs = val
+                            break
+            else:
+                pairs = []
             all_new_pairs.extend(pairs)
             print(f"  Batch: generated {len(pairs)} pairs")
         except json.JSONDecodeError as e:
