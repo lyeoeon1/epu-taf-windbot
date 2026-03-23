@@ -4,18 +4,19 @@ import vecs
 from llama_index.core import Settings, VectorStoreIndex
 from llama_index.core.chat_engine.types import BaseChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
+from llama_index.core.postprocessor import SimilarityPostprocessor
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 
-from app.prompts.system import get_system_prompt
+from app.prompts.system import get_condense_prompt, get_system_prompt
 
 logger = logging.getLogger(__name__)
 
 
 def configure_settings():
     """Set global LlamaIndex settings."""
-    Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0.3)
+    Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0.1)
     Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
     Settings.chunk_size = 1024
     Settings.chunk_overlap = 200
@@ -63,15 +64,21 @@ def get_chat_engine(
         language: Language for system prompt and metadata filtering ("en" or "vi").
         has_history: Whether the conversation has prior messages.
     """
-    memory = ChatMemoryBuffer.from_defaults(token_limit=4000)
+    memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
     system_prompt = get_system_prompt(language)
     mode = "condense_plus_context" if has_history else "context"
 
-    chat_engine = index.as_chat_engine(
-        chat_mode=mode,
-        memory=memory,
-        similarity_top_k=5,
-        system_prompt=system_prompt,
-        verbose=False,
-    )
+    engine_kwargs = {
+        "chat_mode": mode,
+        "memory": memory,
+        "similarity_top_k": 10,
+        "system_prompt": system_prompt,
+        "node_postprocessors": [SimilarityPostprocessor(similarity_cutoff=0.5)],
+        "verbose": False,
+    }
+
+    if has_history:
+        engine_kwargs["condense_question_prompt"] = get_condense_prompt(language)
+
+    chat_engine = index.as_chat_engine(**engine_kwargs)
     return chat_engine
