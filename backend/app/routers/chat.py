@@ -16,6 +16,7 @@ from app.services.chat_history import get_session_messages, save_message
 from app.services.corrections import (
     CorrectionDetector,
     collect_corrections_from_history,
+    detect_input_language,
     extract_correction,
     format_corrections_block,
 )
@@ -79,8 +80,9 @@ async def chat(
         if new_correction:
             corrections.append(new_correction)
 
-    # Build corrections block and create chat engine
-    corrections_block = format_corrections_block(corrections)
+    # Build corrections block (with language hint) and create chat engine
+    lang_hint = detect_input_language(request.message)
+    corrections_block = format_corrections_block(corrections, user_language_hint=lang_hint)
     chat_engine = get_chat_engine(
         index,
         language=request.language,
