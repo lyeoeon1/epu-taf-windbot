@@ -13,6 +13,12 @@ from app.dependencies import get_index, get_supabase
 from app.models.schemas import ChatRequest
 from app.prompts.system import get_suggestion_prompt
 from app.services.chat_history import get_session_messages, save_message
+from app.services.corrections import (
+    CorrectionDetector,
+    collect_corrections_from_history,
+    extract_correction,
+    format_corrections_block,
+)
 from app.services.rag import get_chat_engine
 
 logger = logging.getLogger(__name__)
@@ -54,9 +60,32 @@ async def chat(
     prior_history = history[:-1] if history else []
     has_history = len(prior_history) > 0
 
-    # Create chat engine with appropriate mode
+    # Collect cached corrections from prior messages' metadata
+    corrections = collect_corrections_from_history(prior_history)
+
+    # Detect if current message is a correction (regex, <1ms)
+    detector = CorrectionDetector()
+    is_correction_msg = detector.is_correction(request.message)
+
+    # Extract structured correction if detected (~500ms LLM call)
+    new_correction = None
+    if is_correction_msg:
+        new_correction = await asyncio.to_thread(
+            extract_correction,
+            get_openai_client(),
+            request.message,
+            history,
+        )
+        if new_correction:
+            corrections.append(new_correction)
+
+    # Build corrections block and create chat engine
+    corrections_block = format_corrections_block(corrections)
     chat_engine = get_chat_engine(
-        index, language=request.language, has_history=has_history
+        index,
+        language=request.language,
+        has_history=has_history,
+        corrections_block=corrections_block,
     )
     for msg in prior_history:
         role = (
@@ -99,13 +128,16 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Save complete assistant response
+        # Save complete assistant response (cache corrections in metadata)
+        save_metadata = {"language": request.language}
+        if corrections:
+            save_metadata["corrections"] = corrections
         await save_message(
             supabase,
             session_id,
             "assistant",
             full_response,
-            metadata={"language": request.language},
+            metadata=save_metadata,
         )
 
         # Send done signal immediately so user sees complete response

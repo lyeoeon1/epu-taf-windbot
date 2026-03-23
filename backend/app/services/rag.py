@@ -52,7 +52,10 @@ def create_index(vector_store: SupabaseVectorStore) -> VectorStoreIndex:
 
 
 def get_chat_engine(
-    index: VectorStoreIndex, language: str = "en", has_history: bool = False
+    index: VectorStoreIndex,
+    language: str = "en",
+    has_history: bool = False,
+    corrections_block: str = "",
 ) -> BaseChatEngine:
     """Create a chat engine using context mode.
 
@@ -64,9 +67,10 @@ def get_chat_engine(
         index: The VectorStoreIndex to query against.
         language: Language for system prompt and metadata filtering ("en" or "vi").
         has_history: Whether the conversation has prior messages.
+        corrections_block: Formatted corrections to inject into system prompt.
     """
     memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
-    system_prompt = get_system_prompt(language)
+    system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
     chat_engine = index.as_chat_engine(
         chat_mode="context",
