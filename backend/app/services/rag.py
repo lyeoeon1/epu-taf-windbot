@@ -73,7 +73,7 @@ def get_chat_engine(
         "memory": memory,
         "similarity_top_k": 10,
         "system_prompt": system_prompt,
-        "node_postprocessors": [SimilarityPostprocessor(similarity_cutoff=0.5)],
+        "node_postprocessors": [SimilarityPostprocessor(similarity_cutoff=0.15)],
         "verbose": False,
     }
 
