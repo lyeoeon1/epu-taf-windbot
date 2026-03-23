@@ -1,17 +1,61 @@
 import logging
+from typing import Optional
 
 import vecs
 from llama_index.core import Settings, VectorStoreIndex
 from llama_index.core.chat_engine.types import BaseChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.postprocessor import SimilarityPostprocessor
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
+from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.supabase import SupabaseVectorStore
+from pydantic import Field
 
 from app.prompts.system import get_system_prompt
 
 logger = logging.getLogger(__name__)
+
+
+class CorrectionOverridePostprocessor(BaseNodePostprocessor):
+    """Mark retrieved nodes that conflict with user corrections.
+
+    When corrections exist, scans each retrieved chunk and prepends
+    an override notice if the chunk contains a conflicting value.
+    This ensures the LLM sees the conflict explicitly.
+    """
+
+    corrections: list[dict] = Field(default_factory=list)
+
+    def _postprocess_nodes(
+        self,
+        nodes: list[NodeWithScore],
+        query_bundle: Optional[QueryBundle] = None,
+    ) -> list[NodeWithScore]:
+        if not self.corrections:
+            return nodes
+        for node_ws in nodes:
+            text = node_ws.node.get_content().lower()
+            for corr in self.corrections:
+                old_val = (corr.get("old_value") or "").lower().strip()
+                attr = (corr.get("attribute") or "").lower().strip()
+                new_val = (corr.get("new_value") or "").lower().strip()
+                # Match if node has the old value, or mentions the attribute
+                # with a different value than the correction
+                if (old_val and old_val in text) or (
+                    attr and attr in text and new_val and new_val not in text
+                ):
+                    prefix = (
+                        f"[USER CORRECTED: {corr.get('attribute')}="
+                        f"{corr.get('new_value')}. "
+                        f"IGNORE conflicting values below.]\n"
+                    )
+                    node_ws.node.set_content(
+                        prefix + node_ws.node.get_content()
+                    )
+                    break
+        return nodes
 
 
 def configure_settings():
@@ -56,6 +100,7 @@ def get_chat_engine(
     language: str = "en",
     has_history: bool = False,
     corrections_block: str = "",
+    corrections: Optional[list[dict]] = None,
 ) -> BaseChatEngine:
     """Create a chat engine using context mode.
 
@@ -68,16 +113,23 @@ def get_chat_engine(
         language: Language for system prompt and metadata filtering ("en" or "vi").
         has_history: Whether the conversation has prior messages.
         corrections_block: Formatted corrections to inject into system prompt.
+        corrections: Raw correction dicts for node post-processing.
     """
     memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
     system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
+    postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.15)]
+    if corrections:
+        postprocessors.append(
+            CorrectionOverridePostprocessor(corrections=corrections)
+        )
+
     chat_engine = index.as_chat_engine(
         chat_mode="context",
         memory=memory,
-        similarity_top_k=10,
+        similarity_top_k=15,
         system_prompt=system_prompt,
-        node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.15)],
+        node_postprocessors=postprocessors,
         verbose=False,
     )
     return chat_engine
