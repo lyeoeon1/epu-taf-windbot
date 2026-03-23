@@ -86,6 +86,7 @@ async def chat(
         language=request.language,
         has_history=has_history,
         corrections_block=corrections_block,
+        corrections=corrections or None,
     )
     for msg in prior_history:
         role = (
