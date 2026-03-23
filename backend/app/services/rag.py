@@ -9,7 +9,7 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 
-from app.prompts.system import get_condense_prompt, get_system_prompt
+from app.prompts.system import get_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +54,11 @@ def create_index(vector_store: SupabaseVectorStore) -> VectorStoreIndex:
 def get_chat_engine(
     index: VectorStoreIndex, language: str = "en", has_history: bool = False
 ) -> BaseChatEngine:
-    """Create a chat engine with appropriate mode based on history.
+    """Create a chat engine using context mode.
 
-    Uses "context" mode when no history (1 LLM call),
-    "condense_plus_context" when history exists (2 LLM calls but better quality).
+    Always uses "context" mode so the full chat history (including user
+    corrections) is visible to the LLM. This ensures corrections are
+    naturally retained across turns.
 
     Args:
         index: The VectorStoreIndex to query against.
@@ -66,19 +67,13 @@ def get_chat_engine(
     """
     memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
     system_prompt = get_system_prompt(language)
-    mode = "condense_plus_context" if has_history else "context"
 
-    engine_kwargs = {
-        "chat_mode": mode,
-        "memory": memory,
-        "similarity_top_k": 10,
-        "system_prompt": system_prompt,
-        "node_postprocessors": [SimilarityPostprocessor(similarity_cutoff=0.15)],
-        "verbose": False,
-    }
-
-    if has_history:
-        engine_kwargs["condense_question_prompt"] = get_condense_prompt(language)
-
-    chat_engine = index.as_chat_engine(**engine_kwargs)
+    chat_engine = index.as_chat_engine(
+        chat_mode="context",
+        memory=memory,
+        similarity_top_k=10,
+        system_prompt=system_prompt,
+        node_postprocessors=[SimilarityPostprocessor(similarity_cutoff=0.15)],
+        verbose=False,
+    )
     return chat_engine
