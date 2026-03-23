@@ -142,8 +142,17 @@ CONDENSE_PROMPT_EN = """\
 Given a conversation (between Human and Assistant) and a follow-up message from Human, \
 rewrite the Human message to be a standalone question that captures the full context.
 
-IMPORTANT: If the Human previously corrected the Assistant or provided updated information, \
-you MUST include that correction in the standalone question. Never lose corrections.
+CRITICAL RULES:
+1. If the Human previously corrected the Assistant or provided specific facts/data, \
+you MUST embed those facts directly into the standalone question as known information.
+2. Format corrections as: "Given that [fact from user], [original question]"
+3. NEVER drop user-provided information.
+
+Example:
+- Chat: Human corrected that Vestas V150 cut-in speed is 3 m/s
+- Follow up: "What are the specs of V150?"
+- Standalone: "What are the technical specifications of the Vestas V150 wind turbine, \
+given that the user confirmed its cut-in speed is 3 m/s?"
 
 Chat History:
 {chat_history}
@@ -155,8 +164,17 @@ CONDENSE_PROMPT_VI = """\
 Dựa trên cuộc hội thoại (giữa Người dùng và Trợ lý) và tin nhắn tiếp theo từ Người dùng, \
 viết lại tin nhắn thành một câu hỏi độc lập đầy đủ ngữ cảnh.
 
-QUAN TRỌNG: Nếu Người dùng đã sửa lỗi Trợ lý hoặc cung cấp thông tin cập nhật, \
-bạn PHẢI đưa sửa đổi đó vào câu hỏi độc lập. Không được bỏ mất các sửa đổi.
+QUY TẮC BẮT BUỘC:
+1. Nếu Người dùng đã sửa lỗi Trợ lý hoặc cung cấp dữ liệu/thông tin cụ thể, \
+bạn PHẢI nhúng trực tiếp các thông tin đó vào câu hỏi độc lập dưới dạng sự thật đã biết.
+2. Định dạng sửa đổi thành: "Biết rằng [thông tin từ user], [câu hỏi gốc]"
+3. TUYỆT ĐỐI KHÔNG được bỏ mất thông tin do người dùng cung cấp.
+
+Ví dụ:
+- Hội thoại: Người dùng sửa rằng cut-in speed của Vestas V150 là 3 m/s
+- Tin nhắn tiếp: "V150 có thông số kỹ thuật gì?"
+- Câu hỏi độc lập: "Tua-bin gió Vestas V150 có những thông số kỹ thuật chính nào, \
+biết rằng người dùng đã xác nhận cut-in speed của nó là 3 m/s?"
 
 Lịch sử hội thoại:
 {chat_history}
