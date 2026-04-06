@@ -13,7 +13,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 from pydantic import Field
 
-from app.prompts.system import get_system_prompt
+from app.prompts.system import get_condense_prompt, get_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -111,11 +111,16 @@ def get_chat_engine(
     corrections_block: str = "",
     corrections: Optional[list[dict]] = None,
 ) -> BaseChatEngine:
-    """Create a chat engine using context mode.
+    """Create a chat engine using condense_plus_context mode.
 
-    Always uses "context" mode so the full chat history (including user
-    corrections) is visible to the LLM. This ensures corrections are
-    naturally retained across turns.
+    Uses "condense_plus_context" mode which automatically condenses
+    follow-up questions into standalone queries before retrieval.
+    This ensures short/ambiguous follow-ups like "có thể có 4 ko?"
+    are reformulated into clear queries (e.g., "Tua-bin gió có thể
+    có 4 cánh quạt không?") before hitting the vector store.
+
+    The full chat history (including user corrections) remains visible
+    to the LLM for generation, so corrections are naturally retained.
 
     Args:
         index: The VectorStoreIndex to query against.
@@ -134,11 +139,12 @@ def get_chat_engine(
         )
 
     chat_engine = index.as_chat_engine(
-        chat_mode="context",
+        chat_mode="condense_plus_context",
         memory=memory,
         similarity_top_k=15,
         system_prompt=system_prompt,
         node_postprocessors=postprocessors,
+        condense_prompt=get_condense_prompt(language),
         verbose=False,
     )
     return chat_engine
