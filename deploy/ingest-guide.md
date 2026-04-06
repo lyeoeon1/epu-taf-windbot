@@ -95,9 +95,30 @@ Ingesting AWEA-Operations-and-Maintenance-...2017.pdf... OK (476 chunks)
 Done! Total chunks created: 722
 ```
 
-> Warning `Could not create vector index: replace is set to False` là bình thường — index đã tồn tại.
+> Warning `Could not create vector index: replace is set to False` là bình thường — index đã tồn tại, nhưng cần rebuild (xem bước 5).
 
-## 4. Restart backend service
+## 4. Rebuild vector index (BẮT BUỘC)
+
+Sau khi ingest, vector index cũ **không tự động cập nhật** để bao gồm chunks mới. Nếu không rebuild, retriever sẽ **không tìm thấy** nội dung vừa nạp.
+
+Vào **Supabase Dashboard → SQL Editor** và chạy:
+
+```sql
+-- Drop index cũ và tạo lại để include toàn bộ vectors
+DROP INDEX IF EXISTS vecs.ix_vector_cosine_ops_hnsw_m16_efc64_b494534;
+CREATE INDEX ix_vector_cosine_ops_hnsw_m16_efc64_b494534
+ON vecs.wind_turbine_docs
+USING hnsw (vec vector_cosine_ops)
+WITH (m=16, ef_construction=64);
+```
+
+> **Lưu ý:** Nếu tên index khác, kiểm tra bằng:
+> ```sql
+> SELECT indexname FROM pg_indexes
+> WHERE tablename = 'wind_turbine_docs' AND schemaname = 'vecs';
+> ```
+
+## 5. Restart backend service
 
 Thoát về root rồi restart:
 
@@ -113,7 +134,7 @@ systemctl status botai-backend
 curl -s http://localhost:8000/api/health
 ```
 
-## 5. Cập nhật metadata trên Supabase
+## 6. Cập nhật metadata trên Supabase
 
 Script ingest chỉ ghi chunks vào vector store, **không tự cập nhật bảng `documents_metadata`**. Cần insert thủ công qua Supabase Dashboard (SQL Editor) hoặc MCP:
 
@@ -126,7 +147,7 @@ INSERT INTO documents_metadata (filename, file_type, language, num_chunks, inges
 
 **Lưu ý:** Thay tên file, file_type, language, và num_chunks theo kết quả ingest thực tế.
 
-## 6. Xử lý lỗi thường gặp
+## 7. Xử lý lỗi thường gặp
 
 | Lỗi | Nguyên nhân | Cách fix |
 |-----|-------------|----------|
@@ -138,7 +159,7 @@ INSERT INTO documents_metadata (filename, file_type, language, num_chunks, inges
 | `SSL connection has been closed` | Supabase bị pause | Vào Supabase Dashboard restore project, rồi restart service |
 | `botai is not in the sudoers file` | Đang dùng user botai chạy sudo | Thoát về root (`exit`) rồi chạy lệnh cần sudo |
 
-## 7. Kiểm tra dữ liệu đã nạp
+## 8. Kiểm tra dữ liệu đã nạp
 
 ### Kiểm tra tổng số vectors
 
@@ -163,19 +184,20 @@ FROM documents_metadata
 ORDER BY ingested_at DESC;
 ```
 
-## 8. Quy trình tóm tắt
+## 9. Quy trình tóm tắt
 
 ```
-1. Nhận file từ khách hàng
-2. SFTP (root) upload vào /home/botai/.../backend/data/<folder-mới>/
-3. SSH root: chown -R botai:botai <đường-dẫn>/
-4. SSH: su - botai → cd ~/botai-backend/repo/backend
-5. Load env: set -a; source .env; set +a
-6. Ingest: venv/bin/python scripts/ingest_docs.py --dir ./data/<folder>/
-7. Ghi nhận số chunks mỗi file từ output
-8. Exit về root → systemctl restart botai-backend
-9. Insert metadata vào Supabase (SQL Editor hoặc MCP)
-10. Test chatbot trên windbot.vercel.app
+1.  Nhận file từ khách hàng
+2.  SFTP (root) upload vào /home/botai/.../backend/data/<folder-mới>/
+3.  SSH root: chown -R botai:botai <đường-dẫn>/
+4.  SSH: su - botai → cd ~/botai-backend/repo/backend
+5.  Load env: set -a; source .env; set +a
+6.  Ingest: venv/bin/python scripts/ingest_docs.py --dir ./data/<folder>/
+7.  Ghi nhận số chunks mỗi file từ output
+8.  Rebuild vector index trên Supabase SQL Editor (DROP + CREATE INDEX)
+9.  Exit về root → systemctl restart botai-backend
+10. Insert metadata vào Supabase (SQL Editor hoặc MCP)
+11. Test chatbot trên windbot.vercel.app
 ```
 
 ## Lịch sử nạp tài liệu
