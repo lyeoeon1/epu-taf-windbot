@@ -110,6 +110,7 @@ def get_chat_engine(
     has_history: bool = False,
     corrections_block: str = "",
     corrections: Optional[list[dict]] = None,
+    chat_history: Optional[list] = None,
 ) -> BaseChatEngine:
     """Create a chat engine using condense_plus_context mode.
 
@@ -128,8 +129,12 @@ def get_chat_engine(
         has_history: Whether the conversation has prior messages.
         corrections_block: Formatted corrections to inject into system prompt.
         corrections: Raw correction dicts for node post-processing.
+        chat_history: Prior chat messages to pre-load into memory.
     """
-    memory = ChatMemoryBuffer.from_defaults(token_limit=8000)
+    memory = ChatMemoryBuffer.from_defaults(
+        token_limit=8000,
+        chat_history=chat_history,
+    )
     system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
     postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.15)]
