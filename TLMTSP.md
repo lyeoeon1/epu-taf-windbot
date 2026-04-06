@@ -1,6 +1,6 @@
 # TÀI LIỆU MÔ TẢ NGHIỆP VỤ SẢN PHẨM — AI CHATBOT TUA-BIN GIÓ (WINDBOT)
 
-**Dự án:** Qualcomm VR Lab | **Phiên bản:** 2.0 | **Ngày cập nhật:** 24/03/2026 | **Trạng thái:** ✅ Đã đáp ứng | ⚠️ Một phần | ❌ Chưa có
+**Dự án:** Qualcomm VR Lab | **Phiên bản:** 2.1 | **Ngày cập nhật:** 06/04/2026 | **Trạng thái:** ✅ Đã đáp ứng | ⚠️ Một phần | ❌ Chưa có
 
 ---
 
@@ -57,21 +57,26 @@ Cần làm: Lập báo cáo đánh giá tích hợp VR360, thử nghiệm WebXR 
 
 **Giải pháp / Thực trạng:** ✅ Đã đáp ứng
 
-Thực trạng: Đã đáp ứng đầy đủ — GPT-4o-mini (OpenAI) làm LLM chính với system prompt song ngữ Việt-Anh chuyên biệt cho domain tua-bin gió. Chat history được duy trì trong session với memory buffer 8000 tokens (40 messages). Luôn dùng context mode để giữ full history.
+Thực trạng: Đã đáp ứng đầy đủ — GPT-4o-mini (OpenAI) làm LLM chính với system prompt song ngữ Việt-Anh chuyên biệt cho domain tua-bin gió. Chat history được duy trì trong session với memory buffer 8000 tokens (40 messages). Sử dụng condense_plus_context mode để tự động condense follow-up queries thành standalone questions trước khi retrieval.
 
 Các tính năng NLP đã có:
 - RAG (Retrieval-Augmented Generation) với Supabase pgvector, top_k=15, similarity_cutoff=0.15
+- **Query condensing tự động** (condense_plus_context mode) — follow-up ngắn/mơ hồ như "có thể có 4 ko?" được reformulate thành "Tua-bin gió có thể có 4 cánh quạt không?" trước khi retrieval
 - Streaming response qua SSE (token-by-token)
 - Follow-up suggestions (3 câu hỏi gợi ý)
 - Correction detection + extraction + system prompt injection (regex detect → LLM extract → metadata cache → inject)
 - CorrectionOverridePostprocessor (mark conflicting KB chunks khi user correction tồn tại)
 - Language detection tự động (detect_input_language → [RESPOND IN] hint)
-- Entity verification với FIRST/THEN/FINALLY sequence (chống fabrication)
+- Entity verification với FIRST/THEN/FINALLY sequence (chống fabrication cho specific models)
+- **Information hierarchy 4 tầng**: User corrections → Knowledge base → General knowledge fallback (kèm disclaimer) → Từ chối (specific entity không có trong KB)
+- **Attribution phân biệt nguồn**: KB → "theo tài liệu chuyên ngành", user corrections → "theo thông tin bạn đã xác nhận", general knowledge → "theo kiến thức chung"
 - Temperature 0.1 cho consistency cao
 
 Kết quả test v3: **37/46 (85%)** — Consistency 100%, Bilingual 100%, Suggestions 100%, Q&A 100%, Scope 100%.
 
-**Ghi chú:** Sử dụng GPT-4o-mini qua OpenAI API commercial. Không cần fine-tune model riêng ở giai đoạn này.
+Cải tiến v2.1 (06/04/2026): Fix follow-up context loss, general knowledge fallback, entity verification strengthening — đã verify qua dữ liệu người dùng thực trên Supabase.
+
+**Ghi chú:** Sử dụng GPT-4o-mini qua OpenAI API commercial. Query condensing thêm 1 LLM call nhẹ (~$0.0001/request) cho mỗi tin nhắn có history.
 
 ---
 
@@ -315,12 +320,12 @@ Cần làm: (1) Ký phụ lục hợp đồng hỗ trợ 3 tháng với SLA cụ
 
 ## Tổng kết mức độ đáp ứng yêu cầu
 
-| Trạng thái | Số yêu cầu | Tỷ lệ | v1.0 (10/03) | v2.0 (24/03) | Thay đổi |
-|---|---|---|---|---|---|
-| ✅ Đã đáp ứng | 5 | 26% | 2 (11%) | 5 (26%) | **+3** |
-| ⚠️ Một phần | 8 | 42% | 10 (53%) | 8 (42%) | -2 (upgrade lên ✅) |
-| ❌ Chưa có | 6 | 32% | 7 (37%) | 6 (32%) | -1 (upgrade lên ⚠️) |
-| **TỔNG CỘNG** | **19** | **100%** | | | |
+| Trạng thái | Số yêu cầu | Tỷ lệ | v1.0 (10/03) | v2.0 (24/03) | v2.1 (06/04) | Thay đổi |
+|---|---|---|---|---|---|---|
+| ✅ Đã đáp ứng | 5 | 26% | 2 (11%) | 5 (26%) | 5 (26%) | — |
+| ⚠️ Một phần | 8 | 42% | 10 (53%) | 8 (42%) | 8 (42%) | — |
+| ❌ Chưa có | 6 | 32% | 7 (37%) | 6 (32%) | 6 (32%) | — |
+| **TỔNG CỘNG** | **19** | **100%** | | | | |
 
 ### Thay đổi so với v1.0:
 - **#2 (Q&A kịch bản):** ⚠️ → ✅ — Đã có Q&A corpus 150 pairs, benchmark 160 câu, test suite 46 cases (85% pass)
@@ -334,6 +339,14 @@ Cần làm: (1) Ký phụ lục hợp đồng hỗ trợ 3 tháng với SLA cụ
 - Language detection tự động (EN/VI response matching)
 - Scope restriction + continuation phrase exceptions
 - Test pass rate: **73% → 85%** (3 vòng cải tiến)
+
+### Cải tiến kỹ thuật chính (v2.0 → v2.1, 06/04/2026):
+- **Query condensing**: Chuyển từ `context` mode sang `condense_plus_context` mode — tự động reformulate follow-up queries mơ hồ (VD: "có thể có 4 ko?" → "Tua-bin gió có thể có 4 cánh quạt không?") trước khi retrieval
+- **Fix chat history loading**: History không được load vào engine memory do bug `dict.get(key, [])` — fix bằng cách truyền history qua `ChatMemoryBuffer.from_defaults(chat_history=...)`
+- **General knowledge fallback**: Cho phép trả lời từ kiến thức chung với disclaimer khi KB không có thông tin về khái niệm chung (thay vì từ chối hoàn toàn)
+- **Entity verification strengthening**: Kiểm tra specific entity/model TRƯỚC general fallback — ngăn LLM bịa specs cho model cụ thể (VD: Vestas V236)
+- **Attribution phân biệt nguồn**: "theo tài liệu chuyên ngành" (KB), "theo thông tin bạn đã xác nhận" (user corrections), "theo kiến thức chung" (fallback)
+- Đã verify qua dữ liệu người dùng thực trên Supabase (6 test scenarios pass)
 
 ---
 
@@ -350,3 +363,15 @@ Cần làm: (1) Ký phụ lục hợp đồng hỗ trợ 3 tháng với SLA cụ
 | Follow-up Suggestions | 4 | **100%** | 3 suggestions, relevant, <80 chars |
 | Multi-turn & Edge Cases | 6 | **83%** | Hiểu typo, không dấu, continuation phrases |
 | **TỔNG** | **46** | **85%** | **Target ≥85% — ĐẠT** |
+
+## Kiểm tra thực tế v2.1 (06/04/2026) — Dữ liệu người dùng thực từ Supabase
+
+| Test Case | Input | Kết quả | Status |
+|---|---|---|---|
+| Follow-up context | "turbine có mấy cánh" → "có thể có 4 ko?" | Hiểu context, trả lời đúng về 4 cánh quạt | ✅ |
+| Follow-up "còn loại nào khác?" | "pitch control là gì?" → "còn loại nào khác?" | Trả lời về stall control | ✅ |
+| Follow-up "còn cut-out thì sao?" | "tốc độ gió cut-in bao nhiêu?" → "còn cut-out thì sao?" | Trả lời chi tiết về cut-out 25 m/s | ✅ |
+| Câu rất ngắn "tại sao?" | Sau câu trả lời về cut-out | Giải thích lý do bảo vệ tua-bin | ✅ |
+| Câu rất ngắn "chi tiết hơn" | Sau câu trả lời trước | Mở rộng 4 điểm chi tiết | ✅ |
+| General knowledge fallback | "tuabin gió có ảnh hưởng đến chim không?" | Trả lời đầy đủ, không từ chối | ✅ |
+| Entity verification | "Vestas V236 có thông số kỹ thuật gì?" | "Thông tin cụ thể về Vestas V236 chưa có trong cơ sở tri thức hiện tại" | ✅ |
