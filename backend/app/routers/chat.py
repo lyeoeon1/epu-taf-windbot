@@ -80,6 +80,18 @@ async def chat(
         if new_correction:
             corrections.append(new_correction)
 
+    # Build chat history as ChatMessage objects for the engine
+    chat_history_messages = []
+    for msg in prior_history:
+        role = (
+            MessageRole.USER
+            if msg["role"] == "user"
+            else MessageRole.ASSISTANT
+        )
+        chat_history_messages.append(
+            ChatMessage(role=role, content=msg["content"])
+        )
+
     # Build corrections block (with language hint) and create chat engine
     lang_hint = detect_input_language(request.message)
     corrections_block = format_corrections_block(corrections, user_language_hint=lang_hint)
@@ -89,16 +101,8 @@ async def chat(
         has_history=has_history,
         corrections_block=corrections_block,
         corrections=corrections or None,
+        chat_history=chat_history_messages or None,
     )
-    for msg in prior_history:
-        role = (
-            MessageRole.USER
-            if msg["role"] == "user"
-            else MessageRole.ASSISTANT
-        )
-        chat_engine.chat_history.append(
-            ChatMessage(role=role, content=msg["content"])
-        )
 
     # Stream the response (run blocking call on thread pool)
     streaming_response = await asyncio.to_thread(
