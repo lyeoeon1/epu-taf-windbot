@@ -3,7 +3,7 @@ import json
 import logging
 import threading
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from llama_index.core.llms import ChatMessage, MessageRole
 from openai import OpenAI
@@ -50,64 +50,70 @@ async def chat(
     - data: {"token": "..."}\n\n
     - data: {"done": true}\n\n
     """
-    # Save user message and load history in parallel
-    session_id = str(request.session_id)
-    _, history = await asyncio.gather(
-        save_message(supabase, session_id, "user", request.message),
-        get_session_messages(supabase, session_id),
-    )
-
-    # Determine if there's prior history (exclude the message we just saved)
-    prior_history = history[:-1] if history else []
-    has_history = len(prior_history) > 0
-
-    # Collect cached corrections from prior messages' metadata
-    corrections = collect_corrections_from_history(prior_history)
-
-    # Detect if current message is a correction (regex, <1ms)
-    detector = CorrectionDetector()
-    is_correction_msg = detector.is_correction(request.message)
-
-    # Extract structured correction if detected (~500ms LLM call)
-    new_correction = None
-    if is_correction_msg:
-        new_correction = await asyncio.to_thread(
-            extract_correction,
-            get_openai_client(),
-            request.message,
-            history,
-        )
-        if new_correction:
-            corrections.append(new_correction)
-
-    # Build chat history as ChatMessage objects for the engine
-    chat_history_messages = []
-    for msg in prior_history:
-        role = (
-            MessageRole.USER
-            if msg["role"] == "user"
-            else MessageRole.ASSISTANT
-        )
-        chat_history_messages.append(
-            ChatMessage(role=role, content=msg["content"])
+    try:
+        # Save user message and load history in parallel
+        session_id = str(request.session_id)
+        _, history = await asyncio.gather(
+            save_message(supabase, session_id, "user", request.message),
+            get_session_messages(supabase, session_id),
         )
 
-    # Build corrections block (with language hint) and create chat engine
-    lang_hint = detect_input_language(request.message)
-    corrections_block = format_corrections_block(corrections, user_language_hint=lang_hint)
-    chat_engine = get_chat_engine(
-        index,
-        language=request.language,
-        has_history=has_history,
-        corrections_block=corrections_block,
-        corrections=corrections or None,
-        chat_history=chat_history_messages or None,
-    )
+        # Determine if there's prior history (exclude the message we just saved)
+        prior_history = history[:-1] if history else []
+        has_history = len(prior_history) > 0
 
-    # Stream the response (run blocking call on thread pool)
-    streaming_response = await asyncio.to_thread(
-        chat_engine.stream_chat, request.message
-    )
+        # Collect cached corrections from prior messages' metadata
+        corrections = collect_corrections_from_history(prior_history)
+
+        # Detect if current message is a correction (regex, <1ms)
+        detector = CorrectionDetector()
+        is_correction_msg = detector.is_correction(request.message)
+
+        # Extract structured correction if detected (~500ms LLM call)
+        new_correction = None
+        if is_correction_msg:
+            new_correction = await asyncio.to_thread(
+                extract_correction,
+                get_openai_client(),
+                request.message,
+                history,
+            )
+            if new_correction:
+                corrections.append(new_correction)
+
+        # Build chat history as ChatMessage objects for the engine
+        chat_history_messages = []
+        for msg in prior_history:
+            role = (
+                MessageRole.USER
+                if msg["role"] == "user"
+                else MessageRole.ASSISTANT
+            )
+            chat_history_messages.append(
+                ChatMessage(role=role, content=msg["content"])
+            )
+
+        # Build corrections block (with language hint) and create chat engine
+        lang_hint = detect_input_language(request.message)
+        corrections_block = format_corrections_block(corrections, user_language_hint=lang_hint)
+        chat_engine = get_chat_engine(
+            index,
+            language=request.language,
+            has_history=has_history,
+            corrections_block=corrections_block,
+            corrections=corrections or None,
+            chat_history=chat_history_messages or None,
+        )
+
+        # Stream the response (run blocking call on thread pool)
+        streaming_response = await asyncio.to_thread(
+            chat_engine.stream_chat, request.message
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Chat endpoint failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
     async def event_generator():
         full_response = ""
