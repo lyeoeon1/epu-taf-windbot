@@ -1,10 +1,18 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+
+# Export API keys to os.environ so OpenAI SDK and LlamaIndex can find them.
+# pydantic_settings loads .env into the Settings object but does NOT set os.environ.
+if settings.openai_api_key:
+    os.environ["OPENAI_API_KEY"] = settings.openai_api_key
+if settings.llama_cloud_api_key:
+    os.environ["LLAMA_CLOUD_API_KEY"] = settings.llama_cloud_api_key
 from app.routers import chat, glossary, health, ingest, sessions
 from app.services.rag import configure_settings, create_index, create_vector_store
 from app.state import app_state
