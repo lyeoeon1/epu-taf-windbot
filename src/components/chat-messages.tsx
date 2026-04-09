@@ -178,21 +178,42 @@ const markdownComponents: Components = {
   },
 };
 
-function FeedbackIcon({ className }: { className?: string }) {
+function ThumbsUpIcon({ filled, className }: { filled?: boolean; className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
     >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+    </svg>
+  );
+}
+
+function ThumbsDownIcon({ filled, className }: { filled?: boolean; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M17 14V2" />
+      <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
     </svg>
   );
 }
@@ -208,7 +229,18 @@ function AssistantMessageActions({
   copiedLabel: string;
   sessionId: string | null;
 }) {
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+
+  const handleThumbsUp = useCallback(() => {
+    setVote("up");
+    setShowFeedback(false);
+  }, []);
+
+  const handleThumbsDown = useCallback(() => {
+    setVote("down");
+    setShowFeedback(true);
+  }, []);
 
   return (
     <>
@@ -216,11 +248,27 @@ function AssistantMessageActions({
         <CopyButton text={msg.content} copyLabel={copyLabel} copiedLabel={copiedLabel} />
         <button
           type="button"
-          onClick={() => setShowFeedback(!showFeedback)}
-          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
-          title="Feedback"
+          onClick={handleThumbsUp}
+          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors ${
+            vote === "up"
+              ? "text-green-500 dark:text-green-400"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
+          }`}
+          title="Good response"
         >
-          <FeedbackIcon />
+          <ThumbsUpIcon filled={vote === "up"} />
+        </button>
+        <button
+          type="button"
+          onClick={handleThumbsDown}
+          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors ${
+            vote === "down"
+              ? "text-red-500 dark:text-red-400"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
+          }`}
+          title="Bad response"
+        >
+          <ThumbsDownIcon filled={vote === "down"} />
         </button>
         <span className="text-xs text-muted-foreground">
           {formatTime(msg.timestamp)}
@@ -229,7 +277,7 @@ function AssistantMessageActions({
       {msg.sources && msg.sources.length > 0 && (
         <SourceCitations sources={msg.sources} />
       )}
-      {showFeedback && (
+      {showFeedback && vote === "down" && (
         <FeedbackPanel
           sessionId={sessionId}
           messageContent={msg.content}
