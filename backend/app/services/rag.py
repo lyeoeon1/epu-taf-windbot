@@ -67,6 +67,26 @@ class CorrectionOverridePostprocessor(BaseNodePostprocessor):
         return nodes
 
 
+class SourceNumberingPostprocessor(BaseNodePostprocessor):
+    """Number retrieved nodes so the LLM can cite them inline.
+
+    Prepends [Source N] to each node's content and stores the number
+    in metadata. Must be the LAST postprocessor in the chain.
+    """
+
+    def _postprocess_nodes(
+        self,
+        nodes: list[NodeWithScore],
+        query_bundle: Optional[QueryBundle] = None,
+    ) -> list[NodeWithScore]:
+        for i, node_ws in enumerate(nodes):
+            num = i + 1
+            node_ws.node.metadata["source_number"] = num
+            original = node_ws.node.get_content()
+            node_ws.node.set_content(f"[Source {num}] {original}")
+        return nodes
+
+
 def configure_settings():
     """Set global LlamaIndex settings."""
     Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0.1)
@@ -142,6 +162,8 @@ def get_chat_engine(
         postprocessors.append(
             CorrectionOverridePostprocessor(corrections=corrections)
         )
+
+    postprocessors.append(SourceNumberingPostprocessor())  # Must be last
 
     chat_engine = index.as_chat_engine(
         chat_mode="condense_plus_context",

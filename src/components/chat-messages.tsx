@@ -12,7 +12,7 @@ import { MermaidBlock } from "./mermaid-block";
 import { MermaidErrorBoundary } from "./mermaid-error-boundary";
 import * as Dialog from "@radix-ui/react-dialog";
 import { FeedbackPanel } from "./feedback-panel";
-import { SourceCitations } from "./source-citations";
+import { SourcesProvider, TextWithCitations } from "./source-citations";
 import "katex/dist/katex.min.css";
 
 const labels = {
@@ -336,16 +336,43 @@ export function ChatMessages({ messages, isLoading, sessionId, onSendMessage }: 
               {msg.content ? (
                 <>
                   <div className="prose max-w-none text-foreground leading-relaxed dark:prose-invert dark:text-white">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm, remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      components={markdownComponents}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                    {msg.sources && msg.sources.length > 0 && (
-                      <SourceCitations sources={msg.sources} />
-                    )}
+                    <SourcesProvider sources={msg.sources || []}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm, remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        components={{
+                          ...markdownComponents,
+                          p({ children }) {
+                            return (
+                              <p>
+                                {Array.isArray(children)
+                                  ? children.map((child, i) =>
+                                      typeof child === "string" ? <TextWithCitations key={i}>{child}</TextWithCitations> : child
+                                    )
+                                  : typeof children === "string"
+                                    ? <TextWithCitations>{children}</TextWithCitations>
+                                    : children}
+                              </p>
+                            );
+                          },
+                          li({ children }) {
+                            return (
+                              <li>
+                                {Array.isArray(children)
+                                  ? children.map((child, i) =>
+                                      typeof child === "string" ? <TextWithCitations key={i}>{child}</TextWithCitations> : child
+                                    )
+                                  : typeof children === "string"
+                                    ? <TextWithCitations>{children}</TextWithCitations>
+                                    : children}
+                              </li>
+                            );
+                          },
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </SourcesProvider>
                   </div>
                   <AssistantMessageActions
                     msg={msg}
