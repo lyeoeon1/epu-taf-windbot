@@ -10,6 +10,8 @@ import type { Message } from "@/hooks/use-chat";
 import { useLanguage } from "@/contexts/language-context";
 import { MermaidBlock } from "./mermaid-block";
 import { MermaidErrorBoundary } from "./mermaid-error-boundary";
+import { FeedbackPanel } from "./feedback-panel";
+import { SourceCitations } from "./source-citations";
 import "katex/dist/katex.min.css";
 
 const labels = {
@@ -176,13 +178,76 @@ const markdownComponents: Components = {
   },
 };
 
+function FeedbackIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+  );
+}
+
+function AssistantMessageActions({
+  msg,
+  copyLabel,
+  copiedLabel,
+  sessionId,
+}: {
+  msg: Message;
+  copyLabel: string;
+  copiedLabel: string;
+  sessionId: string | null;
+}) {
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  return (
+    <>
+      <div className="mt-1 flex items-center gap-1">
+        <CopyButton text={msg.content} copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        <button
+          type="button"
+          onClick={() => setShowFeedback(!showFeedback)}
+          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
+          title="Feedback"
+        >
+          <FeedbackIcon />
+        </button>
+        <span className="text-xs text-muted-foreground">
+          {formatTime(msg.timestamp)}
+        </span>
+      </div>
+      {msg.sources && msg.sources.length > 0 && (
+        <SourceCitations sources={msg.sources} />
+      )}
+      {showFeedback && (
+        <FeedbackPanel
+          sessionId={sessionId}
+          messageContent={msg.content}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
+    </>
+  );
+}
+
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
+  sessionId?: string | null;
   onSendMessage?: (content: string) => void;
 }
 
-export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, sessionId, onSendMessage }: ChatMessagesProps) {
   const { language } = useLanguage();
   const t = labels[language];
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -227,12 +292,12 @@ export function ChatMessages({ messages, isLoading, onSendMessage }: ChatMessage
                       {msg.content}
                     </ReactMarkdown>
                   </div>
-                  <div className="mt-1 flex items-center gap-1">
-                    <CopyButton text={msg.content} copyLabel={t.copy} copiedLabel={t.copied} />
-                    <span className="text-xs text-muted-foreground">
-                      {formatTime(msg.timestamp)}
-                    </span>
-                  </div>
+                  <AssistantMessageActions
+                    msg={msg}
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                    sessionId={sessionId ?? null}
+                  />
                 </>
               ) : (
                 isLoading && (

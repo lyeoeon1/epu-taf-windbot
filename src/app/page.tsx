@@ -14,7 +14,7 @@ const labels = {
 export default function Home() {
   const { language } = useLanguage();
   const t = labels[language];
-  const { messages, isLoading, sendMessage, clearChat } = useChat(language);
+  const { messages, isLoading, sessionId, sendMessage, clearChat } = useChat(language);
 
   if (messages.length === 0) {
     return (
@@ -41,7 +41,7 @@ export default function Home() {
       <Header onClearChat={clearChat} />
       <div className="flex-1 overflow-y-auto px-4">
         <div className="mx-auto max-w-2xl py-8">
-          <ChatMessages messages={messages} isLoading={isLoading} onSendMessage={sendMessage} />
+          <ChatMessages messages={messages} isLoading={isLoading} sessionId={sessionId} onSendMessage={sendMessage} />
         </div>
       </div>
       <div className="sticky bottom-0 bg-background dark:bg-[#212121] px-4 pb-4 pt-2">

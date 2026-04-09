@@ -69,3 +69,16 @@ CREATE INDEX idx_glossary_category ON glossary(category);
 CREATE TRIGGER update_glossary_updated_at
     BEFORE UPDATE ON glossary
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- User feedback on chat messages
+CREATE TABLE IF NOT EXISTS message_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    message_content TEXT NOT NULL,
+    feedback_tags TEXT[] NOT NULL DEFAULT '{}',
+    feedback_text TEXT DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_message_feedback_session ON message_feedback(session_id);
+CREATE INDEX idx_message_feedback_created ON message_feedback(created_at);
