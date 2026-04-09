@@ -9,7 +9,7 @@ from llama_index.core.llms import ChatMessage, MessageRole
 from openai import OpenAI
 from supabase import Client
 
-from app.dependencies import get_index, get_supabase
+from app.dependencies import get_glossary_expander, get_index, get_reranker, get_supabase
 from app.models.schemas import ChatRequest
 from app.prompts.system import get_suggestion_prompt
 from app.services.chat_history import get_session_messages, save_message
@@ -103,6 +103,9 @@ async def chat(
             corrections_block=corrections_block,
             corrections=corrections or None,
             chat_history=chat_history_messages or None,
+            supabase_client=supabase,
+            glossary_expander=get_glossary_expander(),
+            reranker=get_reranker(),
         )
 
         # Stream the response (run blocking call on thread pool)

@@ -29,3 +29,13 @@ def get_supabase() -> Client:
             settings.supabase_url, settings.supabase_service_key
         )
     return app_state["supabase"]
+
+
+def get_glossary_expander():
+    """Get the GlossaryExpander instance (initialized at startup)."""
+    return app_state.get("glossary_expander")
+
+
+def get_reranker():
+    """Get the FlashReranker instance (initialized at startup)."""
+    return app_state.get("reranker")

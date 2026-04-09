@@ -1,4 +1,6 @@
+import logging
 import os
+from typing import Optional
 
 from llama_cloud import AsyncLlamaCloud
 from llama_index.core import SimpleDirectoryReader
@@ -7,8 +9,11 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import Document
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.vector_stores.supabase import SupabaseVectorStore
+from supabase import Client as SupabaseClient
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 # File extensions that should use LlamaParse for better parsing
 LLAMAPARSE_EXTENSIONS = {".pdf", ".docx", ".doc", ".pptx", ".xlsx"}
@@ -78,16 +83,40 @@ def parse_with_simple_reader(
     return documents
 
 
+def _populate_chunk_fts(
+    supabase_client: SupabaseClient,
+    nodes: list,
+) -> None:
+    """Insert ingested chunks into the chunk_fts table for BM25 search.
+
+    This ensures new ingestions are immediately searchable via both
+    dense (pgvector) and sparse (tsvector) search.
+    """
+    for node in nodes:
+        try:
+            supabase_client.table("chunk_fts").upsert({
+                "chunk_id": node.node_id,
+                "content": node.get_content(),
+                "filename": node.metadata.get("filename", ""),
+                "page": node.metadata.get("page"),
+                "language": node.metadata.get("language", "vi"),
+            }).execute()
+        except Exception as e:
+            logger.warning("Failed to insert chunk %s into FTS: %s", node.node_id, e)
+
+
 async def ingest_documents(
     file_path: str,
     language: str,
     vector_store: SupabaseVectorStore,
     tier: str = "agentic",
+    supabase_client: Optional[SupabaseClient] = None,
 ) -> int:
     """Ingest a document into the vector store.
 
     Automatically selects LlamaParse or SimpleDirectoryReader based on
-    file extension.
+    file extension. If supabase_client is provided, also populates the
+    chunk_fts table for BM25 search.
 
     Returns the number of chunks created.
     """
@@ -111,4 +140,10 @@ async def ingest_documents(
     )
 
     nodes = await pipeline.arun(documents=documents)
+
+    # Also populate FTS table for BM25 search
+    if supabase_client and nodes:
+        _populate_chunk_fts(supabase_client, nodes)
+        logger.info("Populated %d chunks into FTS table", len(nodes))
+
     return len(nodes)
