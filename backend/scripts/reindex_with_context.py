@@ -23,6 +23,14 @@ import sys
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+
+from dotenv import load_dotenv  # noqa: E402
+load_dotenv()
+
+from app.config import settings as _settings  # noqa: E402
+if _settings.openai_api_key:
+    os.environ["OPENAI_API_KEY"] = _settings.openai_api_key
 
 from openai import OpenAI  # noqa: E402
 from supabase import create_client  # noqa: E402
