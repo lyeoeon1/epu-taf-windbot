@@ -82,6 +82,17 @@ class AdvancedRetriever(BaseRetriever):
         # Initialize sub-components
         self._bm25_searcher = BM25Searcher(supabase_client) if enable_bm25 else None
 
+    @staticmethod
+    def _is_qa_chunk(node_ws: NodeWithScore) -> bool:
+        """Check if a node is from the AI-generated QA corpus."""
+        filename = (node_ws.node.metadata.get("filename") or "").lower()
+        if filename.startswith("qa"):
+            return True
+        content = node_ws.node.get_content()[:50].strip()
+        if content.startswith("Q:") or content.startswith("Q :"):
+            return True
+        return False
+
     def _dense_search(self, query: str, top_k: int) -> list[NodeWithScore]:
         """Execute dense vector search via the existing VectorStoreIndex."""
         retriever = self._index.as_retriever(similarity_top_k=top_k)
@@ -203,6 +214,22 @@ class AdvancedRetriever(BaseRetriever):
         candidates = merge_multi_query_results(hybrid_per_query, top_n=50)
 
         logger.debug("Pipeline candidates after RRF: %d", len(candidates))
+
+        # ── Step 5.5: Filter QA corpus BEFORE reranking ──────────────
+        # QA chunks (GPT-generated) always outscore original documents
+        # in reranking. Filter them here so reranker scores only
+        # authoritative source documents.
+        pre_filter = len(candidates)
+        candidates = [
+            n for n in candidates
+            if not self._is_qa_chunk(n)
+        ]
+        if len(candidates) < pre_filter:
+            logger.info(
+                "Filtered %d QA chunks before reranking, %d remaining",
+                pre_filter - len(candidates),
+                len(candidates),
+            )
 
         # ── Step 6: Rerank ────────────────────────────────────────────
         if self._enable_reranking and self._reranker:
