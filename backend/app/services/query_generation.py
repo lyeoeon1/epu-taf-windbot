@@ -146,6 +146,7 @@ async def generate_query_variants(
     query: str,
     enable_multi_query: bool = True,
     enable_hyde: bool = True,
+    multi_query_count: int = 2,
     model: str = "gpt-4o-mini",
 ) -> tuple[list[str], str]:
     """Generate both multi-query variants and HyDE document in parallel.
@@ -167,7 +168,7 @@ async def generate_query_variants(
         return ""
 
     multi_query_task = (
-        asyncio.to_thread(generate_multi_queries, client, query, 3, model)
+        asyncio.to_thread(generate_multi_queries, client, query, multi_query_count, model)
         if enable_multi_query
         else _noop_list()
     )
