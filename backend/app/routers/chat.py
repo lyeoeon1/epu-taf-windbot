@@ -141,25 +141,30 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Retrieve source nodes for citations (separate retrieval call)
+        # Extract source nodes from the chat engine's actual retrieval
+        # These are the SAME numbered nodes the LLM saw in its context
         sources = []
         try:
-            retriever = index.as_retriever(similarity_top_k=10)
-            source_nodes = await asyncio.to_thread(retriever.retrieve, request.message)
-            # Filter by same cutoff as chat engine and take top 5
-            # Filter by same similarity cutoff as chat engine (higher score = more relevant)
-            source_nodes = [n for n in source_nodes if n.score is not None][:5]
-            for i, node_ws in enumerate(source_nodes):
+            context_nodes = getattr(streaming_response, "source_nodes", None) or []
+            for node_ws in context_nodes:
                 metadata = node_ws.node.metadata or {}
+                num = metadata.get("source_number")
+                if num is None:
+                    continue
+                # Strip the "[Source N] " prefix from content for display
+                content = node_ws.node.get_content()
+                prefix = f"[Source {num}] "
+                if content.startswith(prefix):
+                    content = content[len(prefix):]
                 sources.append({
-                    "id": i + 1,
-                    "text": node_ws.node.get_content()[:300],
+                    "id": num,
+                    "text": content[:300],
                     "filename": metadata.get("filename", ""),
                     "page": metadata.get("page"),
                     "score": round(node_ws.score, 3) if node_ws.score else None,
                 })
         except Exception as e:
-            logger.warning("Failed to retrieve source nodes: %s", e)
+            logger.warning("Failed to extract source nodes: %s", e)
 
         # Save complete assistant response (cache corrections + sources in metadata)
         save_metadata = {"language": request.language}
