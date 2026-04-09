@@ -233,14 +233,22 @@ function AssistantMessageActions({
   const [showFeedback, setShowFeedback] = useState(false);
 
   const handleThumbsUp = useCallback(() => {
-    setVote("up");
-    setShowFeedback(false);
-  }, []);
+    if (vote === "up" && showFeedback) {
+      setShowFeedback(false);
+    } else {
+      setVote("up");
+      setShowFeedback(true);
+    }
+  }, [vote, showFeedback]);
 
   const handleThumbsDown = useCallback(() => {
-    setVote("down");
-    setShowFeedback(true);
-  }, []);
+    if (vote === "down" && showFeedback) {
+      setShowFeedback(false);
+    } else {
+      setVote("down");
+      setShowFeedback(true);
+    }
+  }, [vote, showFeedback]);
 
   return (
     <>
@@ -277,10 +285,11 @@ function AssistantMessageActions({
       {msg.sources && msg.sources.length > 0 && (
         <SourceCitations sources={msg.sources} />
       )}
-      {showFeedback && vote === "down" && (
+      {showFeedback && vote && (
         <FeedbackPanel
           sessionId={sessionId}
           messageContent={msg.content}
+          variant={vote === "up" ? "positive" : "negative"}
           onClose={() => setShowFeedback(false)}
         />
       )}
