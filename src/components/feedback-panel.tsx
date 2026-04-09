@@ -10,12 +10,19 @@ const labels = {
     cancel: "Hủy",
     submit: "Gửi",
     submitted: "Cảm ơn phản hồi!",
-    tags: {
-      factually_correct: "Chính xác",
-      easy_to_understand: "Dễ hiểu",
-      informative: "Hữu ích",
-      creative: "Thú vị",
-      incorrect: "Không chính xác",
+    positiveTags: {
+      factually_correct: "Factually correct",
+      easy_to_understand: "Easy to understand",
+      informative: "Informative",
+      creative: "Creative / Interesting",
+      other: "Khác",
+    },
+    negativeTags: {
+      unsafe: "Phản cảm/không an toàn",
+      not_relevant: "Không liên quan",
+      not_factual: "Câu trả lời không đúng sự thật",
+      partially_incorrect: "Có phần không chính xác",
+      other: "Khác",
     },
   },
   en: {
@@ -24,27 +31,38 @@ const labels = {
     cancel: "Cancel",
     submit: "Submit",
     submitted: "Thanks for your feedback!",
-    tags: {
+    positiveTags: {
       factually_correct: "Factually correct",
       easy_to_understand: "Easy to understand",
       informative: "Informative",
       creative: "Creative / Interesting",
-      incorrect: "Incorrect",
+      other: "Other",
+    },
+    negativeTags: {
+      unsafe: "Unsafe / Offensive",
+      not_relevant: "Not relevant",
+      not_factual: "Not factually correct",
+      partially_incorrect: "Partially incorrect",
+      other: "Other",
     },
   },
 };
 
-const TAG_KEYS = ["factually_correct", "easy_to_understand", "informative", "creative", "incorrect"] as const;
+const POSITIVE_TAG_KEYS = ["factually_correct", "easy_to_understand", "informative", "creative", "other"] as const;
+const NEGATIVE_TAG_KEYS = ["unsafe", "not_relevant", "not_factual", "partially_incorrect", "other"] as const;
 
 interface FeedbackPanelProps {
   sessionId: string | null;
   messageContent: string;
+  variant: "positive" | "negative";
   onClose: () => void;
 }
 
-export function FeedbackPanel({ sessionId, messageContent, onClose }: FeedbackPanelProps) {
+export function FeedbackPanel({ sessionId, messageContent, variant, onClose }: FeedbackPanelProps) {
   const { language } = useLanguage();
   const t = labels[language];
+  const tagKeys = variant === "positive" ? POSITIVE_TAG_KEYS : NEGATIVE_TAG_KEYS;
+  const tagLabels = variant === "positive" ? t.positiveTags : t.negativeTags;
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [feedbackText, setFeedbackText] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -74,7 +92,7 @@ export function FeedbackPanel({ sessionId, messageContent, onClose }: FeedbackPa
         body: JSON.stringify({
           session_id: sessionId,
           message_content: messageContent.slice(0, 2000),
-          feedback_tags: Array.from(selectedTags),
+          feedback_tags: [`vote_${variant}`, ...Array.from(selectedTags)],
           feedback_text: feedbackText.trim(),
         }),
       });
@@ -85,7 +103,7 @@ export function FeedbackPanel({ sessionId, messageContent, onClose }: FeedbackPa
     } finally {
       setSubmitting(false);
     }
-  }, [selectedTags, feedbackText, sessionId, messageContent, onClose]);
+  }, [selectedTags, feedbackText, sessionId, messageContent, variant, onClose]);
 
   if (submitted) {
     return (
@@ -102,7 +120,7 @@ export function FeedbackPanel({ sessionId, messageContent, onClose }: FeedbackPa
       </p>
 
       <div className="mb-2 flex flex-wrap gap-1.5">
-        {TAG_KEYS.map((tag) => (
+        {tagKeys.map((tag) => (
           <button
             key={tag}
             type="button"
@@ -113,7 +131,7 @@ export function FeedbackPanel({ sessionId, messageContent, onClose }: FeedbackPa
                 : "border-gray-200 text-muted-foreground hover:bg-accent dark:border-[#515151] dark:text-gray-400 dark:hover:bg-[#515151]"
             }`}
           >
-            {t.tags[tag as keyof typeof t.tags]}
+            {tagLabels[tag as keyof typeof tagLabels]}
           </button>
         ))}
       </div>
