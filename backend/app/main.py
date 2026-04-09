@@ -13,7 +13,7 @@ if settings.openai_api_key:
     os.environ["OPENAI_API_KEY"] = settings.openai_api_key
 if settings.llama_cloud_api_key:
     os.environ["LLAMA_CLOUD_API_KEY"] = settings.llama_cloud_api_key
-from app.routers import chat, glossary, health, ingest, sessions
+from app.routers import chat, feedback, glossary, health, ingest, sessions
 from app.services.rag import configure_settings, create_index, create_vector_store
 from app.state import app_state
 
@@ -58,3 +58,4 @@ app.include_router(sessions.router)
 app.include_router(ingest.router)
 app.include_router(chat.router)
 app.include_router(glossary.router)
+app.include_router(feedback.router)

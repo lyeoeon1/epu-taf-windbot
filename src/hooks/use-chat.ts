@@ -2,17 +2,27 @@
 
 import { useCallback, useRef, useState } from "react";
 
+export interface SourceNode {
+  id: number;
+  text: string;
+  filename: string;
+  page?: number;
+  score: number | null;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
+  sources?: SourceNode[];
   timestamp: number;
 }
 
 export interface UseChatReturn {
   messages: Message[];
   isLoading: boolean;
+  sessionId: string | null;
   sendMessage: (content: string) => Promise<void>;
   clearChat: () => void;
 }
@@ -25,6 +35,7 @@ const errorLabels = {
 export function useChat(language: string = "vi"): UseChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const sessionIdRef = useRef<string | null>(null);
 
   const ensureSession = useCallback(async (): Promise<string> => {
@@ -40,6 +51,7 @@ export function useChat(language: string = "vi"): UseChatReturn {
 
     const data = await res.json();
     sessionIdRef.current = data.id;
+    setSessionId(data.id);
     return data.id;
   }, [language]);
 
@@ -118,6 +130,15 @@ export function useChat(language: string = "vi"): UseChatReturn {
                   )
                 );
               }
+              if (data.sources) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMessage.id
+                      ? { ...m, sources: data.sources }
+                      : m
+                  )
+                );
+              }
               if (data.token) {
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -143,6 +164,15 @@ export function useChat(language: string = "vi"): UseChatReturn {
                 prev.map((m) =>
                   m.id === assistantMessage.id
                     ? { ...m, suggestions: data.suggestions }
+                    : m
+                )
+              );
+            }
+            if (data.sources) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessage.id
+                    ? { ...m, sources: data.sources }
                     : m
                 )
               );
@@ -173,7 +203,8 @@ export function useChat(language: string = "vi"): UseChatReturn {
   const clearChat = useCallback(() => {
     setMessages([]);
     sessionIdRef.current = null;
+    setSessionId(null);
   }, []);
 
-  return { messages, isLoading, sendMessage, clearChat };
+  return { messages, isLoading, sessionId, sendMessage, clearChat };
 }

@@ -81,3 +81,10 @@ class EvalResult(BaseModel):
     clarity: float
     tone: float
     retrieval_hit: bool
+
+
+class FeedbackRequest(BaseModel):
+    session_id: UUID
+    message_content: str
+    feedback_tags: list[str] = []
+    feedback_text: str = ""

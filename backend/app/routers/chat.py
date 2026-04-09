@@ -141,10 +141,32 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Save complete assistant response (cache corrections in metadata)
+        # Retrieve source nodes for citations (separate retrieval call)
+        sources = []
+        try:
+            retriever = index.as_retriever(similarity_top_k=10)
+            source_nodes = await asyncio.to_thread(retriever.retrieve, request.message)
+            # Filter by same cutoff as chat engine and take top 5
+            # Filter by same similarity cutoff as chat engine (higher score = more relevant)
+            source_nodes = [n for n in source_nodes if n.score is not None][:5]
+            for i, node_ws in enumerate(source_nodes):
+                metadata = node_ws.node.metadata or {}
+                sources.append({
+                    "id": i + 1,
+                    "text": node_ws.node.get_content()[:300],
+                    "filename": metadata.get("filename", ""),
+                    "page": metadata.get("page"),
+                    "score": round(node_ws.score, 3) if node_ws.score else None,
+                })
+        except Exception as e:
+            logger.warning("Failed to retrieve source nodes: %s", e)
+
+        # Save complete assistant response (cache corrections + sources in metadata)
         save_metadata = {"language": request.language}
         if corrections:
             save_metadata["corrections"] = corrections
+        if sources:
+            save_metadata["sources"] = sources
         await save_message(
             supabase,
             session_id,
@@ -155,6 +177,10 @@ async def chat(
 
         # Send done signal immediately so user sees complete response
         yield f"data: {json.dumps({'done': True})}\n\n"
+
+        # Send source citations after done signal
+        if sources:
+            yield f"data: {json.dumps({'sources': sources})}\n\n"
 
         # Generate follow-up suggestions after done signal (non-blocking)
         try:

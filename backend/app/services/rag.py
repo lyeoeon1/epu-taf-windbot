@@ -137,7 +137,7 @@ def get_chat_engine(
     )
     system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
-    postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.2)]
+    postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.35)]
     if corrections:
         postprocessors.append(
             CorrectionOverridePostprocessor(corrections=corrections)
@@ -146,7 +146,7 @@ def get_chat_engine(
     chat_engine = index.as_chat_engine(
         chat_mode="condense_plus_context",
         memory=memory,
-        similarity_top_k=20,
+        similarity_top_k=10,
         system_prompt=system_prompt,
         node_postprocessors=postprocessors,
         condense_prompt=get_condense_prompt(language),
