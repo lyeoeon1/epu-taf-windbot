@@ -22,6 +22,33 @@ from app.services.corrections import (
 )
 from app.services.rag import get_chat_engine
 
+# Friendly display names for source filenames
+_FILENAME_DISPLAY = {
+    "Dien Gio (Sach chuyen nganh).pdf": "Sach Dien Gio",
+    "Wind_Energy_Handbook.pdf": "Wind Energy Handbook",
+    "windenergyengineeringahandbookforonshoreandoffshorewindturbines-1.pdf": "Wind Energy Engineering Handbook",
+    "AWEA-Operations-and-Maintenance-Recommended-Practices-Second-Edition-2017.pdf": "AWEA O&M Recommended Practices",
+    "R06-004 - Wind Energy Design and Fundamentals - US.pdf": "Wind Energy Design & Fundamentals",
+    "195-fowt-guide-jan24.pdf": "Floating Offshore Wind Guide",
+    "Wind-Tecnology (1).docx": "Wind Technology",
+    "QA - Kien thuc tua-bin gio": "QA - Kien thuc tua-bin gio",
+    "QA - Cau truc tua-bin gio": "QA - Cau truc tua-bin gio",
+    "QA - Van hanh tua-bin gio": "QA - Van hanh tua-bin gio",
+    "QA - Bao tri tua-bin gio": "QA - Bao tri tua-bin gio",
+    "QA - An toan dien gio": "QA - An toan dien gio",
+    "QA - Xu ly su co": "QA - Xu ly su co",
+}
+
+
+def _display_filename(raw: str) -> str:
+    """Convert raw filename to a user-friendly display name."""
+    if raw in _FILENAME_DISPLAY:
+        return _FILENAME_DISPLAY[raw]
+    # Strip .md extension for KB markdown files
+    if raw.endswith(".md"):
+        return raw[:-3].replace("_", " ").title()
+    return raw
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
@@ -151,10 +178,11 @@ async def chat(
             source_nodes = [n for n in source_nodes if n.score is not None][:5]
             for i, node_ws in enumerate(source_nodes):
                 metadata = node_ws.node.metadata or {}
+                raw_filename = metadata.get("filename", "")
                 sources.append({
                     "id": i + 1,
                     "text": node_ws.node.get_content()[:300],
-                    "filename": metadata.get("filename", ""),
+                    "filename": _display_filename(raw_filename),
                     "page": metadata.get("page"),
                     "score": round(node_ws.score, 3) if node_ws.score else None,
                 })
