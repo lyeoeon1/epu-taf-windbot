@@ -137,7 +137,7 @@ def get_chat_engine(
     )
     system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
-    postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.35)]
+    postprocessors = [SimilarityPostprocessor(similarity_cutoff=0.25)]
     if corrections:
         postprocessors.append(
             CorrectionOverridePostprocessor(corrections=corrections)
