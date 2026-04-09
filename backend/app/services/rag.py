@@ -202,7 +202,10 @@ def get_chat_engine(
     )
 
     postprocessors = []
-    if EXCLUDE_QA_CORPUS:
+    # QA corpus filter only for legacy mode — in advanced mode the reranker
+    # validates relevance (high-scoring QA chunks are genuinely useful).
+    # In legacy mode without reranking, QA corpus may introduce errors.
+    if EXCLUDE_QA_CORPUS and not use_advanced:
         postprocessors.append(QACorpusFilterPostprocessor())
     # SimilarityPostprocessor only for legacy mode — in advanced mode the
     # reranker already handles relevance scoring (and uses a different score
