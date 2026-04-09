@@ -1,0 +1,219 @@
+"""Advanced Retriever: orchestrates the full retrieval pipeline.
+
+Implements LlamaIndex's BaseRetriever interface so it plugs directly
+into CondensePlusContextChatEngine. The pipeline:
+
+1. Query Expansion (glossary synonyms, <1ms)
+2. Multi-Query + HyDE Generation (parallel LLM calls, ~800ms)
+3. Dense + BM25 Search (parallel per query variant, ~100ms)
+4. RRF Fusion (merge + dedup, <5ms)
+5. Cross-encoder Reranking (FlashRank, ~50ms)
+
+Total added latency: ~1-2s (acceptable for chatbot UX).
+"""
+
+import asyncio
+import logging
+from typing import Optional
+
+from llama_index.core import VectorStoreIndex
+from llama_index.core.retrievers import BaseRetriever
+from llama_index.core.schema import NodeWithScore, QueryBundle
+from openai import OpenAI
+from supabase import Client as SupabaseClient
+
+from app.services.bm25_search import BM25Searcher
+from app.services.hybrid_search import merge_multi_query_results, reciprocal_rank_fusion
+from app.services.query_expansion import GlossaryExpander
+from app.services.query_generation import generate_query_variants
+from app.services.reranker import FlashReranker
+
+logger = logging.getLogger(__name__)
+
+
+class AdvancedRetriever(BaseRetriever):
+    """Full pipeline retriever with hybrid search, reranking, and query expansion.
+
+    This retriever replaces the default VectorStoreIndex retriever.
+    It implements _retrieve() (sync) which is called by the chat engine.
+    """
+
+    def __init__(
+        self,
+        index: VectorStoreIndex,
+        supabase_client: SupabaseClient,
+        glossary_expander: Optional[GlossaryExpander] = None,
+        reranker: Optional[FlashReranker] = None,
+        openai_client: Optional[OpenAI] = None,
+        # Feature toggles
+        enable_multi_query: bool = True,
+        enable_hyde: bool = True,
+        enable_bm25: bool = True,
+        enable_reranking: bool = True,
+        enable_glossary_expansion: bool = True,
+        # Tuning parameters
+        dense_top_k: int = 20,
+        bm25_top_k: int = 20,
+        rerank_top_k: int = 8,
+        dense_weight: float = 0.8,
+        sparse_weight: float = 0.2,
+    ):
+        super().__init__()
+        self._index = index
+        self._supabase = supabase_client
+        self._glossary = glossary_expander
+        self._reranker = reranker
+        self._openai = openai_client or OpenAI()
+
+        # Feature toggles
+        self._enable_multi_query = enable_multi_query
+        self._enable_hyde = enable_hyde
+        self._enable_bm25 = enable_bm25
+        self._enable_reranking = enable_reranking
+        self._enable_glossary = enable_glossary_expansion
+
+        # Parameters
+        self._dense_top_k = dense_top_k
+        self._bm25_top_k = bm25_top_k
+        self._rerank_top_k = rerank_top_k
+        self._dense_weight = dense_weight
+        self._sparse_weight = sparse_weight
+
+        # Initialize sub-components
+        self._bm25_searcher = BM25Searcher(supabase_client) if enable_bm25 else None
+
+    def _dense_search(self, query: str, top_k: int) -> list[NodeWithScore]:
+        """Execute dense vector search via the existing VectorStoreIndex."""
+        retriever = self._index.as_retriever(similarity_top_k=top_k)
+        return retriever.retrieve(query)
+
+    def _dense_search_multiple(
+        self, queries: list[str], top_k: int
+    ) -> list[list[NodeWithScore]]:
+        """Execute dense search for multiple queries."""
+        results = []
+        for q in queries:
+            try:
+                results.append(self._dense_search(q, top_k))
+            except Exception as e:
+                logger.warning("Dense search failed for '%s': %s", q[:50], e)
+                results.append([])
+        return results
+
+    def _bm25_search_multiple(
+        self, queries: list[str], top_k: int
+    ) -> list[list[NodeWithScore]]:
+        """Execute BM25 search for multiple queries."""
+        if not self._bm25_searcher:
+            return [[] for _ in queries]
+        results = []
+        for q in queries:
+            try:
+                results.append(self._bm25_searcher.search(q, top_k=top_k))
+            except Exception as e:
+                logger.warning("BM25 search failed for '%s': %s", q[:50], e)
+                results.append([])
+        return results
+
+    def _retrieve(self, query_bundle: QueryBundle) -> list[NodeWithScore]:
+        """Synchronous retrieval — called by CondensePlusContextChatEngine.
+
+        This is the main entry point. Since the chat engine calls this
+        synchronously, we use asyncio.run() for the async pipeline
+        (multi-query + HyDE generation).
+        """
+        query = query_bundle.query_str
+        logger.info("AdvancedRetriever: processing '%s'", query[:80])
+
+        # ── Step 1: Query Expansion (sync, <1ms) ──────────────────────
+        expanded_query = query
+        if self._enable_glossary and self._glossary:
+            expanded_query = self._glossary.expand(query)
+            if expanded_query != query:
+                logger.debug("Glossary expanded: '%s'", expanded_query[:100])
+
+        # ── Step 2: Multi-Query + HyDE (async, ~800ms) ───────────────
+        multi_queries = []
+        hyde_doc = ""
+
+        if self._enable_multi_query or self._enable_hyde:
+            try:
+                # Try to use existing event loop, fallback to new one
+                try:
+                    loop = asyncio.get_running_loop()
+                    # We're inside an event loop — use thread
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as pool:
+                        future = pool.submit(
+                            asyncio.run,
+                            generate_query_variants(
+                                self._openai, query,
+                                enable_multi_query=self._enable_multi_query,
+                                enable_hyde=self._enable_hyde,
+                            )
+                        )
+                        multi_queries, hyde_doc = future.result(timeout=10)
+                except RuntimeError:
+                    # No event loop running — safe to use asyncio.run()
+                    multi_queries, hyde_doc = asyncio.run(
+                        generate_query_variants(
+                            self._openai, query,
+                            enable_multi_query=self._enable_multi_query,
+                            enable_hyde=self._enable_hyde,
+                        )
+                    )
+            except Exception as e:
+                logger.warning("Query variant generation failed: %s", e)
+
+        # ── Step 3: Collect all query variants ────────────────────────
+        all_queries = [query]
+        if expanded_query != query:
+            all_queries.append(expanded_query)
+        all_queries.extend(multi_queries)
+        if hyde_doc:
+            all_queries.append(hyde_doc)
+
+        logger.debug(
+            "Total query variants: %d (original + %d expanded + %d multi + %d hyde)",
+            len(all_queries),
+            1 if expanded_query != query else 0,
+            len(multi_queries),
+            1 if hyde_doc else 0,
+        )
+
+        # ── Step 4: Dense + BM25 Search (per variant) ────────────────
+        dense_per_query = self._dense_search_multiple(all_queries, self._dense_top_k)
+        bm25_per_query = self._bm25_search_multiple(all_queries, self._bm25_top_k)
+
+        # ── Step 5: RRF Fusion ────────────────────────────────────────
+        # First: merge dense + sparse per query using RRF
+        hybrid_per_query = []
+        for dense_results, bm25_results in zip(dense_per_query, bm25_per_query):
+            if bm25_results:
+                merged = reciprocal_rank_fusion(
+                    dense_results, bm25_results,
+                    dense_weight=self._dense_weight,
+                    sparse_weight=self._sparse_weight,
+                )
+            else:
+                merged = dense_results
+            hybrid_per_query.append(merged)
+
+        # Then: merge across all query variants
+        candidates = merge_multi_query_results(hybrid_per_query, top_n=50)
+
+        logger.debug("Pipeline candidates after RRF: %d", len(candidates))
+
+        # ── Step 6: Rerank ────────────────────────────────────────────
+        if self._enable_reranking and self._reranker:
+            # Use the ORIGINAL query for reranking (not expanded)
+            final = self._reranker.rerank(query, candidates, top_k=self._rerank_top_k)
+        else:
+            final = candidates[:self._rerank_top_k]
+
+        logger.info(
+            "AdvancedRetriever: returned %d nodes (from %d candidates)",
+            len(final),
+            len(candidates),
+        )
+        return final

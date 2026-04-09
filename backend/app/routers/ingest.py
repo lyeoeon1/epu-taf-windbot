@@ -40,7 +40,8 @@ async def ingest(
 
         try:
             num_chunks = await ingest_documents(
-                tmp_path, language, vector_store, tier
+                tmp_path, language, vector_store, tier,
+                supabase_client=supabase,
             )
 
             # Save metadata to Supabase

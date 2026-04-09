@@ -14,7 +14,9 @@ if settings.openai_api_key:
 if settings.llama_cloud_api_key:
     os.environ["LLAMA_CLOUD_API_KEY"] = settings.llama_cloud_api_key
 from app.routers import chat, feedback, glossary, health, ingest, sessions
+from app.services.query_expansion import GlossaryExpander
 from app.services.rag import configure_settings, create_index, create_vector_store
+from app.services.reranker import FlashReranker
 from app.state import app_state
 
 logger = logging.getLogger(__name__)
@@ -36,6 +38,28 @@ async def lifespan(app: FastAPI):
             "Chat and ingest endpoints will not work until configured.",
             e,
         )
+
+    # Initialize advanced retrieval components
+    if settings.enable_advanced_retrieval:
+        try:
+            glossary_expander = GlossaryExpander()
+            app_state["glossary_expander"] = glossary_expander
+            logger.info(
+                "GlossaryExpander loaded: %d terms", glossary_expander.term_count
+            )
+        except Exception as e:
+            logger.warning("Failed to init GlossaryExpander: %s", e)
+
+        if settings.enable_reranking:
+            try:
+                reranker = FlashReranker()
+                app_state["reranker"] = reranker
+                logger.info(
+                    "FlashReranker initialized (available=%s)", reranker.is_available
+                )
+            except Exception as e:
+                logger.warning("Failed to init FlashReranker: %s", e)
+
     yield
 
 

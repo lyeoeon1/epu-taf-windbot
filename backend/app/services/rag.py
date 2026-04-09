@@ -3,6 +3,7 @@ from typing import Optional
 
 import vecs
 from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core.chat_engine import CondensePlusContextChatEngine
 from llama_index.core.chat_engine.types import BaseChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.postprocessor import SimilarityPostprocessor
@@ -12,8 +13,13 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 from pydantic import Field
+from supabase import Client as SupabaseClient
 
+from app.config import settings as app_settings
 from app.prompts.system import get_condense_prompt, get_system_prompt
+from app.services.advanced_retriever import AdvancedRetriever
+from app.services.query_expansion import GlossaryExpander
+from app.services.reranker import FlashReranker
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +159,9 @@ def get_chat_engine(
     corrections_block: str = "",
     corrections: Optional[list[dict]] = None,
     chat_history: Optional[list] = None,
+    supabase_client: Optional[SupabaseClient] = None,
+    glossary_expander: Optional[GlossaryExpander] = None,
+    reranker: Optional[FlashReranker] = None,
 ) -> BaseChatEngine:
     """Create a chat engine using condense_plus_context mode.
 
@@ -162,8 +171,12 @@ def get_chat_engine(
     are reformulated into clear queries (e.g., "Tua-bin gió có thể
     có 4 cánh quạt không?") before hitting the vector store.
 
-    The full chat history (including user corrections) remains visible
-    to the LLM for generation, so corrections are naturally retained.
+    When advanced retrieval is enabled, the default VectorStoreIndex
+    retriever is replaced with AdvancedRetriever which adds:
+    - Glossary-powered query expansion
+    - Multi-query + HyDE generation
+    - Hybrid search (dense + BM25)
+    - Cross-encoder reranking
 
     Args:
         index: The VectorStoreIndex to query against.
@@ -172,6 +185,9 @@ def get_chat_engine(
         corrections_block: Formatted corrections to inject into system prompt.
         corrections: Raw correction dicts for node post-processing.
         chat_history: Prior chat messages to pre-load into memory.
+        supabase_client: Supabase client for BM25 search (advanced mode).
+        glossary_expander: GlossaryExpander instance (advanced mode).
+        reranker: FlashReranker instance (advanced mode).
     """
     memory = ChatMemoryBuffer.from_defaults(
         token_limit=8000,
@@ -179,24 +195,68 @@ def get_chat_engine(
     )
     system_prompt = get_system_prompt(language, corrections_block=corrections_block)
 
+    # Choose retriever: advanced pipeline or legacy dense-only
+    use_advanced = (
+        app_settings.enable_advanced_retrieval
+        and supabase_client is not None
+    )
+
     postprocessors = []
     if EXCLUDE_QA_CORPUS:
         postprocessors.append(QACorpusFilterPostprocessor())
-    postprocessors.append(SimilarityPostprocessor(similarity_cutoff=0.25))
+    # SimilarityPostprocessor only for legacy mode — in advanced mode the
+    # reranker already handles relevance scoring (and uses a different score
+    # scale, so the 0.25 cosine cutoff would incorrectly filter results).
+    if not use_advanced:
+        postprocessors.append(SimilarityPostprocessor(similarity_cutoff=0.25))
     if corrections:
         postprocessors.append(
             CorrectionOverridePostprocessor(corrections=corrections)
         )
-
     postprocessors.append(SourceNumberingPostprocessor())  # Must be last
 
-    chat_engine = index.as_chat_engine(
-        chat_mode="condense_plus_context",
-        memory=memory,
-        similarity_top_k=10,
-        system_prompt=system_prompt,
-        node_postprocessors=postprocessors,
-        condense_prompt=get_condense_prompt(language),
-        verbose=False,
-    )
+    if use_advanced:
+        retriever = AdvancedRetriever(
+            index=index,
+            supabase_client=supabase_client,
+            glossary_expander=glossary_expander,
+            reranker=reranker,
+            enable_multi_query=app_settings.enable_multi_query,
+            enable_hyde=app_settings.enable_hyde,
+            enable_bm25=app_settings.enable_bm25,
+            enable_reranking=app_settings.enable_reranking,
+            enable_glossary_expansion=app_settings.enable_glossary_expansion,
+            dense_top_k=app_settings.dense_top_k,
+            bm25_top_k=app_settings.bm25_top_k,
+            rerank_top_k=app_settings.rerank_top_k,
+            dense_weight=app_settings.dense_weight,
+            sparse_weight=app_settings.sparse_weight,
+        )
+        logger.info("Using AdvancedRetriever (hybrid search + reranking)")
+
+        chat_engine = CondensePlusContextChatEngine.from_defaults(
+            retriever=retriever,
+            memory=memory,
+            system_prompt=system_prompt,
+            condense_prompt=get_condense_prompt(language),
+            node_postprocessors=postprocessors,
+            verbose=False,
+        )
+    else:
+        # Legacy mode: dense-only retrieval via index.as_chat_engine()
+        if use_advanced is False and app_settings.enable_advanced_retrieval:
+            logger.warning(
+                "Advanced retrieval enabled but supabase_client not provided. "
+                "Falling back to legacy dense-only mode."
+            )
+        chat_engine = index.as_chat_engine(
+            chat_mode="condense_plus_context",
+            memory=memory,
+            similarity_top_k=10,
+            system_prompt=system_prompt,
+            node_postprocessors=postprocessors,
+            condense_prompt=get_condense_prompt(language),
+            verbose=False,
+        )
+
     return chat_engine

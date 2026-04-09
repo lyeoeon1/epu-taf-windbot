@@ -16,6 +16,9 @@ llama-cloud>=1.0
 # Supabase client
 supabase==2.9.0
 
+# Reranking (cross-encoder for retrieval precision)
+flashrank>=0.2.0
+
 # Utilities
 python-dotenv==1.0.0
 python-multipart==0.0.9
