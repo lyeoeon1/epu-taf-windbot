@@ -46,7 +46,7 @@ def extract_correction(
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1-nano",
             temperature=0,
             max_tokens=200,
             messages=[
