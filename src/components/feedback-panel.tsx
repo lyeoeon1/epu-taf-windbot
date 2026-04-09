@@ -107,14 +107,14 @@ export function FeedbackPanel({ sessionId, messageContent, variant, onClose }: F
 
   if (submitted) {
     return (
-      <div className="mt-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">
+      <div className="rounded-xl px-4 py-3 text-xs text-green-700 dark:bg-[#262626] dark:text-green-400">
         {t.submitted}
       </div>
     );
   }
 
   return (
-    <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-[#414141] dark:bg-[#262626]">
+    <div className="rounded-xl p-4 dark:bg-[#262626]">
       <p className="mb-2 text-xs font-medium text-muted-foreground dark:text-gray-400">
         {t.title}
       </p>

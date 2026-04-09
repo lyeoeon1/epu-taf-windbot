@@ -10,6 +10,7 @@ import type { Message } from "@/hooks/use-chat";
 import { useLanguage } from "@/contexts/language-context";
 import { MermaidBlock } from "./mermaid-block";
 import { MermaidErrorBoundary } from "./mermaid-error-boundary";
+import * as Dialog from "@radix-ui/react-dialog";
 import { FeedbackPanel } from "./feedback-panel";
 import { SourceCitations } from "./source-citations";
 import "katex/dist/katex.min.css";
@@ -178,14 +179,14 @@ const markdownComponents: Components = {
   },
 };
 
-function ThumbsUpIcon({ filled, className }: { filled?: boolean; className?: string }) {
+function ThumbsUpIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
+      fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
@@ -198,14 +199,14 @@ function ThumbsUpIcon({ filled, className }: { filled?: boolean; className?: str
   );
 }
 
-function ThumbsDownIcon({ filled, className }: { filled?: boolean; className?: string }) {
+function ThumbsDownIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="16"
       height="16"
       viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
+      fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
@@ -257,42 +258,36 @@ function AssistantMessageActions({
         <button
           type="button"
           onClick={handleThumbsUp}
-          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors ${
-            vote === "up"
-              ? "text-green-500 dark:text-green-400"
-              : "text-muted-foreground hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
-          }`}
+          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
           title="Good response"
         >
-          <ThumbsUpIcon filled={vote === "up"} />
+          <ThumbsUpIcon />
         </button>
         <button
           type="button"
           onClick={handleThumbsDown}
-          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-md transition-colors ${
-            vote === "down"
-              ? "text-red-500 dark:text-red-400"
-              : "text-muted-foreground hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
-          }`}
+          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground dark:text-gray-400 dark:hover:bg-[#515151] dark:hover:text-white"
           title="Bad response"
         >
-          <ThumbsDownIcon filled={vote === "down"} />
+          <ThumbsDownIcon />
         </button>
         <span className="text-xs text-muted-foreground">
           {formatTime(msg.timestamp)}
         </span>
       </div>
-      {msg.sources && msg.sources.length > 0 && (
-        <SourceCitations sources={msg.sources} />
-      )}
-      {showFeedback && vote && (
-        <FeedbackPanel
-          sessionId={sessionId}
-          messageContent={msg.content}
-          variant={vote === "up" ? "positive" : "negative"}
-          onClose={() => setShowFeedback(false)}
-        />
-      )}
+      <Dialog.Root open={showFeedback && !!vote} onOpenChange={(open) => { if (!open) setShowFeedback(false); }}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-gray-200 bg-white p-0 shadow-xl dark:border-[#414141] dark:bg-[#262626]">
+            <FeedbackPanel
+              sessionId={sessionId}
+              messageContent={msg.content}
+              variant={vote === "up" ? "positive" : "negative"}
+              onClose={() => setShowFeedback(false)}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }
@@ -348,6 +343,9 @@ export function ChatMessages({ messages, isLoading, sessionId, onSendMessage }: 
                     >
                       {msg.content}
                     </ReactMarkdown>
+                    {msg.sources && msg.sources.length > 0 && (
+                      <SourceCitations sources={msg.sources} />
+                    )}
                   </div>
                   <AssistantMessageActions
                     msg={msg}
