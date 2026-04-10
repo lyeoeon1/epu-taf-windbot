@@ -48,11 +48,13 @@ def main():
     batch_size = 1000
 
     while True:
-        response = sb.table("chunk_fts") \
-            .select("chunk_id, content, filename, page, language") \
-            .not_.("filename", "like", "QA%") \
-            .range(offset, offset + batch_size - 1) \
+        response = (
+            sb.table("chunk_fts")
+            .select("chunk_id, content, filename, page, language")
+            .not_("filename", "like", "QA%")
+            .range(offset, offset + batch_size - 1)
             .execute()
+        )
 
         if not response.data:
             break
