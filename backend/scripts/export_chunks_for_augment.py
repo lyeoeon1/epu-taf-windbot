@@ -51,7 +51,7 @@ def main():
         response = (
             sb.table("chunk_fts")
             .select("chunk_id, content, filename, page, language")
-            .not_("filename", "like", "QA%")
+            .filter("filename", "not.like", "QA%")
             .range(offset, offset + batch_size - 1)
             .execute()
         )
