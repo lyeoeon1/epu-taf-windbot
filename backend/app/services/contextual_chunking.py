@@ -58,12 +58,14 @@ CONTEXT_PROMPT_LITE = """\
 {chunk_text}
 </chunk>
 
-Write 2-3 sentences of context for this chunk. Include:
-1. Section/topic it belongs to
-2. Vietnamese AND English equivalents for each technical term
-3. Related search terms
+Write 2-3 sentences of context IN VIETNAMESE for this chunk. You MUST write in Vietnamese even if the chunk is in English. Include:
+1. Chương/mục chunk thuộc về (section/topic)
+2. Thuật ngữ đồng nghĩa VN + EN cho MỌI key term, format: "thuật ngữ VN (English term)"
+3. Khái niệm liên quan user có thể search bằng tiếng Việt
 
-Output ONLY the context paragraph."""
+Example output: "Chương 3 về thành phần tuabin gió. Hộp số (gearbox) truyền động từ rotor sang máy phát (generator), liên quan mô-men xoắn (torque), vòng bi (bearing), tỷ số truyền (gear ratio). Tìm: bảo trì hộp số, thay dầu, gearbox maintenance."
+
+Output ONLY the context paragraph in Vietnamese."""
 
 
 def extract_document_title(document_text: str) -> str:
