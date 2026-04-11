@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 import threading
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -25,6 +26,49 @@ from app.services.rag import get_chat_engine
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
+
+
+def renumber_citations(text: str, source_nodes: list) -> tuple[str, list]:
+    """Renumber [N] citations sequentially by order of first appearance.
+
+    E.g., if text contains [5], [9], [10], they become [1], [2], [3].
+    source_nodes are reordered and renumbered to match.
+    """
+    # Find all [N] in order of first appearance
+    seen = []
+    for match in re.finditer(r'\[(\d{1,2})\]', text):
+        num = int(match.group(1))
+        if num not in seen:
+            seen.append(num)
+
+    if not seen:
+        return text, source_nodes
+
+    # Build old→new mapping
+    old_to_new = {old: new for new, old in enumerate(seen, 1)}
+
+    # Replace in text using placeholders to avoid collision
+    new_text = text
+    for old_num in sorted(old_to_new.keys(), reverse=True):
+        new_text = new_text.replace(f'[{old_num}]', f'[__CITE_{old_to_new[old_num]}__]')
+    for new_num in range(1, len(old_to_new) + 1):
+        new_text = new_text.replace(f'[__CITE_{new_num}__]', f'[{new_num}]')
+
+    # Reorder source_nodes to match new numbering
+    source_map = {}
+    for node in source_nodes:
+        sn = node.node.metadata.get("source_number")
+        if sn is not None:
+            source_map[sn] = node
+
+    reordered = []
+    for old_num in seen:
+        if old_num in source_map:
+            node = source_map[old_num]
+            node.node.metadata["source_number"] = old_to_new[old_num]
+            reordered.append(node)
+
+    return new_text, reordered
 
 # Cached OpenAI client for suggestions (lazy-initialized)
 _openai_client = None
@@ -144,11 +188,13 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Extract source nodes from the chat engine's actual retrieval
-        # These are the SAME numbered nodes the LLM saw in its context
+        # Renumber citations sequentially by first appearance
+        context_nodes = getattr(streaming_response, "source_nodes", None) or []
+        full_response, context_nodes = renumber_citations(full_response, context_nodes)
+
+        # Extract source nodes with renumbered IDs
         sources = []
         try:
-            context_nodes = getattr(streaming_response, "source_nodes", None) or []
             for node_ws in context_nodes:
                 metadata = node_ws.node.metadata or {}
                 num = metadata.get("source_number")
@@ -186,9 +232,9 @@ async def chat(
         # Send done signal immediately so user sees complete response
         yield f"data: {json.dumps({'done': True})}\n\n"
 
-        # Send source citations after done signal
+        # Send source citations + renumbered content after done signal
         if sources:
-            yield f"data: {json.dumps({'sources': sources})}\n\n"
+            yield f"data: {json.dumps({'sources': sources, 'content': full_response})}\n\n"
 
         # Generate follow-up suggestions after done signal (non-blocking)
         try:
