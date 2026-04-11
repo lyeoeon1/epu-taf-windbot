@@ -134,7 +134,7 @@ export function useChat(language: string = "vi"): UseChatReturn {
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMessage.id
-                      ? { ...m, sources: data.sources }
+                      ? { ...m, sources: data.sources, ...(data.content ? { content: data.content } : {}) }
                       : m
                   )
                 );
@@ -172,7 +172,7 @@ export function useChat(language: string = "vi"): UseChatReturn {
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMessage.id
-                    ? { ...m, sources: data.sources }
+                    ? { ...m, sources: data.sources, ...(data.content ? { content: data.content } : {}) }
                     : m
                 )
               );
