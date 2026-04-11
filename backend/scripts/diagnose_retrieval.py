@@ -17,8 +17,16 @@ import sys
 import textwrap
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from app.config import settings  # noqa: E402
+
+# Ensure OpenAI key is in env for LlamaIndex
+if settings.openai_api_key:
+    os.environ["OPENAI_API_KEY"] = settings.openai_api_key
 from app.services.rag import configure_settings, create_vector_store, create_index  # noqa: E402
 
 # 8 questions from customer feedback that produced wrong answers
