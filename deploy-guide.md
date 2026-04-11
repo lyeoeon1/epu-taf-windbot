@@ -20,7 +20,7 @@ Vercel (Frontend Next.js) → Cloudflare Tunnel / Ngrok → VPS (port 8000)
 |---|---|
 | VPS | Contabo, Ubuntu 24.04, 4 CPU, 8GB RAM |
 | User | `botai` (user riêng, không dùng root) |
-| Repo | `/home/botai/botai-backend/repo/` |
+| Repo | `/home/botai/repo/` |
 | Port | 8000 |
 | Process | gunicorn + UvicornWorker (multi-worker) |
 | Service | `botai-backend.service` (systemd) |
@@ -42,7 +42,7 @@ Script sẽ tự động: tạo user `botai`, clone repo, tạo venv, cài depen
 ### Deploy/Update code mới
 
 ```bash
-sudo bash /home/botai/botai-backend/repo/deploy/deploy.sh
+sudo bash /home/botai/repo/deploy/deploy.sh
 ```
 
 ### Quản lý service
@@ -63,7 +63,7 @@ sudo systemctl stop botai-backend
 
 ### Cấu hình .env
 
-File `.env` tại `/home/botai/botai-backend/repo/backend/.env` cần các biến sau:
+File `.env` tại `/home/botai/repo/backend/.env` cần các biến sau:
 
 ```env
 OPENAI_API_KEY=sk-...
