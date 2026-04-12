@@ -9,18 +9,18 @@ const SUBMIT = "Gửi";
 const SUBMITTED = "Cảm ơn phản hồi! / Thanks for your feedback!";
 
 const POSITIVE_TAGS = {
-  factually_correct: "Chính xác / Factually correct",
-  easy_to_understand: "Dễ hiểu / Easy to understand",
-  informative: "Hữu ích / Informative",
+  factually_correct: "Chính xác / Correct",
+  easy_to_understand: "Dễ hiểu / Clear",
+  informative: "Hữu ích / Helpful",
   creative: "Sáng tạo / Creative",
   other: "Khác / Other",
 } as const;
 
 const NEGATIVE_TAGS = {
   unsafe: "Không an toàn / Unsafe",
-  not_relevant: "Không liên quan / Not relevant",
-  not_factual: "Sai sự thật / Not factual",
-  partially_incorrect: "Chưa chính xác / Partially incorrect",
+  not_relevant: "Không liên quan / Irrelevant",
+  not_factual: "Sai sự thật / Incorrect",
+  partially_incorrect: "Thiếu chính xác / Inaccurate",
   other: "Khác / Other",
 } as const;
 
@@ -81,14 +81,14 @@ export function FeedbackPanel({ sessionId, messageContent, variant, onClose }: F
 
   if (submitted) {
     return (
-      <div className="max-w-sm rounded-xl px-4 py-3 text-[13px] text-green-700 shadow-lg dark:bg-[#262626] dark:text-green-400">
+      <div className="max-w-md rounded-xl px-4 py-3 text-[13px] text-green-700 shadow-lg dark:bg-[#262626] dark:text-green-400">
         {SUBMITTED}
       </div>
     );
   }
 
   return (
-    <div className="max-w-sm rounded-xl p-4 shadow-lg dark:bg-[#262626]">
+    <div className="max-w-md rounded-xl p-4 shadow-lg dark:bg-[#262626]">
       <p className="mb-3 text-[13px] font-medium text-muted-foreground dark:text-gray-400">
         {TITLE}
       </p>
@@ -99,7 +99,7 @@ export function FeedbackPanel({ sessionId, messageContent, variant, onClose }: F
             key={tag}
             type="button"
             onClick={() => toggleTag(tag)}
-            className={`cursor-pointer rounded-full border px-3 py-1.5 text-[13px] transition-colors ${
+            className={`cursor-pointer rounded-full border px-2.5 py-1 text-xs transition-colors ${
               selectedTags.has(tag)
                 ? "border-blue-400 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"
                 : "border-gray-200 text-muted-foreground hover:bg-accent dark:border-[#515151] dark:text-gray-400 dark:hover:bg-[#515151]"
