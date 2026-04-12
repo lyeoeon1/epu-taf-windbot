@@ -71,6 +71,47 @@ Where omega is the rotational speed in rad/s, R is the rotor radius, and V is th
 - The theoretical maximum Cp is 0.593 (Betz limit); modern turbines achieve Cp of 0.45-0.50
 - Variable-speed turbines adjust rotor speed to maintain optimal TSR across a range of wind speeds
 
+## Betz Limit and Physical Efficiency Limits
+
+### The Betz Limit (Physical / Theoretical)
+
+The Betz limit is a PURELY PHYSICAL constraint derived by Albert Betz in 1919 from conservation of momentum using actuator disc theory. It states that no wind turbine can extract more than 16/27 (approximately 59.3%) of the kinetic energy from the wind passing through it.
+
+The derivation assumes:
+- A uniform, steady-state wind flow
+- An ideal rotor modeled as an actuator disc
+- No wake rotation effects
+- Infinite number of blades (no tip losses)
+- Frictionless, incompressible flow
+
+The maximum power coefficient is:
+
+**Cp_max = 16/27 ≈ 0.593**
+
+This limit applies to ALL horizontal-axis wind turbines regardless of their engineering design, blade count, or manufacturer. It is a fundamental law of physics (conservation of momentum and energy), not an engineering limitation. Even a hypothetically perfect turbine cannot exceed this limit.
+
+### Engineering and Technical Losses (Reducing Cp Below Betz)
+
+Real turbines achieve Cp below the Betz limit due to aerodynamic and mechanical losses:
+
+- **Tip losses:** Finite blade count causes pressure equalization at blade tips, reducing energy capture. Typically reduces Cp by 2-5%.
+- **Profile drag:** Airfoil surface friction and form drag dissipate energy. Reduces Cp by 2-5%.
+- **Wake rotation:** The wake behind the rotor rotates in the opposite direction, carrying away rotational kinetic energy. Reduces Cp by 1-3%.
+- **Drivetrain losses:** Gearbox (~97% efficiency), generator (~96%), power converter (~98%) further reduce overall system efficiency.
+
+Modern utility-scale turbines achieve Cp of 0.45-0.50 at their optimal tip speed ratio, which is about 75-85% of the theoretical Betz limit.
+
+### Economic and Practical Constraints (Separate from Cp)
+
+The following factors affect Annual Energy Production (AEP) but are NOT part of the Betz limit or Cp:
+
+- **Capacity factor** (typically 25-50% for onshore, 35-55% for offshore): Ratio of actual energy produced to maximum possible if operating at rated power 100% of the time.
+- **Curtailment:** Grid operators may reduce output due to grid congestion or oversupply.
+- **Wake effects in wind farms:** Upstream turbines reduce wind speed for downstream turbines (wake deficit), reducing overall farm output by 5-15%.
+- **Availability:** Maintenance downtime reduces operating hours.
+
+These are operational and economic metrics. They must NOT be confused with the Betz limit, which is purely about the physics of energy extraction from an airstream.
+
 ## Pitch Control
 
 Pitch control rotates each blade around its longitudinal axis to change the angle of attack relative to the wind.
@@ -149,6 +190,45 @@ Ty so toc do dau canh (TSR) la ty so giua toc do dau canh va toc do gio tu do:
 - TSR toi uu cho tuabin ba canh hien dai thuong la 7-9
 - Van hanh tai TSR toi uu toi da hoa he so cong suat (Cp)
 - Cp toi da ly thuyet la 0.593 (gioi han Betz); tuabin hien dai dat Cp 0.45-0.50
+
+## Gioi Han Betz va Gioi Han Hieu Suat Vat Ly
+
+### Gioi Han Betz (Vat Ly / Ly Thuyet)
+
+Gioi han Betz la rang buoc THUAN TUY VAT LY, duoc Albert Betz chung minh nam 1919 tu dinh luat bao toan dong luong su dung ly thuyet dia canh dong (actuator disc theory). No khang dinh rang khong co tuabin gio nao co the trich xuat hon 16/27 (xap xi 59.3%) nang luong dong hoc tu dong gio di qua no.
+
+Cac gia dinh cua ly thuyet Betz:
+- Dong gio deu, on dinh
+- Rotor ly tuong (dia canh dong)
+- Khong co hieu ung xoay vung vet gio (wake rotation)
+- So luong canh vo han (khong co ton that dau canh)
+- Dong chay khong ma sat, khong nen duoc
+
+He so cong suat toi da: Cp_max = 16/27 ≈ 0.593
+
+Gioi han nay ap dung cho TAT CA tuabin gio truc ngang bat ke thiet ke ky thuat, so canh, hay nha san xuat. Day la dinh luat vat ly co ban (bao toan dong luong va nang luong), KHONG PHAI gioi han ky thuat. Ngay ca tuabin hoan hao ve ly thuyet cung khong the vuot qua gioi han nay.
+
+### Ton That Ky Thuat (Giam Cp Xuong Duoi Betz)
+
+Tuabin thuc te dat Cp thap hon gioi han Betz do ton that khi dong hoc va co khi:
+
+- **Ton that dau canh (tip losses):** So canh huu han gay can bang ap suat tai dau canh, giam 2-5% Cp.
+- **Luc can profil (profile drag):** Ma sat be mat va luc can hinh dang tieu tan nang luong, giam 2-5% Cp.
+- **Xoay vung vet gio (wake rotation):** Vung vet gio phia sau rotor xoay mang theo nang luong dong hoc quay, giam 1-3% Cp.
+- **Ton that he truyen dong:** Hop so (~97% hieu suat), may phat (~96%), bo bien doi (~98%) giam them hieu suat tong the.
+
+Tuabin hien dai dat Cp khoang 0.45-0.50 tai ty so toc do dau canh toi uu, tuong duong 75-85% gioi han Betz ly thuyet.
+
+### Rang Buoc Kinh Te va Thuc Te (TACH BIET voi Cp)
+
+Cac yeu to sau anh huong den san luong dien hang nam (AEP) nhung KHONG phai la phan cua gioi han Betz hay Cp:
+
+- **He so cong suat (capacity factor)** (25-50% onshore, 35-55% offshore): Ty le nang luong thuc te so voi toi da neu chay cong suat dinh muc 100% thoi gian.
+- **Cat giam cong suat (curtailment):** Van hanh vien luoi co the giam cong suat do tac nghen luoi.
+- **Hieu ung vet gio trong trang trai (wake effects):** Tuabin phia truoc giam toc do gio cho tuabin phia sau, giam san luong trang trai 5-15%.
+- **Do kha dung (availability):** Thoi gian bao tri giam so gio van hanh.
+
+Day la cac chi so van hanh va kinh te. Chung KHONG DUOC nham lan voi gioi han Betz, chi lien quan den vat ly trich xuat nang luong tu dong gio.
 
 ## Dieu Khien Goc Canh
 
