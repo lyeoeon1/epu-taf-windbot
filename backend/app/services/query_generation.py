@@ -82,6 +82,7 @@ def generate_multi_queries(
         response = client.chat.completions.create(
             model=model,
             temperature=0,
+            seed=42,
             max_tokens=300,
             messages=[
                 {
@@ -127,6 +128,7 @@ def generate_hyde_document(
         response = client.chat.completions.create(
             model=model,
             temperature=0,
+            seed=42,
             max_tokens=250,
             messages=[
                 {
