@@ -21,6 +21,7 @@ from app.services.corrections import (
     extract_correction,
     format_corrections_block,
 )
+from app.services.global_corrections import get_active_corrections, merge_corrections
 from app.services.rag import get_chat_engine
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,10 @@ async def chat(
 
         # Collect cached corrections from prior messages' metadata
         corrections = collect_corrections_from_history(prior_history)
+
+        # Load persistent global corrections and merge with session corrections
+        global_corrs = await asyncio.to_thread(get_active_corrections, supabase)
+        corrections = merge_corrections(global_corrs, corrections)
 
         # Detect if current message is a correction (regex, <1ms)
         detector = CorrectionDetector()
