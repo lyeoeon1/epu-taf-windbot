@@ -20,8 +20,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from openai import OpenAI  # noqa: E402
 
+from supabase import create_client  # noqa: E402
+
 from app.config import settings  # noqa: E402
+from app.services.query_expansion import GlossaryExpander  # noqa: E402
 from app.services.rag import configure_settings, create_index, create_vector_store, get_chat_engine  # noqa: E402
+from app.services.reranker import FlashReranker  # noqa: E402
 
 JUDGE_PROMPT = """\
 You are an expert evaluator for a wind turbine knowledge chatbot.
@@ -60,9 +64,17 @@ def judge_answer(client: OpenAI, question: str, expected: str, actual: str, crit
     return json.loads(response.choices[0].message.content)
 
 
-async def get_chatbot_answer(index, question: str, language: str = "vi") -> str:
-    """Get answer from the RAG chatbot."""
-    chat_engine = get_chat_engine(index, language=language, has_history=False)
+async def get_chatbot_answer(
+    index, question: str, language: str = "vi",
+    supabase_client=None, glossary_expander=None, reranker=None,
+) -> str:
+    """Get answer from the RAG chatbot using the full advanced pipeline."""
+    chat_engine = get_chat_engine(
+        index, language=language, has_history=False,
+        supabase_client=supabase_client,
+        glossary_expander=glossary_expander,
+        reranker=reranker,
+    )
     response = chat_engine.chat(question)
     return str(response)
 
@@ -90,11 +102,14 @@ async def main():
 
     print(f"Evaluating {len(all_pairs)} questions...")
 
-    # Initialize RAG
+    # Initialize RAG with full advanced pipeline (matches production)
     configure_settings()
     vector_store = create_vector_store(settings.supabase_connection_string)
     index = create_index(vector_store)
     client = OpenAI(api_key=settings.openai_api_key)
+    supabase = create_client(settings.supabase_url, settings.supabase_service_key)
+    glossary = GlossaryExpander()
+    reranker = FlashReranker()
 
     results = []
     totals = {"accuracy": 0, "completeness": 0, "relevance": 0, "clarity": 0, "tone": 0}
@@ -110,7 +125,12 @@ async def main():
         print(f"  [{i+1}/{len(all_pairs)}] Q{qid}: {question[:60]}...", end=" ", flush=True)
 
         try:
-            actual = await get_chatbot_answer(index, question, args.language)
+            actual = await get_chatbot_answer(
+                index, question, args.language,
+                supabase_client=supabase,
+                glossary_expander=glossary,
+                reranker=reranker,
+            )
             scores = judge_answer(client, question, expected, actual, criteria)
 
             result = {
