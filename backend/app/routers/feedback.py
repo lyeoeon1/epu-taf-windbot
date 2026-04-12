@@ -5,10 +5,14 @@ from supabase import Client
 
 from app.dependencies import get_supabase
 from app.models.schemas import FeedbackRequest
+from app.services.global_corrections import promote_correction
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["feedback"])
+
+# Tags that indicate the user validates the answer (and any corrections in it)
+POSITIVE_TAGS = {"vote_positive", "accurate", "helpful", "easy_to_understand"}
 
 
 @router.post("/feedback", status_code=201)
@@ -16,7 +20,11 @@ async def submit_feedback(
     request: FeedbackRequest,
     supabase: Client = Depends(get_supabase),
 ):
-    """Submit user feedback for a chat message."""
+    """Submit user feedback for a chat message.
+
+    If feedback is positive and the session contains corrections,
+    those corrections are promoted to global persistence.
+    """
     try:
         result = supabase.table("message_feedback").insert({
             "session_id": str(request.session_id),
@@ -24,7 +32,41 @@ async def submit_feedback(
             "feedback_tags": request.feedback_tags,
             "feedback_text": request.feedback_text[:1000] if request.feedback_text else "",
         }).execute()
+
+        # Check if feedback is positive → promote any session corrections to global
+        is_positive = bool(set(request.feedback_tags) & POSITIVE_TAGS)
+        if is_positive:
+            await _promote_session_corrections(supabase, str(request.session_id))
+
         return {"status": "ok", "id": result.data[0]["id"] if result.data else None}
     except Exception as e:
         logger.error("Failed to save feedback: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to save feedback")
+
+
+async def _promote_session_corrections(supabase: Client, session_id: str):
+    """Find corrections in session message metadata and promote to global."""
+    try:
+        messages = (
+            supabase.table("chat_messages")
+            .select("metadata")
+            .eq("session_id", session_id)
+            .eq("role", "assistant")
+            .order("created_at", desc=True)
+            .limit(5)
+            .execute()
+        )
+        promoted = 0
+        for msg in (messages.data or []):
+            metadata = msg.get("metadata") or {}
+            for correction in metadata.get("corrections", []):
+                if correction.get("entity") and correction.get("new_value"):
+                    promote_correction(supabase, correction, session_id)
+                    promoted += 1
+        if promoted:
+            logger.info(
+                "Promoted %d corrections from session %s to global",
+                promoted, session_id[:8],
+            )
+    except Exception as e:
+        logger.warning("Failed to promote corrections from feedback: %s", e)
