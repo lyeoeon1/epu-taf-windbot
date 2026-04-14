@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     rerank_top_k: int = 13      # Was 10 — more context chunks for detailed answers
     bm25_top_k: int = 30        # Was 20 — wider net for keyword search across 2900+ chunks
     dense_top_k: int = 30       # Was 20 — wider net for semantic search
-    multi_query_count: int = 2  # Was 3 — reduced to lower latency
+    multi_query_count: int = 1  # Was 2 — each variant adds ~3s Phase B search
 
     # LLM model selection
     llm_model: str = "gpt-4.1-mini"  # Final choice after A/B test

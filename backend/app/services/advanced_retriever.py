@@ -60,6 +60,7 @@ class AdvancedRetriever(BaseRetriever):
         rerank_top_k: int = 8,
         dense_weight: float = 0.8,
         sparse_weight: float = 0.2,
+        multi_query_count: int = 2,
         # Vietnamese document priority
         enable_vi_priority: bool = True,
         vi_score_boost: float = 2.0,
@@ -85,6 +86,7 @@ class AdvancedRetriever(BaseRetriever):
         self._rerank_top_k = rerank_top_k
         self._dense_weight = dense_weight
         self._sparse_weight = sparse_weight
+        self._multi_query_count = multi_query_count
 
         # Vietnamese priority
         self._enable_vi_priority = enable_vi_priority
@@ -183,6 +185,7 @@ class AdvancedRetriever(BaseRetriever):
                         self._openai, query,
                         enable_multi_query=self._enable_multi_query,
                         enable_hyde=self._enable_hyde,
+                        multi_query_count=self._multi_query_count,
                     )
                 )
             finally:
