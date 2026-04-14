@@ -120,25 +120,27 @@ function FitIcon() {
 
 /**
  * Sanitize Mermaid code to fix common LLM-generated syntax issues.
- * - Wraps node labels containing special chars (parentheses, diacritics) in quotes
- * - Fixes Vietnamese text with () inside [] brackets that confuse the parser
+ * Wraps ALL unquoted node labels in quotes to handle Vietnamese text,
+ * parentheses, and other special characters that break the Mermaid parser.
  */
 function sanitizeMermaidCode(raw: string): string {
-  // Fix node labels with parentheses inside brackets: A[text (stuff)] → A["text (stuff)"]
-  // Match: identifier[content with parens] but NOT already quoted identifier["..."]
-  let result = raw.replace(
-    /(\w+)\[(?!")((?:[^\[\]]|\\.)*\([^[\]]*\)[^\[\]]*)\]/g,
-    (_match, id, content) => `${id}["${content}"]`
-  );
+  // Process each line individually
+  return raw
+    .split("\n")
+    .map((line) => {
+      // Skip lines that are just graph/flowchart declarations or arrows-only
+      if (/^\s*(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitgraph|mindmap|timeline)\b/i.test(line)) {
+        return line;
+      }
 
-  // Also fix labels with Vietnamese diacritics that aren't quoted
-  // Match: identifier[content with diacritics] where content has Vietnamese chars
-  result = result.replace(
-    /(\w+)\[(?!")((?:[^\[\]])*[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\[\]]*)\]/g,
-    (_match, id, content) => `${id}["${content}"]`
-  );
-
-  return result;
+      // Quote all unquoted bracket labels: A[text] → A["text"]
+      // But skip already-quoted: A["text"] stays unchanged
+      return line.replace(
+        /\[(?!")((?:[^\[\]"]+))\]/g,
+        (_match, content) => `["${content}"]`
+      );
+    })
+    .join("\n");
 }
 
 export function MermaidBlock({ code }: MermaidBlockProps) {
