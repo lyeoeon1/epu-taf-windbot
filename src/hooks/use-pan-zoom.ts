@@ -105,6 +105,10 @@ export function usePanZoom() {
     return Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
   };
 
+  // Use ref to always read latest state in pointer handlers (avoid stale closures)
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -115,8 +119,8 @@ export function usePanZoom() {
           pointerId: e.pointerId,
           startX: e.clientX,
           startY: e.clientY,
-          startTx: state.translateX,
-          startTy: state.translateY,
+          startTx: stateRef.current.translateX,
+          startTy: stateRef.current.translateY,
         };
         setIsPanning(true);
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -128,7 +132,7 @@ export function usePanZoom() {
         setIsPanning(false);
       }
     },
-    [state.translateX, state.translateY]
+    []
   );
 
   const onPointerMove = useCallback(
@@ -149,15 +153,16 @@ export function usePanZoom() {
         return;
       }
 
-      if (!dragStart.current || e.pointerId !== dragStart.current.pointerId) return;
+      const drag = dragStart.current;
+      if (!drag || e.pointerId !== drag.pointerId) return;
 
-      const dx = e.clientX - dragStart.current.startX;
-      const dy = e.clientY - dragStart.current.startY;
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
 
       setState((prev) => ({
         ...prev,
-        translateX: dragStart.current!.startTx + dx / prev.scale,
-        translateY: dragStart.current!.startTy + dy / prev.scale,
+        translateX: drag.startTx + dx / prev.scale,
+        translateY: drag.startTy + dy / prev.scale,
       }));
     },
     []
