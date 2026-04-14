@@ -189,7 +189,7 @@ function fixNodeWidths(container: HTMLDivElement) {
     // Method 2: foreignObject > div (htmlLabels: true)
     const fo = node.querySelector("foreignObject");
     if (fo) {
-      const div = fo.querySelector("div");
+      const div = fo.querySelector("div") as HTMLDivElement | null;
       if (div) {
         // Temporarily make div nowrap to measure true single-line width
         const origWS = div.style.whiteSpace;
@@ -197,6 +197,13 @@ function fixNodeWidths(container: HTMLDivElement) {
         const scrollW = div.scrollWidth;
         div.style.whiteSpace = origWS;
         if (scrollW > contentWidth) contentWidth = scrollW;
+
+        // Center text inside the node
+        div.style.textAlign = "center";
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.style.justifyContent = "center";
+        div.style.height = "100%";
       }
     }
 
