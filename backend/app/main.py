@@ -2,13 +2,14 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-# Configure root logger so app.* loggers output to stderr (captured by systemd)
-# force=True ensures this works even after uvicorn configures its own loggers
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    force=True,
-)
+# Configure app.* loggers to output to stderr (captured by systemd).
+# Must set handler on the "app" logger directly because uvicorn only
+# configures its own loggers and strips root logger handlers in workers.
+_app_logger = logging.getLogger("app")
+_app_logger.setLevel(logging.INFO)
+_app_handler = logging.StreamHandler()
+_app_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+_app_logger.addHandler(_app_handler)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
