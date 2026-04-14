@@ -150,6 +150,8 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
   const svgRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const { containerRef, contentRef, state, isPanning, zoomIn, zoomOut, fitToContainer, handlers } = usePanZoom();
+  const fitRef = useRef(fitToContainer);
+  fitRef.current = fitToContainer;
 
   // Debounce rendering: wait for code to stop changing (streaming complete)
   // before attempting to render. This prevents errors from partial code
@@ -178,6 +180,13 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         startOnLoad: false,
         theme: "base",
         themeVariables: themeVars,
+        flowchart: {
+          useMaxWidth: false,
+          htmlLabels: true,
+          wrap: true,
+          nodeSpacing: 30,
+          rankSpacing: 40,
+        },
       });
 
       try {
@@ -188,10 +197,10 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
           svgRef.current.innerHTML = svg;
           setError(null);
 
-          // Auto-fit after render
+          // Auto-fit after render (use ref to avoid dep cycle)
           requestAnimationFrame(() => {
             if (!cancelled) {
-              fitToContainer();
+              fitRef.current();
             }
           });
         }
@@ -207,7 +216,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
     return () => {
       cancelled = true;
     };
-  }, [stableCode, theme, fitToContainer]);
+  }, [stableCode, theme]);
 
   if (error) {
     return (
