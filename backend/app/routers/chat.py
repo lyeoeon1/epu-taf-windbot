@@ -14,7 +14,7 @@ from supabase import Client
 
 from app.dependencies import get_glossary_expander, get_index, get_reranker, get_supabase
 from app.models.schemas import ChatRequest
-from app.prompts.system import get_suggestion_prompt
+from app.prompts.system import get_suggestion_prompt, get_system_prompt
 from app.services.chat_history import get_session_messages, save_message
 from app.services.corrections import (
     CorrectionDetector,
@@ -125,6 +125,80 @@ async def chat(
             _, history = await asyncio.gather(
                 save_message(supabase, session_id, "user", request.message),
                 get_session_messages(supabase, session_id),
+            )
+
+        # ── Fast path: skip RAG for short GENERAL messages (greetings) ──
+        if question_type == "GENERAL" and len(request.message.strip()) < 20:
+            logger.info("Greeting fast-path: skipping RAG for '%s'", request.message[:30])
+
+            system_prompt = get_system_prompt(request.language, question_type="GENERAL")
+            # Build minimal chat history
+            prior_history = history[:-1] if history else []
+            messages = [{"role": "system", "content": system_prompt}]
+            for msg in prior_history[-4:]:  # Last 2 exchanges for context
+                messages.append({"role": msg["role"], "content": msg["content"]})
+            messages.append({"role": "user", "content": request.message})
+
+            async def greeting_event_generator():
+                full_response = ""
+                try:
+                    stream = await asyncio.to_thread(
+                        lambda: get_openai_client().chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=messages,
+                            temperature=0.7,
+                            max_tokens=300,
+                            stream=True,
+                        )
+                    )
+                    for chunk in stream:
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            full_response += delta.content
+                            yield f"data: {json.dumps({'token': delta.content})}\n\n"
+                except Exception as e:
+                    logger.error("Greeting stream error: %s", e)
+
+                save_metadata = {
+                    "language": request.language,
+                    "question_type": question_type,
+                    "classification_method": classification_method,
+                    "fast_path": "greeting",
+                }
+                await save_message(
+                    supabase, session_id, "assistant", full_response,
+                    metadata=save_metadata,
+                )
+                yield f"data: {json.dumps({'done': True})}\n\n"
+
+                # Generate suggestions
+                try:
+                    prompt = get_suggestion_prompt(request.language).format(
+                        user_message=request.message,
+                        assistant_answer=full_response[:500],
+                    )
+                    raw = await asyncio.to_thread(
+                        lambda: get_openai_client().chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[{"role": "user", "content": prompt}],
+                            temperature=0.7,
+                            max_tokens=300,
+                        ).choices[0].message.content.strip()
+                    )
+                    suggestions = json.loads(raw)
+                    if isinstance(suggestions, list) and len(suggestions) >= 3:
+                        yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
+                except Exception as e:
+                    logger.warning("Greeting suggestions failed: %s", e)
+
+            return StreamingResponse(
+                greeting_event_generator(),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",
+                },
             )
 
         # Determine if there's prior history (exclude the message we just saved)

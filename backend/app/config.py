@@ -24,9 +24,10 @@ class Settings(BaseSettings):
     dense_weight: float = 0.5   # Equal weight: BM25 proven to find correct chunks from large PDFs
     sparse_weight: float = 0.5  # Was 0.2 — increased to give BM25 keyword matches fair ranking
     rerank_top_k: int = 13      # Was 10 — more context chunks for detailed answers
-    bm25_top_k: int = 30        # Was 20 — wider net for keyword search across 2900+ chunks
-    dense_top_k: int = 30       # Was 20 — wider net for semantic search
-    multi_query_count: int = 2  # Was 3 — reduced to lower latency
+    bm25_top_k: int = 20        # Was 30 — reduced to lower reranking latency (candidates #21+ rarely make top-13)
+    dense_top_k: int = 20       # Was 30 — reduced to lower reranking latency
+    multi_query_count: int = 1  # Was 2 — still have: original + glossary expanded + 1 variant = 3 query angles
+    max_rerank_candidates: int = 25  # Cap candidates before reranking (FlashRank on 2-core VPS is slow)
 
     # LLM model selection
     llm_model: str = "gpt-4o-mini"  # Options: "gpt-4o-mini", "gpt-4.1-mini"
