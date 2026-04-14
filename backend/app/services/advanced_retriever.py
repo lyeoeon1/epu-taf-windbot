@@ -13,6 +13,7 @@ Total added latency: ~1-2s (acceptable for chatbot UX).
 """
 
 import asyncio
+import concurrent.futures
 import logging
 from typing import Optional
 
@@ -57,6 +58,9 @@ class AdvancedRetriever(BaseRetriever):
         rerank_top_k: int = 8,
         dense_weight: float = 0.8,
         sparse_weight: float = 0.2,
+        # Query generation
+        multi_query_count: int = 1,
+        max_rerank_candidates: int = 25,
         # Vietnamese document priority
         enable_vi_priority: bool = True,
         vi_score_boost: float = 2.0,
@@ -82,6 +86,8 @@ class AdvancedRetriever(BaseRetriever):
         self._rerank_top_k = rerank_top_k
         self._dense_weight = dense_weight
         self._sparse_weight = sparse_weight
+        self._multi_query_count = multi_query_count
+        self._max_rerank_candidates = max_rerank_candidates
 
         # Vietnamese priority
         self._enable_vi_priority = enable_vi_priority
@@ -164,15 +170,16 @@ class AdvancedRetriever(BaseRetriever):
     def _dense_search_multiple(
         self, queries: list[str], top_k: int
     ) -> list[list[NodeWithScore]]:
-        """Execute dense search for multiple queries."""
-        results = []
-        for q in queries:
+        """Execute dense search for multiple queries in parallel."""
+        def _search(q: str) -> list[NodeWithScore]:
             try:
-                results.append(self._dense_search(q, top_k))
+                return self._dense_search(q, top_k)
             except Exception as e:
                 logger.warning("Dense search failed for '%s': %s", q[:50], e)
-                results.append([])
-        return results
+                return []
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(queries)) as pool:
+            return list(pool.map(_search, queries))
 
     def _bm25_search_multiple(
         self, queries: list[str], top_k: int
@@ -224,6 +231,7 @@ class AdvancedRetriever(BaseRetriever):
                                 self._openai, query,
                                 enable_multi_query=self._enable_multi_query,
                                 enable_hyde=self._enable_hyde,
+                                multi_query_count=self._multi_query_count,
                             )
                         )
                         multi_queries, hyde_doc = future.result(timeout=10)
@@ -234,6 +242,7 @@ class AdvancedRetriever(BaseRetriever):
                             self._openai, query,
                             enable_multi_query=self._enable_multi_query,
                             enable_hyde=self._enable_hyde,
+                            multi_query_count=self._multi_query_count,
                         )
                     )
             except Exception as e:
@@ -294,7 +303,15 @@ class AdvancedRetriever(BaseRetriever):
                 len(candidates),
             )
 
-        # ── Step 5.6: Boost Vietnamese scores (before reranking) ─────
+        # ── Step 5.6: Cap candidates before reranking ────────────────
+        if len(candidates) > self._max_rerank_candidates:
+            logger.info(
+                "Capping candidates %d → %d before reranking",
+                len(candidates), self._max_rerank_candidates,
+            )
+            candidates = candidates[:self._max_rerank_candidates]
+
+        # ── Step 5.7: Boost Vietnamese scores (before reranking) ─────
         if self._enable_vi_priority:
             candidates = self._boost_vi_scores(candidates, self._vi_boost)
 
