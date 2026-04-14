@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     dense_top_k: int = 30       # Was 20 — wider net for semantic search
     multi_query_count: int = 2  # Was 3 — reduced to lower latency
 
+    # Vietnamese document priority
+    enable_vi_priority: bool = True
+    vi_priority_threshold: int = 3    # min VN chunks among candidates to trigger VN-only mode
+    vi_score_boost: float = 2.0       # score multiplier for VN chunks in mixed mode
+    vi_rerank_fallback_score: float = 0.05  # if VN-only top rerank score < this, fallback to all
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
