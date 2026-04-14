@@ -150,12 +150,22 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
   const uniqueId = useId().replace(/:/g, "-");
   const { containerRef, contentRef, state, isPanning, zoomIn, zoomOut, fitToContainer, handlers } = usePanZoom();
 
-  // Clear error when code changes (e.g. during streaming, code grows)
+  // Debounce rendering: wait for code to stop changing (streaming complete)
+  // before attempting to render. This prevents errors from partial code
+  // during SSE streaming.
+  const [stableCode, setStableCode] = useState<string | null>(null);
+
   useEffect(() => {
     setError(null);
+    setStableCode(null);
+    const timer = setTimeout(() => {
+      setStableCode(code);
+    }, 500); // 500ms debounce — streaming tokens arrive faster than this
+    return () => clearTimeout(timer);
   }, [code]);
 
   useEffect(() => {
+    if (!stableCode) return;
     let cancelled = false;
 
     async function renderDiagram() {
@@ -170,7 +180,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
       });
 
       try {
-        const sanitized = sanitizeMermaidCode(code);
+        const sanitized = sanitizeMermaidCode(stableCode);
         const { svg } = await mermaid.render(`mermaid-${uniqueId}`, sanitized);
         if (!cancelled && svgRef.current) {
           svgRef.current.innerHTML = svg;
@@ -195,7 +205,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
     return () => {
       cancelled = true;
     };
-  }, [code, theme, uniqueId, fitToContainer]);
+  }, [stableCode, theme, uniqueId, fitToContainer]);
 
   if (error) {
     return (
