@@ -16,6 +16,7 @@ from app.config import settings as app_settings
 from app.dependencies import get_glossary_expander, get_index, get_reranker, get_supabase
 from app.models.schemas import ChatRequest
 from app.prompts.system import get_suggestion_prompt
+from app.services.bm25_search import BM25Searcher
 from app.services.chat_history import get_session_messages, save_message
 from app.services.corrections import (
     CorrectionDetector,
@@ -196,6 +197,19 @@ def _greeting_response(
     )
 
 
+async def _prefetch_search(index, supabase: Client, message: str):
+    """Pre-compute dense + BM25 search in parallel with classification."""
+    def _do_search():
+        retriever = index.as_retriever(similarity_top_k=30)
+        dense = retriever.retrieve(message)
+        try:
+            bm25 = BM25Searcher(supabase).search(message, top_k=30)
+        except Exception:
+            bm25 = []
+        return dense, bm25
+    return await asyncio.to_thread(_do_search)
+
+
 @router.post("/chat")
 async def chat(
     request: ChatRequest,
@@ -215,9 +229,10 @@ async def chat(
         question_type, regex_confidence = classifier.classify_sync(request.message)
         classification_method = "regex"
 
-        # Save user message and load history in parallel
-        # If regex confidence is low, also run LLM classification in parallel
+        # Start prefetch search immediately (parallel with save/load/classify)
         session_id = str(request.session_id)
+        prefetch_task = _prefetch_search(index, supabase, request.message)
+
         if regex_confidence < CONFIDENCE_THRESHOLD:
             # Low confidence — run LLM classification in parallel with I/O
             async def _classify_llm():
@@ -225,17 +240,19 @@ async def chat(
                     classifier.classify_llm, get_openai_client(), request.message
                 )
 
-            _, history, llm_type = await asyncio.gather(
+            _, history, llm_type, prefetch_results = await asyncio.gather(
                 save_message(supabase, session_id, "user", request.message),
                 get_session_messages(supabase, session_id),
                 _classify_llm(),
+                prefetch_task,
             )
             question_type = llm_type
             classification_method = "llm"
         else:
-            _, history = await asyncio.gather(
+            _, history, prefetch_results = await asyncio.gather(
                 save_message(supabase, session_id, "user", request.message),
                 get_session_messages(supabase, session_id),
+                prefetch_task,
             )
 
         # Determine if there's prior history (exclude the message we just saved)
@@ -301,6 +318,11 @@ async def chat(
             reranker=get_reranker(),
             question_type=question_type,
         )
+
+        # Inject prefetched search results into the retriever
+        if hasattr(chat_engine, '_retriever') and hasattr(chat_engine._retriever, 'set_prefetched_results'):
+            dense, bm25 = prefetch_results
+            chat_engine._retriever.set_prefetched_results(dense, bm25)
 
         # Stream the response (run blocking call on thread pool)
         streaming_response = await asyncio.to_thread(

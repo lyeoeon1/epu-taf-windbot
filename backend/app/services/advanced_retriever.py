@@ -101,6 +101,10 @@ class AdvancedRetriever(BaseRetriever):
         # Initialize sub-components
         self._bm25_searcher = BM25Searcher(supabase_client) if enable_bm25 else None
 
+        # Prefetched results for the original query (set externally)
+        self._prefetched_dense = None
+        self._prefetched_bm25 = None
+
     @staticmethod
     def _boost_vi_scores(
         candidates: list[NodeWithScore],
@@ -180,6 +184,13 @@ class AdvancedRetriever(BaseRetriever):
             logger.warning("BM25 search failed for '%s': %s", query[:50], e)
             return []
 
+    def set_prefetched_results(
+        self, dense_results: list[NodeWithScore], bm25_results: list[NodeWithScore]
+    ):
+        """Set pre-computed search results for the original query."""
+        self._prefetched_dense = dense_results
+        self._prefetched_bm25 = bm25_results
+
     def _generate_multi_query(self, query: str) -> tuple[list[str], str]:
         """Generate multi-query variants (runs in thread pool)."""
         try:
@@ -249,25 +260,38 @@ class AdvancedRetriever(BaseRetriever):
             need_multi_query = self._enable_multi_query or self._enable_hyde
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-            # Submit initial dense + BM25 searches
-            dense_futures_a = {
-                q: pool.submit(self._safe_dense_search, q, self._dense_top_k)
-                for q in initial_queries
-            }
-            bm25_futures_a = {
-                q: pool.submit(self._safe_bm25_search, q, self._bm25_top_k)
-                for q in initial_queries
-            }
-
-            # Submit multi-query generation in parallel
+            # Submit multi-query generation in parallel (before search)
             mq_future = None
             if need_multi_query:
                 mq_future = pool.submit(self._generate_multi_query, query)
 
-            # Wait for Phase A to complete (15s timeout per search)
-            dense_results_a = [
-                dense_futures_a[q].result(timeout=15) for q in initial_queries
-            ]
+            # Phase A: use prefetched results for original query if available
+            if self._prefetched_dense is not None:
+                dense_results_a = [self._prefetched_dense]
+                bm25_results_a = [self._prefetched_bm25 or []]
+                # Search expanded query in parallel if needed
+                if len(initial_queries) > 1:
+                    expanded_q = initial_queries[1]
+                    d_fut = pool.submit(self._safe_dense_search, expanded_q, self._dense_top_k)
+                    b_fut = pool.submit(self._safe_bm25_search, expanded_q, self._bm25_top_k)
+                    dense_results_a.append(d_fut.result(timeout=15))
+                    bm25_results_a.append(b_fut.result(timeout=15))
+                self._prefetched_dense = None
+                self._prefetched_bm25 = None
+                logger.info("Phase A: used prefetched results for original query")
+            else:
+                # No prefetch — search all initial queries
+                dense_futures_a = {
+                    q: pool.submit(self._safe_dense_search, q, self._dense_top_k)
+                    for q in initial_queries
+                }
+                bm25_futures_a = {
+                    q: pool.submit(self._safe_bm25_search, q, self._bm25_top_k)
+                    for q in initial_queries
+                }
+                dense_results_a = [
+                    dense_futures_a[q].result(timeout=15) for q in initial_queries
+                ]
             bm25_results_a = [
                 bm25_futures_a[q].result(timeout=15) for q in initial_queries
             ]
