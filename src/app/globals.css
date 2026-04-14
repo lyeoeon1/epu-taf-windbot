@@ -271,7 +271,6 @@ body {
 }
 .mermaid-content svg {
   display: block;
-  min-width: 100%;
 }
 .mermaid-toolbar {
   position: absolute;
@@ -328,4 +327,42 @@ body {
   margin: 0.75em 0;
   overflow-x: auto;
   border-left: 3px solid var(--destructive);
+}
+
+/* Toolbar always visible in expanded mode */
+.mermaid-toolbar-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Fullscreen popup overlay */
+.mermaid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--background) 80%, transparent);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.mermaid-popup {
+  width: 90vw;
+  height: 85vh;
+  max-width: 1200px;
+  background: var(--background);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.mermaid-popup .mermaid-viewport {
+  max-height: 100%;
+  height: 100%;
+}
+.mermaid-popup .mermaid-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }

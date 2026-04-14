@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useTheme } from "@/contexts/theme-context";
 import { usePanZoom } from "@/hooks/use-pan-zoom";
 
@@ -118,6 +118,26 @@ function FitIcon() {
   );
 }
 
+function ExpandIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+      <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 /**
  * Sanitize Mermaid code to fix common LLM-generated syntax issues.
  * Wraps ALL unquoted node labels in quotes to handle Vietnamese text,
@@ -149,9 +169,26 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
   const { theme } = useTheme();
   const svgRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { containerRef, contentRef, state, isPanning, zoomIn, zoomOut, fitToContainer, handlers } = usePanZoom();
   const fitRef = useRef(fitToContainer);
   fitRef.current = fitToContainer;
+
+  // Close expanded popup on Escape key
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsExpanded(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isExpanded]);
+
+  const toggleExpand = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+    // Re-fit after expanding/collapsing
+    requestAnimationFrame(() => fitRef.current());
+  }, []);
 
   // Debounce rendering: wait for code to stop changing (streaming complete)
   // before attempting to render. This prevents errors from partial code
@@ -181,11 +218,10 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         theme: "base",
         themeVariables: themeVars,
         flowchart: {
-          useMaxWidth: true,
+          useMaxWidth: false,
           htmlLabels: true,
           nodeSpacing: 30,
           rankSpacing: 40,
-          wrappingWidth: 400,
         },
       });
 
@@ -228,9 +264,9 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
 
   const scalePercent = Math.round(state.scale * 100);
 
-  return (
-    <div className="mermaid-wrapper">
-      <div className="mermaid-toolbar">
+  const diagramContent = (
+    <>
+      <div className={isExpanded ? "mermaid-toolbar mermaid-toolbar-visible" : "mermaid-toolbar"}>
         <button type="button" onClick={zoomOut} aria-label="Zoom out">
           <ZoomOutIcon />
         </button>
@@ -240,6 +276,9 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         </button>
         <button type="button" onClick={fitToContainer} aria-label="Fit to view">
           <FitIcon />
+        </button>
+        <button type="button" onClick={toggleExpand} aria-label={isExpanded ? "Close" : "Expand"}>
+          {isExpanded ? <CloseIcon /> : <ExpandIcon />}
         </button>
       </div>
       <div
@@ -259,6 +298,31 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (isExpanded) {
+    return (
+      <>
+        <div className="mermaid-wrapper">
+          <div className="mermaid-viewport" style={{ height: 80, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: "0.875em", cursor: "pointer" }} onClick={toggleExpand}>
+            Click to view diagram
+          </div>
+        </div>
+        <div className="mermaid-overlay" onClick={toggleExpand}>
+          <div className="mermaid-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="mermaid-wrapper" style={{ margin: 0, height: "100%" }}>
+              {diagramContent}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="mermaid-wrapper">
+      {diagramContent}
     </div>
   );
 }
