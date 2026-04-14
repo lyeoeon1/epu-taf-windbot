@@ -180,7 +180,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
       });
 
       try {
-        const sanitized = sanitizeMermaidCode(stableCode);
+        const sanitized = sanitizeMermaidCode(stableCode!);
         const { svg } = await mermaid.render(`mermaid-${uniqueId}`, sanitized);
         if (!cancelled && svgRef.current) {
           svgRef.current.innerHTML = svg;
