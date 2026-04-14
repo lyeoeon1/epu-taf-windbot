@@ -178,6 +178,7 @@ def get_chat_engine(
     supabase_client: Optional[SupabaseClient] = None,
     glossary_expander: Optional[GlossaryExpander] = None,
     reranker: Optional[FlashReranker] = None,
+    question_type: str = "GENERAL",
 ) -> BaseChatEngine:
     """Create a chat engine using condense_plus_context mode.
 
@@ -209,7 +210,11 @@ def get_chat_engine(
         token_limit=8000,
         chat_history=chat_history,
     )
-    system_prompt = get_system_prompt(language, corrections_block=corrections_block)
+    system_prompt = get_system_prompt(
+        language,
+        corrections_block=corrections_block,
+        question_type=question_type,
+    )
 
     # Choose retriever: advanced pipeline or legacy dense-only
     use_advanced = (

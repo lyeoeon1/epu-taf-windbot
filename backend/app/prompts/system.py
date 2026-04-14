@@ -235,14 +235,37 @@ _PROMPTS = {
 }
 
 
-def get_system_prompt(language: str = "en", corrections_block: str = "") -> str:
-    """Get the system prompt, optionally with corrections injected.
+def get_system_prompt(
+    language: str = "en",
+    corrections_block: str = "",
+    question_type: str = "GENERAL",
+) -> str:
+    """Get the system prompt, optionally with corrections and question type injected.
+
+    Question type instructions are injected BEFORE the context block to guide
+    the LLM on format, depth, and structure for specific question types.
 
     Corrections are appended AFTER the context block (end of prompt)
     so they benefit from LLM recency bias and are closest to the
     user's question.
     """
+    from app.prompts.question_types import get_question_type_instruction
+
     prompt = _PROMPTS.get(language, SYSTEM_PROMPT_EN)
+
+    # Inject type-specific instruction before the context block
+    type_instruction = get_question_type_instruction(question_type, language)
+    if type_instruction:
+        # Find the context block marker and insert instruction before it
+        if language == "vi":
+            marker = "Thông tin ngữ cảnh bên dưới:"
+        else:
+            marker = "Context information is below:"
+        prompt = prompt.replace(
+            marker,
+            f"{type_instruction}\n\n{marker}",
+        )
+
     if corrections_block:
         prompt = prompt + "\n\n" + corrections_block
     return prompt
