@@ -183,7 +183,6 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         flowchart: {
           useMaxWidth: false,
           htmlLabels: true,
-          wrap: true,
           nodeSpacing: 30,
           rankSpacing: 40,
         },
