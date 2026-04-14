@@ -39,13 +39,13 @@ export default function Home() {
   return (
     <div className="flex min-h-svh flex-col bg-background dark:bg-[#212121]">
       <Header onClearChat={clearChat} />
-      <div className="flex-1 overflow-y-auto px-4">
-        <div className="mx-auto max-w-2xl py-8">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4">
+        <div className="mx-auto max-w-full sm:max-w-2xl py-8">
           <ChatMessages messages={messages} isLoading={isLoading} sessionId={sessionId} onSendMessage={sendMessage} />
         </div>
       </div>
-      <div className="sticky bottom-0 bg-background dark:bg-[#212121] px-4 pb-4 pt-2">
-        <div className="mx-auto max-w-2xl">
+      <div className="sticky bottom-0 bg-background dark:bg-[#212121] px-2 sm:px-4 pb-4 pt-2">
+        <div className="mx-auto max-w-full sm:max-w-2xl">
           <PromptBox onSend={sendMessage} disabled={isLoading} />
         </div>
       </div>
