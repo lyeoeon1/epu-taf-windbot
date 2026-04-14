@@ -9,18 +9,25 @@ import logging
 
 from supabase import Client
 
+from app.services.supabase_retry import with_retry
+
 logger = logging.getLogger(__name__)
 
 
 def get_active_corrections(supabase: Client) -> list[dict]:
     """Fetch all active global corrections."""
     try:
-        result = (
-            supabase.table("global_corrections")
-            .select("entity, attribute, old_value, new_value")
-            .eq("is_active", True)
-            .execute()
-        )
+        def _fetch():
+            from app.dependencies import get_supabase
+            client = get_supabase()
+            return (
+                client.table("global_corrections")
+                .select("entity, attribute, old_value, new_value")
+                .eq("is_active", True)
+                .execute()
+            )
+
+        result = with_retry(_fetch)
         return result.data or []
     except Exception as e:
         logger.warning("Failed to load global corrections: %s", e)
@@ -36,21 +43,26 @@ def promote_correction(
     for the same entity+attribute pair.
     """
     try:
-        result = (
-            supabase.table("global_corrections")
-            .upsert(
-                {
-                    "entity": correction["entity"],
-                    "attribute": correction["attribute"],
-                    "old_value": correction.get("old_value", ""),
-                    "new_value": correction["new_value"],
-                    "source_session_id": session_id,
-                    "is_active": True,
-                },
-                on_conflict="entity,attribute",
+        def _upsert():
+            from app.dependencies import get_supabase
+            client = get_supabase()
+            return (
+                client.table("global_corrections")
+                .upsert(
+                    {
+                        "entity": correction["entity"],
+                        "attribute": correction["attribute"],
+                        "old_value": correction.get("old_value", ""),
+                        "new_value": correction["new_value"],
+                        "source_session_id": session_id,
+                        "is_active": True,
+                    },
+                    on_conflict="entity,attribute",
+                )
+                .execute()
             )
-            .execute()
-        )
+
+        result = with_retry(_upsert)
         logger.info(
             "Promoted correction to global: %s.%s = %s",
             correction["entity"],

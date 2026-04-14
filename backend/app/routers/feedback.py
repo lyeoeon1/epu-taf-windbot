@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,6 +7,7 @@ from supabase import Client
 from app.dependencies import get_supabase
 from app.models.schemas import FeedbackRequest
 from app.services.global_corrections import promote_correction
+from app.services.supabase_retry import with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +28,21 @@ async def submit_feedback(
     those corrections are promoted to global persistence.
     """
     try:
-        result = supabase.table("message_feedback").insert({
-            "session_id": str(request.session_id),
-            "message_content": request.message_content[:2000],
-            "feedback_tags": request.feedback_tags,
-            "feedback_text": request.feedback_text[:1000] if request.feedback_text else "",
-        }).execute()
+        def _insert():
+            client = get_supabase()
+            return client.table("message_feedback").insert({
+                "session_id": str(request.session_id),
+                "message_content": request.message_content[:2000],
+                "feedback_tags": request.feedback_tags,
+                "feedback_text": request.feedback_text[:1000] if request.feedback_text else "",
+            }).execute()
+
+        result = await asyncio.to_thread(with_retry, _insert)
 
         # Check if feedback is positive → promote any session corrections to global
         is_positive = bool(set(request.feedback_tags) & POSITIVE_TAGS)
         if is_positive:
-            await _promote_session_corrections(supabase, str(request.session_id))
+            await _promote_session_corrections(str(request.session_id))
 
         return {"status": "ok", "id": result.data[0]["id"] if result.data else None}
     except Exception as e:
@@ -44,24 +50,30 @@ async def submit_feedback(
         raise HTTPException(status_code=500, detail="Failed to save feedback")
 
 
-async def _promote_session_corrections(supabase: Client, session_id: str):
+async def _promote_session_corrections(session_id: str):
     """Find corrections in session message metadata and promote to global."""
     try:
-        messages = (
-            supabase.table("chat_messages")
-            .select("metadata")
-            .eq("session_id", session_id)
-            .eq("role", "assistant")
-            .order("created_at", desc=True)
-            .limit(5)
-            .execute()
-        )
+        def _fetch_messages():
+            client = get_supabase()
+            return (
+                client.table("chat_messages")
+                .select("metadata")
+                .eq("session_id", session_id)
+                .eq("role", "assistant")
+                .order("created_at", desc=True)
+                .limit(5)
+                .execute()
+            )
+
+        messages = await asyncio.to_thread(with_retry, _fetch_messages)
         promoted = 0
         for msg in (messages.data or []):
             metadata = msg.get("metadata") or {}
             for correction in metadata.get("corrections", []):
                 if correction.get("entity") and correction.get("new_value"):
-                    promote_correction(supabase, correction, session_id)
+                    await asyncio.to_thread(
+                        promote_correction, get_supabase(), correction, session_id
+                    )
                     promoted += 1
         if promoted:
             logger.info(
