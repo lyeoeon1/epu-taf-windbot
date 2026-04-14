@@ -1,0 +1,106 @@
+{
+  "description": "Curated 20-question subset for quick regression testing (~5-7 min)",
+  "source": "benchmark-windbot-v1.json",
+  "questions": [
+    {
+      "id": 25,
+      "question": "So sánh ưu nhược điểm của thiết kế direct drive và geared drive cho tua-bin gió?",
+      "expected_answer": "Geared drive: hộp số giảm kích thước máy phát, nhẹ hơn, rẻ hơn. Nhược: hộp số hỏng thường xuyên, chi phí bảo trì cao, tổn thất năng lượng qua hộp số. Direct drive: bỏ hộp số, máy phát quay chậm trực tiếp (PMSG kích thước lớn), ít bảo trì hơn, hiệu suất cao hơn. Nhược: máy phát nặng/đắt, cần nam châm đất hiếm (neodymium). Xu hướng: offshore ưu tiên direct drive, onshore vẫn dùng cả hai.",
+      "difficulty": "Hard",
+      "type": "Comparative",
+      "scoring_criteria": "So sánh đúng ≥4 tiêu chí + xu hướng = 5đ. Đúng 2-3 = 3đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Cấu trúc tua-bin gió"
+    },
+    {
+      "id": 26,
+      "question": "Giải thích hiện tượng wake effect trong trang trại gió và cách giảm thiểu?",
+      "expected_answer": "Wake effect: tua-bin phía trước tạo vùng gió nhiễu loạn (turbulence) và giảm tốc phía sau, làm giảm sản lượng tua-bin phía sau 10-40%. Giảm thiểu bằng: (1) Bố trí khoảng cách 5-10 lần đường kính rotor theo hướng gió chủ đạo, (2) Bố trí so le (staggered layout), (3) Điều khiển yaw misalignment chủ động, (4) Tối ưu bằng mô phỏng CFD.",
+      "difficulty": "Hard",
+      "type": "Conceptual",
+      "scoring_criteria": "Đúng hiện tượng + ≥3 giải pháp = 5đ. Đúng hiện tượng + 1-2 giải pháp = 3đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Cấu trúc tua-bin gió"
+    },
+    {
+      "id": 27,
+      "question": "Tua-bin gió nổi (floating wind turbine) có những loại móng nào?",
+      "expected_answer": "3 loại chính: (1) Spar buoy — trụ nổi sâu, trọng tâm thấp, ổn định nhờ ballast, phù hợp nước rất sâu (>100m); (2) Semi-submersible — phao nổi bán chìm, ổn định nhờ diện tích mặt nước, lắp đặt dễ hơn; (3) Tension Leg Platform (TLP) — neo căng xuống đáy biển, ổn định nhờ lực căng neo. Công nghệ đang phát triển, chi phí còn cao. Dự án tiêu biểu: Hywind Scotland (spar).",
+      "difficulty": "Hard",
+      "type": "Factual",
+      "scoring_criteria": "Đúng 3 loại + đặc điểm = 5đ. Đúng 2 = 3đ. Đúng 1 = 2đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Cấu trúc tua-bin gió"
+    },
+    {
+      "id": 13,
+      "question": "Tại sao cánh quạt tua-bin gió có dạng khí động học (airfoil)?",
+      "expected_answer": "Cánh có dạng airfoil tạo ra chênh lệch áp suất giữa 2 mặt cánh khi gió thổi qua, sinh lực nâng (lift) vuông góc với dòng gió. Lực nâng này tạo mô-men quay cho rotor. Hiệu suất chuyển đổi năng lượng gió nhờ airfoil cao hơn nhiều so với cánh phẳng đơn giản (drag-based).",
+      "difficulty": "Medium",
+      "type": "Conceptual",
+      "scoring_criteria": "Giải thích đúng nguyên lý lift + so sánh drag = 5đ. Đúng ý chính = 3đ",
+      "subsection": "Conceptual — Medium",
+      "_category": "Cấu trúc tua-bin gió"
+    },
+    {
+      "id": 14,
+      "question": "Hộp số (gearbox) trong tua-bin gió có vai trò gì?",
+      "expected_answer": "Hộp số chuyển đổi tốc độ quay thấp của rotor (10-20 vòng/phút) lên tốc độ cao cho máy phát (1000-1800 vòng/phút), với tỷ số truyền khoảng 1:80 đến 1:100. Tuy nhiên, hộp số là bộ phận hay hỏng nhất nên xu hướng hiện nay là dùng thiết kế direct drive (không hộp số).",
+      "difficulty": "Medium",
+      "type": "Conceptual",
+      "scoring_criteria": "Đúng chức năng + tỷ số truyền + xu hướng = 5đ. Đúng chức năng = 3đ",
+      "subsection": "Conceptual — Medium",
+      "_category": "Cấu trúc tua-bin gió"
+    },
+    {
+      "id": 53,
+      "question": "Phân tích tác động của điện gió lên ổn định lưới điện khi tỷ lệ penetration cao?",
+      "expected_answer": "Khi tỷ lệ điện gió cao (>30%): (1) Giảm quán tính hệ thống (inertia) do tua-bin kết nối qua converter, (2) Biến động tần số lớn hơn, (3) Khó dự báo sản lượng chính xác, (4) Cần nhiều nguồn dự phòng linh hoạt. Giải pháp: synthetic inertia từ converter, ESS (lưu trữ năng lượng), nâng cấp grid code, dự báo gió chính xác, kết nối liên vùng.",
+      "difficulty": "Hard",
+      "type": "Conceptual",
+      "scoring_criteria": "Phân tích đúng ≥3 tác động + ≥2 giải pháp = 5đ. Đúng ý chính = 3đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Vận hành tua-bin gió"
+    },
+    {
+      "id": 54,
+      "question": "So sánh LCOE của điện gió onshore, offshore với các nguồn năng lượng khác?",
+      "expected_answer": "LCOE (2024): gió onshore 25-50 USD/MWh, gió offshore 50-100 USD/MWh, mặt trời 25-45 USD/MWh, than 65-150 USD/MWh, khí LNG 45-90 USD/MWh, hạt nhân 60-100 USD/MWh. Gió onshore đã cạnh tranh với nhiệt điện. Offshore đang giảm nhanh nhờ tua-bin lớn hơn, chuỗi cung ứng trưởng thành. LCOE phụ thuộc nhiều vào vị trí, lãi suất, chính sách.",
+      "difficulty": "Hard",
+      "type": "Comparative",
+      "scoring_criteria": "So sánh đúng ≥4 nguồn + xu hướng = 5đ. So sánh 2-3 = 3đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Vận hành tua-bin gió"
+    },
+    {
+      "id": 56,
+      "question": "Giải thích hiện tượng ice throw và icing trên cánh tua-bin gió?",
+      "expected_answer": "Icing: băng tích tụ trên cánh khi nhiệt độ dưới 0°C và độ ẩm cao, làm thay đổi profil khí động → giảm hiệu suất 10-50%, tăng tải trọng, mất cân bằng rotor, rung động. Ice throw: mảnh băng văng ra khi cánh quay, nguy hiểm trong bán kính vài trăm mét. Giải pháp: hệ thống sưởi cánh (blade heating), phát hiện băng bằng cảm biến, dừng tua-bin khi icing nghiêm trọng.",
+      "difficulty": "Hard",
+      "type": "Conceptual",
+      "scoring_criteria": "Đúng cả icing + ice throw + giải pháp = 5đ. Đúng 1 hiện tượng = 3đ",
+      "subsection": "Hard & Edge Cases",
+      "_category": "Vận hành tua-bin gió"
+    },
+    {
+      "id": 43,
+      "question": "Quy trình khởi động tua-bin gió từ trạng thái dừng?",
+      "expected_answer": "Các bước: (1) Kiểm tra hệ thống SCADA, không có cảnh báo active, (2) Nhả phanh cơ khí, (3) Hệ thống yaw xoay nacelle về hướng gió, (4) Hệ thống pitch xoay cánh từ vị trí feather về góc vận hành, (5) Rotor bắt đầu quay khi gió đủ, (6) Đạt tốc độ đồng bộ → kết nối máy phát với lưới, (7) Tăng công suất dần.",
+      "difficulty": "Medium",
+      "type": "Procedural",
+      "scoring_criteria": "Đúng trình tự ≥5 bước = 5đ. Đúng 3-4 = 3đ. Dưới 3 = 2đ",
+      "subsection": "Procedural — Medium",
+      "_category": "Vận hành tua-bin gió"
+    },
+    {
+      "id": 44,
+      "question": "Làm thế nào để tua-bin gió giới hạn công suất khi gió quá mạnh?",
+      "expected_answer": "2 phương pháp chính: (1) Pitch control — xoay cánh tăng góc pitch để giảm lực nâng, giảm mô-men quay, giữ công suất ở mức rated. (2) Stall control (tua-bin cũ) — cánh thiết kế tự stall khi tốc độ gió tăng. Pitch control phổ biến hơn vì điều khiển chính xác, phản ứng nhanh, và có thể feather cánh hoàn toàn khi cần dừng khẩn cấp.",
+      "difficulty": "Medium",
+      "type": "Procedural",
+      "scoring_criteria": "Đúng cả 2 phương pháp + so sánh = 5đ. Đúng 1 phương pháp = 3đ",
+      "subsection": "Procedural — Medium",
+      "_category": "Vận hành tua-bin gió"
+    }
+  ]
+}
