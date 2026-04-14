@@ -30,9 +30,8 @@ class Settings(BaseSettings):
 
     # Vietnamese document priority
     enable_vi_priority: bool = True
-    vi_priority_threshold: int = 3    # min VN chunks among candidates to trigger VN-only mode
-    vi_score_boost: float = 2.0       # score multiplier for VN chunks in mixed mode
-    vi_rerank_fallback_score: float = 0.05  # if VN-only top rerank score < this, fallback to all
+    vi_score_boost: float = 2.0       # score multiplier for VN chunks before reranking
+    vi_reserved_slots: int = 6        # reserved VN positions in final top-K (60% of rerank_top_k)
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
