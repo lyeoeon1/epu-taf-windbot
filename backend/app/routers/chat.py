@@ -24,6 +24,7 @@ from app.services.corrections import (
     format_corrections_block,
 )
 from app.services.global_corrections import get_active_corrections, merge_corrections
+from app.services.question_classifier import QuestionClassifier, CONFIDENCE_THRESHOLD
 from app.services.rag import get_chat_engine
 
 logger = logging.getLogger(__name__)
@@ -98,12 +99,33 @@ async def chat(
     - data: {"done": true}\n\n
     """
     try:
+        # Classify question type (Stage 1: regex, <1ms)
+        classifier = QuestionClassifier()
+        question_type, regex_confidence = classifier.classify_sync(request.message)
+        classification_method = "regex"
+
         # Save user message and load history in parallel
+        # If regex confidence is low, also run LLM classification in parallel
         session_id = str(request.session_id)
-        _, history = await asyncio.gather(
-            save_message(supabase, session_id, "user", request.message),
-            get_session_messages(supabase, session_id),
-        )
+        if regex_confidence < CONFIDENCE_THRESHOLD:
+            # Low confidence — run LLM classification in parallel with I/O
+            async def _classify_llm():
+                return await asyncio.to_thread(
+                    classifier.classify_llm, get_openai_client(), request.message
+                )
+
+            _, history, llm_type = await asyncio.gather(
+                save_message(supabase, session_id, "user", request.message),
+                get_session_messages(supabase, session_id),
+                _classify_llm(),
+            )
+            question_type = llm_type
+            classification_method = "llm"
+        else:
+            _, history = await asyncio.gather(
+                save_message(supabase, session_id, "user", request.message),
+                get_session_messages(supabase, session_id),
+            )
 
         # Determine if there's prior history (exclude the message we just saved)
         prior_history = history[:-1] if history else []
@@ -157,6 +179,7 @@ async def chat(
             supabase_client=supabase,
             glossary_expander=get_glossary_expander(),
             reranker=get_reranker(),
+            question_type=question_type,
         )
 
         # Stream the response (run blocking call on thread pool)
@@ -238,7 +261,11 @@ async def chat(
             logger.warning("Failed to extract source nodes: %s", e)
 
         # Save complete assistant response (cache corrections + sources in metadata)
-        save_metadata = {"language": request.language}
+        save_metadata = {
+            "language": request.language,
+            "question_type": question_type,
+            "classification_method": classification_method,
+        }
         if corrections:
             save_metadata["corrections"] = corrections
         if sources:
