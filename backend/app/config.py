@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     multi_query_count: int = 2  # Was 3 — reduced to lower latency
 
     # LLM model selection
-    llm_model: str = "gpt-5.4-mini-2026-03-17"  # A/B test: testing gpt-5.4-mini
+    llm_model: str = "gpt-4.1-mini"  # Final choice after A/B test
 
     # Vietnamese document priority
     enable_vi_priority: bool = True
