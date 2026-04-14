@@ -2,15 +2,6 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-# Configure app.* loggers to output to stderr (captured by systemd).
-# Must set handler on the "app" logger directly because uvicorn only
-# configures its own loggers and strips root logger handlers in workers.
-_app_logger = logging.getLogger("app")
-_app_logger.setLevel(logging.INFO)
-_app_handler = logging.StreamHandler()
-_app_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-_app_logger.addHandler(_app_handler)
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,6 +25,15 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize LlamaIndex and vector store on startup."""
+    # Configure app.* loggers inside lifespan — runs in each uvicorn worker
+    # AFTER uvicorn has finished its own logging setup
+    _app_log = logging.getLogger("app")
+    if not _app_log.handlers:
+        _app_log.setLevel(logging.INFO)
+        _h = logging.StreamHandler()
+        _h.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
+        _app_log.addHandler(_h)
+
     configure_settings()
     try:
         vector_store = create_vector_store(settings.supabase_connection_string)
