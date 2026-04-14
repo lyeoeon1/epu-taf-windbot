@@ -20,8 +20,8 @@ class Settings(BaseSettings):
     enable_reranking: bool = True
     enable_glossary_expansion: bool = True
 
-    # ONNX reranker settings
-    onnx_model_dir: str = "models/reranker-int8"
+    # ONNX reranker settings (absolute path resolved at startup)
+    onnx_model_dir: str = ""
     reranker_threads: int = 4
 
     # Retrieval tuning parameters
