@@ -1,0 +1,96 @@
+{
+  "description": "10 recent real user questions from Supabase for benchmark testing",
+  "source": "Supabase chat_messages (2026-04-14)",
+  "questions": [
+    {
+      "id": "real-01",
+      "question": "Năng lượng gió ngoài khơi khác gì so với trên bờ?",
+      "expected_answer": "So sánh chi tiết offshore vs onshore: nguồn gió, hệ số công suất, công suất tuabin, nền móng, bảo trì, tác động môi trường, kết nối lưới, chi phí.",
+      "difficulty": "Medium",
+      "type": "Comparative",
+      "scoring_criteria": "Cần có bảng so sánh, đề cập capacity factor, monopile/jacket/floating foundations, chi phí.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-02",
+      "question": "Tuabin gió hoạt động như thế nào?",
+      "expected_answer": "Nguyên lý: gió → cánh quạt quay (lực nâng khí động học) → trục → hộp số (tăng tốc) → máy phát điện → biến áp → lưới điện. Đề cập RPM, tỷ số truyền, pitch/yaw control.",
+      "difficulty": "Easy",
+      "type": "Concept",
+      "scoring_criteria": "Giải thích đầy đủ chuỗi chuyển đổi năng lượng, có số liệu kỹ thuật (RPM, tỷ số truyền).",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-03",
+      "question": "Khi tuabin gió bị rung lắc bất thường, cần kiểm tra những gì?",
+      "expected_answer": "Kiểm tra: cánh quạt (nứt, mòn), cân bằng động rotor, hộp số (dầu, bạc đạn), bu-lông/đai ốc, pitch system, hệ thống chống sét, nền móng. Quy trình từ đơn giản đến phức tạp.",
+      "difficulty": "Hard",
+      "type": "Troubleshooting",
+      "scoring_criteria": "Liệt kê nguyên nhân có thể, các bước kiểm tra có hệ thống, đề cập an toàn.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-04",
+      "question": "Quy trình bảo trì hộp số tuabin gió bao gồm những bước nào?",
+      "expected_answer": "Quy trình: chuẩn bị → xả dầu cũ → làm sạch bộ phận → flush bên trong hộp số → kiểm tra cảm biến → lắp bộ lọc → bơm dầu mới → kiểm tra hoàn thiện. Theo AWEA.",
+      "difficulty": "Hard",
+      "type": "Procedural",
+      "scoring_criteria": "Chi tiết từng bước, đề cập dụng cụ cụ thể, tiêu chuẩn AWEA, lưu ý an toàn.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-05",
+      "question": "So sánh tuabin trục ngang và trục đứng",
+      "expected_answer": "Bảng so sánh HAWT vs VAWT: cấu trúc trục, hướng gió, hiệu suất, khởi động, vị trí máy phát, chi phí, không gian, độ ồn, ứng dụng.",
+      "difficulty": "Medium",
+      "type": "Comparative",
+      "scoring_criteria": "Bảng so sánh ít nhất 8 tiêu chí, kết luận rõ ràng về ứng dụng phù hợp.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-06",
+      "question": "Cấu tạo chính của tuabin gió gồm những gì?",
+      "expected_answer": "13 thành phần: cánh quạt, hệ thống yaw, nacelle, tủ điện, máy phát, phanh, hộp số, trục, yaw system, cáp điện, trụ, biến áp, chân đế.",
+      "difficulty": "Easy",
+      "type": "Factual",
+      "scoring_criteria": "Liệt kê đầy đủ ≥10 thành phần, mô tả chức năng mỗi thành phần, dùng thuật ngữ EPU.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-07",
+      "question": "Làm thế nào để vận hành tuabin gió hiệu quả?",
+      "expected_answer": "Yếu tố: định hướng gió (yaw/pitch), kiểm soát tốc độ, bảo trì định kỳ, giám sát tự động, quản lý sự cố, tối ưu bố trí trang trại gió.",
+      "difficulty": "Medium",
+      "type": "Procedural",
+      "scoring_criteria": "Đề cập ≥5 yếu tố, có giải thích cụ thể cho mỗi yếu tố.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-08",
+      "question": "Tuabin gió hoạt động như thế nào?",
+      "expected_answer": "Nguyên lý chuyển đổi năng lượng gió → cơ → điện. Cánh quạt, hộp số, máy phát, biến áp, lưới điện. Mermaid diagram.",
+      "difficulty": "Easy",
+      "type": "Concept",
+      "scoring_criteria": "Giải thích rõ ràng, có sơ đồ hoặc diagram, số liệu kỹ thuật.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-09",
+      "question": "Ai là người phát minh ra tua-bin gió?",
+      "expected_answer": "Nằm ngoài phạm vi knowledge base. Chatbot nên từ chối lịch sự và hướng dẫn hỏi về kỹ thuật tuabin gió.",
+      "difficulty": "Easy",
+      "type": "Out-of-scope",
+      "scoring_criteria": "Từ chối lịch sự, không bịa thông tin, gợi ý câu hỏi phù hợp.",
+      "_category": "Real User Queries"
+    },
+    {
+      "id": "real-10",
+      "question": "Tua-bin gió hoạt động như thế nào?",
+      "expected_answer": "Nguyên lý hoạt động đầy đủ: gió → cánh quạt → trục → hộp số → máy phát → lưới điện. Cut-in/cut-out speed, pitch/stall control.",
+      "difficulty": "Easy",
+      "type": "Concept",
+      "scoring_criteria": "Đầy đủ chuỗi chuyển đổi, đề cập cut-in (~3.9 m/s), cut-out (~20.5 m/s), pitch control.",
+      "_category": "Real User Queries"
+    }
+  ]
+}
