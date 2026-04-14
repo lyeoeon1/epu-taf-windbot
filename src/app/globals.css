@@ -272,6 +272,18 @@ body {
 .mermaid-content svg {
   display: block;
 }
+/* Force Mermaid node labels to show full text */
+.mermaid-content svg .node foreignObject {
+  overflow: visible !important;
+}
+.mermaid-content svg .node foreignObject div {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+.mermaid-content svg .label-container {
+  overflow: visible !important;
+}
 .mermaid-toolbar {
   position: absolute;
   top: 8px;
