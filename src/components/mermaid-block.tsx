@@ -219,7 +219,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         themeVariables: themeVars,
         flowchart: {
           useMaxWidth: false,
-          htmlLabels: true,
+          htmlLabels: false,
           nodeSpacing: 30,
           rankSpacing: 40,
         },
