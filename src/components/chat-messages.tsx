@@ -320,7 +320,7 @@ export function ChatMessages({ messages, isLoading, sessionId, onSendMessage }: 
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
         >
           {msg.role === "user" ? (
-            <div className="group/msg flex flex-col items-end gap-1 max-w-[80%]">
+            <div className="group/msg flex flex-col items-end gap-1 max-w-[92%] sm:max-w-[80%]">
               <div className="rounded-2xl bg-gray-200 px-4 py-3 text-foreground dark:bg-[#303030] dark:text-white">
                 <p className="whitespace-pre-wrap break-words text-left">{msg.content}</p>
               </div>
@@ -332,7 +332,7 @@ export function ChatMessages({ messages, isLoading, sessionId, onSendMessage }: 
               </div>
             </div>
           ) : (
-            <div className="group/msg max-w-[80%]">
+            <div className="group/msg max-w-[92%] sm:max-w-[80%]">
               {msg.content ? (
                 <>
                   <div className="prose max-w-none text-foreground leading-relaxed dark:prose-invert dark:text-white">
