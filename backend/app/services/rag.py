@@ -11,6 +11,7 @@ from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.llms.openai import utils as openai_llm_utils
 from llama_index.vector_stores.supabase import SupabaseVectorStore
 from pydantic import Field
 from supabase import Client as SupabaseClient
@@ -131,8 +132,22 @@ class SourceNumberingPostprocessor(BaseNodePostprocessor):
         return nodes
 
 
+# Newer OpenAI models not yet in llama_index's hardcoded registry
+_CUSTOM_MODELS = {
+    "gpt-4.1-mini": 1_000_000,
+    "gpt-4.1-nano": 1_000_000,
+    "gpt-4.1": 1_000_000,
+}
+
+
 def configure_settings():
     """Set global LlamaIndex settings."""
+    # Register custom models so llama_index accepts them
+    for name, ctx in _CUSTOM_MODELS.items():
+        if name not in openai_llm_utils.ALL_AVAILABLE_MODELS:
+            openai_llm_utils.ALL_AVAILABLE_MODELS[name] = ctx
+            openai_llm_utils.CHAT_MODELS[name] = ctx
+
     Settings.llm = OpenAI(model=app_settings.llm_model, temperature=0, additional_kwargs={"seed": 42})
     logger.info("LLM model: %s", app_settings.llm_model)
     Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
