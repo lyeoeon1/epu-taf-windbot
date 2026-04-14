@@ -13,42 +13,45 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 
 logger = logging.getLogger(__name__)
 
+# Module-level cache — shared across all instances, survives Pydantic model init.
+# Cannot use class-level attributes because OpenAIEmbedding is a Pydantic BaseModel
+# and class attributes become ModelPrivateAttr, breaking `in` operator.
+_embedding_cache: OrderedDict = OrderedDict()
+_cache_max_size: int = 200
+_cache_hits: int = 0
+_cache_misses: int = 0
+
 
 class CachedOpenAIEmbedding(OpenAIEmbedding):
     """OpenAIEmbedding with an in-memory LRU cache for query embeddings."""
 
-    _cache: OrderedDict = OrderedDict()
-    _max_size: int = 200
-    _hits: int = 0
-    _misses: int = 0
-
     def __init__(self, *args, cache_size: int = 200, **kwargs):
         super().__init__(*args, **kwargs)
-        CachedOpenAIEmbedding._max_size = cache_size
+        global _cache_max_size
+        _cache_max_size = cache_size
 
     def _get_query_embedding(self, query: str) -> List[float]:
         """Get query embedding with LRU cache."""
-        cache = CachedOpenAIEmbedding._cache
+        global _cache_hits, _cache_misses
 
-        if query in cache:
-            cache.move_to_end(query)
-            CachedOpenAIEmbedding._hits += 1
-            return cache[query]
+        if query in _embedding_cache:
+            _embedding_cache.move_to_end(query)
+            _cache_hits += 1
+            return _embedding_cache[query]
 
-        CachedOpenAIEmbedding._misses += 1
+        _cache_misses += 1
         embedding = super()._get_query_embedding(query)
 
-        cache[query] = embedding
-        if len(cache) > CachedOpenAIEmbedding._max_size:
-            cache.popitem(last=False)
+        _embedding_cache[query] = embedding
+        if len(_embedding_cache) > _cache_max_size:
+            _embedding_cache.popitem(last=False)
 
-        if (CachedOpenAIEmbedding._hits + CachedOpenAIEmbedding._misses) % 50 == 0:
-            total = CachedOpenAIEmbedding._hits + CachedOpenAIEmbedding._misses
+        if (_cache_hits + _cache_misses) % 50 == 0:
+            total = _cache_hits + _cache_misses
             logger.info(
                 "Embedding cache: %d hits, %d misses (%.0f%% hit rate)",
-                CachedOpenAIEmbedding._hits,
-                CachedOpenAIEmbedding._misses,
-                100 * CachedOpenAIEmbedding._hits / total if total else 0,
+                _cache_hits, _cache_misses,
+                100 * _cache_hits / total if total else 0,
             )
 
         return embedding
