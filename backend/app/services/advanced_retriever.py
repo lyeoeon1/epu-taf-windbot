@@ -61,6 +61,7 @@ class AdvancedRetriever(BaseRetriever):
         dense_weight: float = 0.8,
         sparse_weight: float = 0.2,
         multi_query_count: int = 2,
+        question_type: str = "GENERAL",
         # Vietnamese document priority
         enable_vi_priority: bool = True,
         vi_score_boost: float = 2.0,
@@ -87,6 +88,10 @@ class AdvancedRetriever(BaseRetriever):
         self._dense_weight = dense_weight
         self._sparse_weight = sparse_weight
         self._multi_query_count = multi_query_count
+        self._question_type = question_type
+        if question_type in ("STRUCTURE", "GENERAL", "PROCEDURE"):
+            self._enable_multi_query = False
+            self._enable_hyde = False
 
         # Vietnamese priority
         self._enable_vi_priority = enable_vi_priority
@@ -238,7 +243,10 @@ class AdvancedRetriever(BaseRetriever):
         if expanded_query != query:
             initial_queries.append(expanded_query)
 
-        need_multi_query = self._enable_multi_query or self._enable_hyde
+        if self._question_type == "PRINCIPLE" and len(query) > 40:
+            need_multi_query = False
+        else:
+            need_multi_query = self._enable_multi_query or self._enable_hyde
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
             # Submit initial dense + BM25 searches
