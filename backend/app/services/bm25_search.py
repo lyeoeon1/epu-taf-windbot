@@ -64,7 +64,7 @@ class BM25Searcher:
                     metadata={
                         "filename": row.get("filename", ""),
                         "page": row.get("page"),
-                        "language": "vi",
+                        "language": row.get("language", "vi"),
                         "domain": "wind_turbine",
                         "search_type": "bm25",
                     },
