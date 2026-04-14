@@ -78,15 +78,21 @@ def renumber_citations(text: str, source_nodes: list) -> tuple[str, list]:
 
 
 def _extract_keywords(text: str) -> set[str]:
-    """Extract meaningful keywords from text (>2 chars, not stopwords)."""
+    """Extract meaningful keywords from text (>=2 chars, not stopwords)."""
     stopwords = {
+        # Vietnamese function words (1-3 chars)
         "là", "và", "của", "cho", "trong", "với", "được", "các", "này",
         "có", "không", "một", "những", "để", "từ", "theo", "khi", "nhưng",
         "hoặc", "cũng", "đã", "sẽ", "còn", "vì", "nên", "bởi", "qua",
+        "ra", "về", "do", "đi", "lên", "mà", "rất", "hay", "như", "tại",
+        # English function words
         "the", "is", "and", "of", "for", "in", "with", "are", "that",
         "this", "can", "has", "have", "not", "from", "but", "which",
+        "its", "was", "were", "been", "may", "also", "more", "than",
+        # Source delimiter noise (from SourceNumberingPostprocessor format)
+        "source", "end", "tài", "liệu", "nội", "dung", "trang",
     }
-    words = re.findall(r'\b\w{3,}\b', text.lower())
+    words = re.findall(r'\b\w{2,}\b', text.lower())
     return {w for w in words if w not in stopwords}
 
 
@@ -104,15 +110,12 @@ def verify_citations(text: str, source_nodes: list) -> str:
     if not source_nodes:
         return text
 
-    # Build source content map: source_number → keywords
+    # Build source keyword map: source_number → keyword set
     source_keywords = {}
-    source_content = {}
     for node in source_nodes:
         sn = node.node.metadata.get("source_number")
         if sn is not None:
-            content = node.node.get_content()
-            source_content[sn] = content
-            source_keywords[sn] = _extract_keywords(content)
+            source_keywords[sn] = _extract_keywords(node.node.get_content())
 
     if not source_keywords:
         return text
@@ -123,9 +126,12 @@ def verify_citations(text: str, source_nodes: list) -> str:
         cite_num = int(match.group(1))
         start, end = match.start(), match.end()
 
-        # Extract surrounding sentence (100 chars before citation)
+        # Extract surrounding sentence (150 chars before, or after if at start)
         sent_start = max(0, start - 150)
         sentence = text[sent_start:start].strip()
+        if not sentence:
+            # Citation at start of text — look forward instead
+            sentence = text[end:end + 150].strip()
         sent_keywords = _extract_keywords(sentence)
 
         if not sent_keywords:
