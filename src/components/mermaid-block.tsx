@@ -185,6 +185,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
           htmlLabels: true,
           nodeSpacing: 30,
           rankSpacing: 40,
+          wrappingWidth: 300,
         },
       });
 
