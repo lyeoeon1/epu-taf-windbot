@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # Retrieval tuning parameters
     dense_weight: float = 0.5   # Equal weight: BM25 proven to find correct chunks from large PDFs
     sparse_weight: float = 0.5  # Was 0.2 — increased to give BM25 keyword matches fair ranking
-    rerank_top_k: int = 10      # Was 8 — more context for LLM, reranker ensures quality
+    rerank_top_k: int = 13      # Was 10 — more context chunks for detailed answers
     bm25_top_k: int = 30        # Was 20 — wider net for keyword search across 2900+ chunks
     dense_top_k: int = 30       # Was 20 — wider net for semantic search
     multi_query_count: int = 2  # Was 3 — reduced to lower latency
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # Vietnamese document priority
     enable_vi_priority: bool = True
     vi_score_boost: float = 2.0       # score multiplier for VN chunks before reranking
-    vi_reserved_slots: int = 6        # reserved VN positions in final top-K (60% of rerank_top_k)
+    vi_reserved_slots: int = 8        # reserved VN positions in final top-K (~60% of rerank_top_k=13)
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
