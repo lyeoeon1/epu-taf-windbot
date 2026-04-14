@@ -389,12 +389,21 @@ async def chat(
                     continue
                 # Strip source delimiters from content for display
                 content = node_ws.node.get_content()
-                # New format: "--- [Source N] (file, p.X) ---\n...\n--- END Source N ---"
                 if content.startswith("--- [Source"):
-                    # Remove first line (header) and last line (footer)
+                    # Format: "--- [Source N] ---\nTài liệu: ...\nNội dung:\n...\n--- END Source N ---"
                     lines = content.split("\n")
-                    content = "\n".join(lines[1:-1]).strip()
-                # Legacy format: "[Source N] ..."
+                    # Skip header lines (--- [Source], Tài liệu:, Nội dung:) and footer (--- END)
+                    content_lines = []
+                    in_content = False
+                    for line in lines:
+                        if line.startswith("Nội dung:"):
+                            in_content = True
+                            continue
+                        if line.startswith("--- END Source"):
+                            break
+                        if in_content:
+                            content_lines.append(line)
+                    content = "\n".join(content_lines).strip()
                 elif content.startswith(f"[Source {num}] "):
                     content = content[len(f"[Source {num}] "):]
                 sources.append({

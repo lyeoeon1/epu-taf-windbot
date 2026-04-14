@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 import vecs
@@ -115,16 +116,48 @@ class QACorpusFilterPostprocessor(BaseNodePostprocessor):
         return filtered
 
 
+class ContextStrippingPostprocessor(BaseNodePostprocessor):
+    """Strip augmented context metadata from chunks before LLM sees them.
+
+    Chunks stored in pgvector have a "[Ngữ cảnh: ...]" prefix added during
+    ingestion for better retrieval. This prefix helps embedding search but
+    confuses the LLM during generation (it may cite metadata instead of
+    actual content). This postprocessor strips the prefix so the LLM only
+    sees the original document content.
+
+    Must run BEFORE SourceNumberingPostprocessor.
+    """
+
+    _CONTEXT_PREFIX = re.compile(
+        r"^\[Ngữ cảnh:.*?\]\s*",
+        re.DOTALL,
+    )
+
+    def _postprocess_nodes(
+        self,
+        nodes: list[NodeWithScore],
+        query_bundle: Optional[QueryBundle] = None,
+    ) -> list[NodeWithScore]:
+        for node_ws in nodes:
+            content = node_ws.node.get_content()
+            stripped = self._CONTEXT_PREFIX.sub("", content)
+            if stripped != content:
+                node_ws.node.set_content(stripped)
+        return nodes
+
+
 class SourceNumberingPostprocessor(BaseNodePostprocessor):
     """Number retrieved nodes with clear boundaries so LLM can cite accurately.
 
-    Wraps each node in delimiters:
-        --- [Source N] (filename, p.page) ---
+    Wraps each node in delimiters with clean separation between
+    metadata header and content body:
+        --- [Source N] ---
+        Tài liệu: filename, trang page
+        Nội dung:
         content...
         --- END Source N ---
 
-    This gives the LLM clear visual boundaries to distinguish sources
-    and cite [N] correctly. Must be the LAST postprocessor in the chain.
+    Must be the LAST postprocessor in the chain.
     """
 
     def _postprocess_nodes(
@@ -138,9 +171,11 @@ class SourceNumberingPostprocessor(BaseNodePostprocessor):
             original = node_ws.node.get_content()
             filename = node_ws.node.metadata.get("filename", "")
             page = node_ws.node.metadata.get("page", "")
-            page_str = f", p.{page}" if page else ""
+            page_str = f", trang {page}" if page else ""
             node_ws.node.set_content(
-                f"--- [Source {num}] ({filename}{page_str}) ---\n"
+                f"--- [Source {num}] ---\n"
+                f"Tài liệu: {filename}{page_str}\n"
+                f"Nội dung:\n"
                 f"{original}\n"
                 f"--- END Source {num} ---"
             )
@@ -271,6 +306,7 @@ def get_chat_engine(
         postprocessors.append(
             CorrectionOverridePostprocessor(corrections=corrections)
         )
+    postprocessors.append(ContextStrippingPostprocessor())  # Strip augmented metadata
     postprocessors.append(SourceNumberingPostprocessor())  # Must be last
 
     if use_advanced:
