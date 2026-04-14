@@ -21,6 +21,13 @@ export class MermaidErrorBoundary extends React.Component<Props, State> {
     return { hasError: true };
   }
 
+  componentDidUpdate(prevProps: Props) {
+    // Reset error state when code changes so diagram can re-render
+    if (prevProps.code !== this.props.code && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("MermaidBlock error:", error, errorInfo);
   }
