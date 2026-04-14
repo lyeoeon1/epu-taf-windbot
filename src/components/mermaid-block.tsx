@@ -166,7 +166,8 @@ function sanitizeMermaidCode(raw: string): string {
 /**
  * Post-process rendered SVG to fix truncated node labels.
  * Mermaid calculates node width too small for long text.
- * This reads actual text width and resizes the node rect/polygon to fit.
+ * Measures actual content width (both SVG text and HTML foreignObject)
+ * then expands rect + foreignObject to fit.
  */
 function fixNodeWidths(container: HTMLDivElement) {
   const svg = container.querySelector("svg");
@@ -174,37 +175,49 @@ function fixNodeWidths(container: HTMLDivElement) {
 
   const nodes = svg.querySelectorAll(".node");
   nodes.forEach((node) => {
-    // Get all text elements in this node
-    const texts = node.querySelectorAll("text");
-    if (texts.length === 0) return;
+    let contentWidth = 0;
 
-    // Calculate max text width across all lines
-    let maxTextWidth = 0;
+    // Method 1: SVG <text> elements (htmlLabels: false)
+    const texts = node.querySelectorAll("text");
     texts.forEach((text) => {
-      const bbox = text.getBBox();
-      if (bbox.width > maxTextWidth) maxTextWidth = bbox.width;
+      try {
+        const bbox = (text as SVGTextElement).getBBox();
+        if (bbox.width > contentWidth) contentWidth = bbox.width;
+      } catch { /* getBBox may fail if not rendered */ }
     });
 
-    if (maxTextWidth === 0) return;
+    // Method 2: foreignObject > div (htmlLabels: true)
+    const fo = node.querySelector("foreignObject");
+    if (fo) {
+      const div = fo.querySelector("div");
+      if (div) {
+        // Temporarily make div nowrap to measure true single-line width
+        const origWS = div.style.whiteSpace;
+        div.style.whiteSpace = "nowrap";
+        const scrollW = div.scrollWidth;
+        div.style.whiteSpace = origWS;
+        if (scrollW > contentWidth) contentWidth = scrollW;
+      }
+    }
 
-    const padding = 16; // padding on each side
-    const neededWidth = maxTextWidth + padding * 2;
+    if (contentWidth === 0) return;
 
-    // Find the shape element (rect, polygon, or path)
+    const padding = 20;
+    const neededWidth = contentWidth + padding * 2;
+
+    // Expand rect to fit
     const rect = node.querySelector("rect");
     if (rect) {
       const currentWidth = parseFloat(rect.getAttribute("width") || "0");
       if (neededWidth > currentWidth) {
         const diff = neededWidth - currentWidth;
         rect.setAttribute("width", String(neededWidth));
-        // Shift rect left by half the diff to keep centered
         const currentX = parseFloat(rect.getAttribute("x") || "0");
         rect.setAttribute("x", String(currentX - diff / 2));
       }
     }
 
-    // Also handle foreignObject if present (htmlLabels: true fallback)
-    const fo = node.querySelector("foreignObject");
+    // Expand foreignObject to match
     if (fo) {
       const currentWidth = parseFloat(fo.getAttribute("width") || "0");
       if (neededWidth > currentWidth) {
@@ -217,13 +230,15 @@ function fixNodeWidths(container: HTMLDivElement) {
   });
 
   // Update SVG viewBox to fit expanded nodes
-  const svgBBox = svg.getBBox();
-  if (svgBBox.width > 0 && svgBBox.height > 0) {
-    const pad = 10;
-    svg.setAttribute("viewBox", `${svgBBox.x - pad} ${svgBBox.y - pad} ${svgBBox.width + pad * 2} ${svgBBox.height + pad * 2}`);
-    svg.setAttribute("width", String(svgBBox.width + pad * 2));
-    svg.setAttribute("height", String(svgBBox.height + pad * 2));
-  }
+  try {
+    const svgBBox = svg.getBBox();
+    if (svgBBox.width > 0 && svgBBox.height > 0) {
+      const pad = 10;
+      svg.setAttribute("viewBox", `${svgBBox.x - pad} ${svgBBox.y - pad} ${svgBBox.width + pad * 2} ${svgBBox.height + pad * 2}`);
+      svg.setAttribute("width", String(svgBBox.width + pad * 2));
+      svg.setAttribute("height", String(svgBBox.height + pad * 2));
+    }
+  } catch { /* getBBox may fail */ }
 }
 
 let mermaidRenderCounter = 0;
