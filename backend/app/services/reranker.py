@@ -28,7 +28,7 @@ class OnnxReranker:
         self,
         model_dir: str = "models/reranker-int8",
         num_threads: int = 4,
-        max_length: int = 512,
+        max_length: int = 256,
     ):
         self._session = None
         self._tokenizer = None

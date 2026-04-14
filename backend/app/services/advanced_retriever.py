@@ -282,12 +282,16 @@ class AdvancedRetriever(BaseRetriever):
                     variant_queries.append(hyde_doc)
 
                 if variant_queries:
+                    # Variant queries use smaller top_k — they supplement
+                    # the original query, so fewer results suffice
+                    variant_dense_k = min(self._dense_top_k, 15)
+                    variant_bm25_k = min(self._bm25_top_k, 15)
                     dense_futures_b = {
-                        q: pool.submit(self._safe_dense_search, q, self._dense_top_k)
+                        q: pool.submit(self._safe_dense_search, q, variant_dense_k)
                         for q in variant_queries
                     }
                     bm25_futures_b = {
-                        q: pool.submit(self._safe_bm25_search, q, self._bm25_top_k)
+                        q: pool.submit(self._safe_bm25_search, q, variant_bm25_k)
                         for q in variant_queries
                     }
 
@@ -310,6 +314,11 @@ class AdvancedRetriever(BaseRetriever):
         all_dense = dense_results_a + dense_results_b
         all_bm25 = bm25_results_a + bm25_results_b
         candidates = self._fuse_search_results(all_dense, all_bm25)
+
+        # Cap candidates to reduce reranker workload (tail candidates rarely
+        # make it into the final top-K after reranking)
+        if len(candidates) > 30:
+            candidates = candidates[:30]
 
         logger.debug("Pipeline candidates after RRF: %d", len(candidates))
 
