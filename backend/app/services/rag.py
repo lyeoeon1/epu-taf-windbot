@@ -253,9 +253,8 @@ def get_chat_engine(
             dense_weight=app_settings.dense_weight,
             sparse_weight=app_settings.sparse_weight,
             enable_vi_priority=app_settings.enable_vi_priority,
-            vi_priority_threshold=app_settings.vi_priority_threshold,
             vi_score_boost=app_settings.vi_score_boost,
-            vi_rerank_fallback_score=app_settings.vi_rerank_fallback_score,
+            vi_reserved_slots=app_settings.vi_reserved_slots,
         )
         logger.info("Using AdvancedRetriever (hybrid search + reranking)")
 

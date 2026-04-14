@@ -59,9 +59,8 @@ class AdvancedRetriever(BaseRetriever):
         sparse_weight: float = 0.2,
         # Vietnamese document priority
         enable_vi_priority: bool = True,
-        vi_priority_threshold: int = 3,
         vi_score_boost: float = 2.0,
-        vi_rerank_fallback_score: float = 0.05,
+        vi_reserved_slots: int = 6,
     ):
         super().__init__()
         self._index = index
@@ -86,50 +85,65 @@ class AdvancedRetriever(BaseRetriever):
 
         # Vietnamese priority
         self._enable_vi_priority = enable_vi_priority
-        self._vi_threshold = vi_priority_threshold
         self._vi_boost = vi_score_boost
-        self._vi_fallback_score = vi_rerank_fallback_score
+        self._vi_reserved_slots = vi_reserved_slots
 
         # Initialize sub-components
         self._bm25_searcher = BM25Searcher(supabase_client) if enable_bm25 else None
 
     @staticmethod
-    def _apply_vi_priority(
+    def _boost_vi_scores(
         candidates: list[NodeWithScore],
-        vi_threshold: int = 3,
         vi_boost: float = 2.0,
-    ) -> tuple[list[NodeWithScore], bool]:
-        """Apply Vietnamese document priority.
+    ) -> list[NodeWithScore]:
+        """Boost Vietnamese chunk scores before reranking.
 
-        If enough VN chunks exist among candidates, drop all EN chunks
-        (VN-only mode). Otherwise, boost VN chunk scores so they rank higher.
-
-        Returns:
-            (filtered_candidates, vi_only_mode)
+        Multiplies VN chunk scores by vi_boost so they rank higher
+        in the reranker input. Does NOT drop any chunks.
         """
-        vi_chunks = [n for n in candidates if n.node.metadata.get("language") == "vi"]
-        en_chunks = [n for n in candidates if n.node.metadata.get("language") != "vi"]
+        boosted = []
+        vi_count = 0
+        for n in candidates:
+            if n.node.metadata.get("language") == "vi":
+                boosted.append(NodeWithScore(node=n.node, score=n.score * vi_boost))
+                vi_count += 1
+            else:
+                boosted.append(n)
+        if vi_count:
+            logger.info("VI priority: boosted %d VN chunks by %.1fx", vi_count, vi_boost)
+        return boosted
 
-        if len(vi_chunks) >= vi_threshold:
-            logger.info(
-                "VI priority: VN-only mode (%d VN chunks, dropped %d EN)",
-                len(vi_chunks), len(en_chunks),
-            )
-            return vi_chunks, True
-        elif vi_chunks:
-            boosted = [
-                NodeWithScore(node=n.node, score=n.score * vi_boost)
-                for n in vi_chunks
-            ]
-            mixed = sorted(boosted + en_chunks, key=lambda n: n.score, reverse=True)
-            logger.info(
-                "VI priority: mixed mode (%d VN boosted %.1fx, %d EN kept)",
-                len(vi_chunks), vi_boost, len(en_chunks),
-            )
-            return mixed, False
-        else:
-            logger.info("VI priority: no VN chunks found, using all %d candidates", len(candidates))
-            return candidates, False
+    @staticmethod
+    def _apply_slot_reservation(
+        reranked: list[NodeWithScore],
+        vi_reserved_slots: int = 6,
+        top_k: int = 10,
+    ) -> list[NodeWithScore]:
+        """Reserve top slots for Vietnamese chunks after reranking.
+
+        Takes reranked results and rearranges so VN chunks occupy
+        the first N positions (up to vi_reserved_slots), followed
+        by best remaining chunks. EN chunks are never dropped.
+        """
+        vi = [n for n in reranked if n.node.metadata.get("language") == "vi"]
+        vi_take = min(len(vi), vi_reserved_slots)
+
+        result = vi[:vi_take]
+        seen = {(n.node.node_id or n.node.id_) for n in result}
+
+        for n in reranked:
+            if len(result) >= top_k:
+                break
+            nid = n.node.node_id or n.node.id_
+            if nid not in seen:
+                result.append(n)
+                seen.add(nid)
+
+        logger.info(
+            "VI slot reservation: %d VN reserved + %d others = %d total",
+            vi_take, len(result) - vi_take, len(result),
+        )
+        return result
 
     @staticmethod
     def _is_qa_chunk(node_ws: NodeWithScore) -> bool:
@@ -280,13 +294,9 @@ class AdvancedRetriever(BaseRetriever):
                 len(candidates),
             )
 
-        # ── Step 5.6: Vietnamese document priority ──────────────────
-        all_candidates_backup = list(candidates)
-        vi_only_mode = False
+        # ── Step 5.6: Boost Vietnamese scores (before reranking) ─────
         if self._enable_vi_priority:
-            candidates, vi_only_mode = self._apply_vi_priority(
-                candidates, self._vi_threshold, self._vi_boost,
-            )
+            candidates = self._boost_vi_scores(candidates, self._vi_boost)
 
         # ── Step 6: Rerank ────────────────────────────────────────────
         if self._enable_reranking and self._reranker:
@@ -295,20 +305,10 @@ class AdvancedRetriever(BaseRetriever):
         else:
             final = candidates[:self._rerank_top_k]
 
-        # Safety fallback: if VN-only mode produced very low relevance
-        if (
-            vi_only_mode
-            and final
-            and final[0].score < self._vi_fallback_score
-            and self._enable_reranking
-            and self._reranker
-        ):
-            logger.warning(
-                "VI-only top score %.4f < threshold %.4f, falling back to all candidates",
-                final[0].score, self._vi_fallback_score,
-            )
-            final = self._reranker.rerank(
-                query, all_candidates_backup, top_k=self._rerank_top_k,
+        # ── Step 6.5: Slot reservation for Vietnamese chunks ─────────
+        if self._enable_vi_priority:
+            final = self._apply_slot_reservation(
+                final, self._vi_reserved_slots, self._rerank_top_k,
             )
 
         logger.info(
