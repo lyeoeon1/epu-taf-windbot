@@ -196,9 +196,11 @@ class WindBotChatEngine(BaseChatEngine):
     def stream_chat(
         self, message: str, chat_history: Optional[List[ChatMessage]] = None,
     ) -> StreamingAgentChatResponse:
-        """Stream a chat response with speculative retrieval.
+        """Stream a chat response.
 
-        For follow-ups: condense and initial retrieval run in parallel.
+        For first messages: skip condense, retrieve directly.
+        For follow-ups: condense first, then retrieve with condensed query.
+        Only ONE retrieval pass — no speculative double retrieval.
         """
         if chat_history is not None:
             self._memory.set(chat_history)
@@ -209,33 +211,13 @@ class WindBotChatEngine(BaseChatEngine):
         if not has_history:
             # First message — no condense needed, direct retrieval
             condensed = message
-            context_nodes = self._retrieve_and_postprocess(message)
         else:
-            # Follow-up — speculative parallel execution
-            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-                # Start condense + initial retrieval simultaneously
-                condense_future = pool.submit(
-                    self._condense_question, memory_history, message
-                )
-                retrieve_future = pool.submit(
-                    self._retrieve_and_postprocess, message
-                )
-
-                condensed = condense_future.result(timeout=15)
-                raw_nodes = retrieve_future.result(timeout=15)
-
+            # Follow-up — condense to standalone question
+            condensed = self._condense_question(memory_history, message)
             logger.info("Condensed question: %s", condensed[:100])
 
-            # If condensed query is substantially different, do a second retrieval
-            if condensed.strip().lower() != message.strip().lower():
-                condensed_nodes = self._retrieve_and_postprocess(condensed)
-                context_nodes = self._dedup_nodes(condensed_nodes, raw_nodes)
-                logger.info(
-                    "Speculative retrieval: %d condensed + %d raw → %d merged",
-                    len(condensed_nodes), len(raw_nodes), len(context_nodes),
-                )
-            else:
-                context_nodes = raw_nodes
+        # Single retrieval pass with the best query
+        context_nodes = self._retrieve_and_postprocess(condensed)
 
         context_source = ToolOutput(
             tool_name="retriever",

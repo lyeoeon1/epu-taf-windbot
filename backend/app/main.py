@@ -25,14 +25,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize LlamaIndex and vector store on startup."""
-    # Configure app.* loggers inside lifespan — runs in each uvicorn worker
-    # AFTER uvicorn has finished its own logging setup
-    _app_log = logging.getLogger("app")
-    if not _app_log.handlers:
-        _app_log.setLevel(logging.INFO)
-        _h = logging.StreamHandler()
-        _h.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
-        _app_log.addHandler(_h)
+    # Use print() for critical startup info — always captured by systemd.
+    # logging.getLogger("app.*") is unreliable under uvicorn workers + torch/transformers.
+    import sys
 
     configure_settings()
     try:
@@ -40,38 +35,43 @@ async def lifespan(app: FastAPI):
         index = create_index(vector_store)
         app_state["vector_store"] = vector_store
         app_state["index"] = index
-        logger.info("Vector store and index initialized successfully")
+        print("[STARTUP] Vector store and index initialized", file=sys.stderr)
     except Exception as e:
-        logger.warning(
-            "Failed to connect to Supabase vector store: %s. "
-            "Chat and ingest endpoints will not work until configured.",
-            e,
-        )
+        print(f"[STARTUP] FAILED vector store: {e}", file=sys.stderr)
 
     # Initialize advanced retrieval components
     if settings.enable_advanced_retrieval:
         try:
             glossary_expander = GlossaryExpander()
             app_state["glossary_expander"] = glossary_expander
-            logger.info(
-                "GlossaryExpander loaded: %d terms", glossary_expander.term_count
+            print(
+                f"[STARTUP] GlossaryExpander loaded: {glossary_expander.term_count} terms",
+                file=sys.stderr,
             )
         except Exception as e:
-            logger.warning("Failed to init GlossaryExpander: %s", e)
+            print(f"[STARTUP] FAILED GlossaryExpander: {e}", file=sys.stderr)
 
         if settings.enable_reranking:
             try:
+                # Resolve ONNX model path relative to this file's directory
+                onnx_dir = settings.onnx_model_dir
+                if not onnx_dir:
+                    onnx_dir = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "models", "reranker-int8",
+                    )
+                print(f"[STARTUP] ONNX model dir: {onnx_dir}", file=sys.stderr)
                 reranker = create_reranker(
-                    onnx_model_dir=settings.onnx_model_dir,
+                    onnx_model_dir=onnx_dir,
                     num_threads=settings.reranker_threads,
                 )
                 app_state["reranker"] = reranker
-                logger.info(
-                    "Reranker initialized: %s (available=%s)",
-                    type(reranker).__name__, reranker.is_available,
+                print(
+                    f"[STARTUP] Reranker: {type(reranker).__name__} (available={reranker.is_available})",
+                    file=sys.stderr,
                 )
             except Exception as e:
-                logger.warning("Failed to init reranker: %s", e)
+                print(f"[STARTUP] FAILED reranker: {e}", file=sys.stderr)
 
     yield
 
