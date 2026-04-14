@@ -277,6 +277,7 @@ def get_chat_engine(
             dense_weight=app_settings.dense_weight,
             sparse_weight=app_settings.sparse_weight,
             multi_query_count=app_settings.multi_query_count,
+            question_type=question_type,
             enable_vi_priority=app_settings.enable_vi_priority,
             vi_score_boost=app_settings.vi_score_boost,
             vi_reserved_slots=app_settings.vi_reserved_slots,
