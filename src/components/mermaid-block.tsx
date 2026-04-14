@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useId } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/contexts/theme-context";
 import { usePanZoom } from "@/hooks/use-pan-zoom";
 
@@ -143,11 +143,12 @@ function sanitizeMermaidCode(raw: string): string {
     .join("\n");
 }
 
+let mermaidRenderCounter = 0;
+
 export function MermaidBlock({ code }: MermaidBlockProps) {
   const { theme } = useTheme();
   const svgRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
-  const uniqueId = useId().replace(/:/g, "-");
   const { containerRef, contentRef, state, isPanning, zoomIn, zoomOut, fitToContainer, handlers } = usePanZoom();
 
   // Debounce rendering: wait for code to stop changing (streaming complete)
@@ -181,7 +182,8 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
 
       try {
         const sanitized = sanitizeMermaidCode(stableCode!);
-        const { svg } = await mermaid.render(`mermaid-${uniqueId}`, sanitized);
+        const renderId = `mermaid-${++mermaidRenderCounter}`;
+        const { svg } = await mermaid.render(renderId, sanitized);
         if (!cancelled && svgRef.current) {
           svgRef.current.innerHTML = svg;
           setError(null);
@@ -205,7 +207,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
     return () => {
       cancelled = true;
     };
-  }, [stableCode, theme, uniqueId, fitToContainer]);
+  }, [stableCode, theme, fitToContainer]);
 
   if (error) {
     return (
