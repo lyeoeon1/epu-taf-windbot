@@ -158,6 +158,7 @@ body {
   white-space: nowrap;
   padding: 0.5em 0.75em;
   min-width: 80px;
+  vertical-align: top;
 }
 .prose td {
   white-space: normal;
@@ -165,6 +166,12 @@ body {
   padding: 0.5em 0.75em;
   min-width: 80px;
   max-width: 300px;
+  vertical-align: top;
+  text-align: left;
+  /* ~4 lines: line-height 1.5 × font-size 0.875em × 4 lines ≈ 5.25em */
+  max-height: 5.25em;
+  overflow: hidden;
+  line-height: 1.5;
 }
 .prose thead {
   border-bottom: 2px solid var(--border);
