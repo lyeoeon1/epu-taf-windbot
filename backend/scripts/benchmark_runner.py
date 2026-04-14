@@ -128,14 +128,15 @@ def judge_existing_metrics(client, question, expected, actual, criteria):
     """Score accuracy, completeness, relevance, clarity, tone."""
     prompt = JUDGE_PROMPT_EXISTING.format(
         question=question,
-        expected_answer=expected,
-        actual_answer=actual,
-        scoring_criteria=criteria,
+        expected_answer=expected[:2000],
+        actual_answer=actual[:3000],
+        scoring_criteria=criteria[:500],
     )
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
+        max_tokens=200,
         response_format={"type": "json_object"},
     )
     return json.loads(response.choices[0].message.content)
@@ -143,22 +144,24 @@ def judge_existing_metrics(client, question, expected, actual, criteria):
 
 def judge_faithfulness(client, question, response_text, source_chunks):
     """Score factual_grounding, citation_accuracy, hallucination."""
+    # Truncate to avoid token limits
     chunks_text = "\n\n".join(
-        f"[Source {s['id']}] ({s['filename']}, p.{s['page']})\n{s['text']}"
-        for s in source_chunks
+        f"[Source {s['id']}] ({s['filename']}, p.{s['page']})\n{s['text'][:300]}"
+        for s in source_chunks[:8]
     )
     if not chunks_text:
         chunks_text = "(No sources retrieved)"
 
     prompt = JUDGE_PROMPT_FAITHFULNESS.format(
         question=question,
-        response=response_text,
+        response=response_text[:3000],
         source_chunks=chunks_text,
     )
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
+        max_tokens=300,
         response_format={"type": "json_object"},
     )
     raw = json.loads(response.choices[0].message.content)
