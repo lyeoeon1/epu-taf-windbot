@@ -150,6 +150,11 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
   const uniqueId = useId().replace(/:/g, "-");
   const { containerRef, contentRef, state, isPanning, zoomIn, zoomOut, fitToContainer, handlers } = usePanZoom();
 
+  // Clear error when code changes (e.g. during streaming, code grows)
+  useEffect(() => {
+    setError(null);
+  }, [code]);
+
   useEffect(() => {
     let cancelled = false;
 
