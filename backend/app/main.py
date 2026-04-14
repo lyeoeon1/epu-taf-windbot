@@ -2,6 +2,12 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+# Configure root logger so app.* loggers output to stderr (captured by systemd)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
