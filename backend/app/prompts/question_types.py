@@ -14,7 +14,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- List ALL sub-components mentioned in context, each with 1-2 sentences explaining its role\n"
             "- Include specific technical data from context (dimensions, weight, power rating, materials)\n"
             "- End with the component's importance in the overall system\n"
-            "Prioritize DEPTH over BREADTH. Answer at least 300 words if context is rich enough."
+            "Prioritize DEPTH over BREADTH. Answer at least 300 words if context is rich enough.\n"
+            "Cite [N] precisely: each technical detail must have [N] pointing to the correct [Source N]."
         ),
         "vi": (
             "[CHẾ ĐỘ TRẢ LỜI: CẤU TRÚC / ĐỊNH NGHĨA]\n"
@@ -23,7 +24,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Liệt kê TẤT CẢ bộ phận con mà context đề cập, mỗi bộ phận kèm 1-2 câu giải thích vai trò\n"
             "- Nêu số liệu kỹ thuật cụ thể từ context (kích thước, trọng lượng, công suất, vật liệu)\n"
             "- Kết thúc bằng tầm quan trọng/vai trò trong hệ thống tổng thể\n"
-            "Ưu tiên ĐỘ SÂU hơn ĐỘ RỘNG. Trả lời ít nhất 300 từ nếu context đủ phong phú."
+            "Ưu tiên ĐỘ SÂU hơn ĐỘ RỘNG. Trả lời ít nhất 300 từ nếu context đủ phong phú.\n"
+            "Cite [N] chính xác: mỗi số liệu kỹ thuật phải có [N] trỏ đúng [Source N] chứa thông tin đó."
         ),
     },
     "PRINCIPLE": {
@@ -34,7 +36,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Include mathematical formulas (use LaTeX) if context provides them\n"
             "- Provide specific technical data (ratios, speeds, efficiency, parameter ranges)\n"
             "- Explain WHY the design works this way (engineering advantages)\n"
-            "Use a Mermaid diagram if the process has multiple sequential steps."
+            "Use a Mermaid diagram if the process has multiple sequential steps.\n"
+            "Cite [N] precisely: each technical value or formula must have [N] pointing to the correct [Source N]."
         ),
         "vi": (
             "[CHẾ ĐỘ TRẢ LỜI: NGUYÊN LÝ HOẠT ĐỘNG]\n"
@@ -43,7 +46,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Nêu công thức toán học (dùng LaTeX) nếu context có\n"
             "- Cung cấp số liệu kỹ thuật cụ thể (tỷ lệ, tốc độ, hiệu suất, dải thông số)\n"
             "- Giải thích TẠI SAO thiết kế như vậy (ưu điểm kỹ thuật)\n"
-            "Dùng sơ đồ Mermaid nếu quy trình có nhiều bước tuần tự."
+            "Dùng sơ đồ Mermaid nếu quy trình có nhiều bước tuần tự.\n"
+            "Cite [N] chính xác: mỗi số liệu, công thức phải có [N] trỏ đúng [Source N] chứa thông tin đó."
         ),
     },
     "PROCEDURE": {
@@ -54,7 +58,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Each step: specific action + tools/equipment needed if mentioned in context\n"
             "- State FREQUENCY of execution (daily/weekly/monthly/yearly) if context provides it\n"
             "- Mark SAFETY WARNINGS at dangerous steps\n"
-            "- Mention applicable technical standards (IEC, AWEA...) if context provides them"
+            "- Mention applicable technical standards (IEC, AWEA...) if context provides them\n"
+            "Cite [N] precisely: each step detail must have [N] pointing to the correct [Source N]."
         ),
         "vi": (
             "[CHẾ ĐỘ TRẢ LỜI: QUY TRÌNH / BẢO TRÌ]\n"
@@ -63,7 +68,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Mỗi bước: hành động cụ thể + dụng cụ/thiết bị cần thiết nếu context đề cập\n"
             "- Ghi rõ TẦN SUẤT thực hiện (hàng ngày/tuần/tháng/năm) nếu context có\n"
             "- CẢNH BÁO AN TOÀN ở các bước nguy hiểm\n"
-            "- Nêu tiêu chuẩn kỹ thuật áp dụng (IEC, AWEA...) nếu context có"
+            "- Nêu tiêu chuẩn kỹ thuật áp dụng (IEC, AWEA...) nếu context có\n"
+            "Cite [N] chính xác: mỗi chi tiết bước phải có [N] trỏ đúng [Source N] chứa thông tin đó."
         ),
     },
     "COMPARISON": {
@@ -74,7 +80,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Each criterion: briefly explain the difference, not just list values\n"
             "- State ADVANTAGES and DISADVANTAGES of each option clearly\n"
             "- Conclude: which option suits which use case\n"
-            "Use markdown table for readability."
+            "Use markdown table for readability.\n"
+            "Cite [N] precisely: each comparison point must have [N] pointing to the correct [Source N]."
         ),
         "vi": (
             "[CHẾ ĐỘ TRẢ LỜI: SO SÁNH]\n"
@@ -83,7 +90,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Mỗi tiêu chí: giải thích ngắn gọn sự khác biệt, không chỉ ghi giá trị\n"
             "- Nêu rõ ƯU ĐIỂM và NHƯỢC ĐIỂM của mỗi phương án\n"
             "- Kết luận: trường hợp nào nên dùng phương án nào\n"
-            "Dùng markdown table cho dễ đọc."
+            "Dùng markdown table cho dễ đọc.\n"
+            "Cite [N] chính xác: mỗi điểm so sánh phải có [N] trỏ đúng [Source N] chứa thông tin đó."
         ),
     },
     "TROUBLESHOOT": {
@@ -94,7 +102,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- List DIAGNOSTIC steps from simple to complex\n"
             "- Propose specific SOLUTIONS for each cause\n"
             "- State URGENCY level (can the turbine keep running, or must it stop immediately?)\n"
-            "- Include SAFETY WARNINGS (high voltage, height, weather conditions)"
+            "- Include SAFETY WARNINGS (high voltage, height, weather conditions)\n"
+            "Cite [N] precisely: each diagnostic detail must have [N] pointing to the correct [Source N]."
         ),
         "vi": (
             "[CHẾ ĐỘ TRẢ LỜI: XỬ LÝ SỰ CỐ]\n"
@@ -103,7 +112,8 @@ QUESTION_TYPE_INSTRUCTIONS = {
             "- Liệt kê bước CHẨN ĐOÁN theo thứ tự từ đơn giản đến phức tạp\n"
             "- Đề xuất GIẢI PHÁP cụ thể cho từng nguyên nhân\n"
             "- Nêu độ KHẨN CẤP (tuabin có thể tiếp tục chạy không, hay phải dừng ngay?)\n"
-            "- CẢNH BÁO AN TOÀN đặc biệt (điện áp cao, độ cao, thời tiết)"
+            "- CẢNH BÁO AN TOÀN đặc biệt (điện áp cao, độ cao, thời tiết)\n"
+            "Cite [N] chính xác: mỗi chi tiết chẩn đoán phải có [N] trỏ đúng [Source N] chứa thông tin đó."
         ),
     },
     "GENERAL": {

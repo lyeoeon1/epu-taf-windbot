@@ -387,11 +387,16 @@ async def chat(
                 num = metadata.get("source_number")
                 if num is None:
                     continue
-                # Strip the "[Source N] " prefix from content for display
+                # Strip source delimiters from content for display
                 content = node_ws.node.get_content()
-                prefix = f"[Source {num}] "
-                if content.startswith(prefix):
-                    content = content[len(prefix):]
+                # New format: "--- [Source N] (file, p.X) ---\n...\n--- END Source N ---"
+                if content.startswith("--- [Source"):
+                    # Remove first line (header) and last line (footer)
+                    lines = content.split("\n")
+                    content = "\n".join(lines[1:-1]).strip()
+                # Legacy format: "[Source N] ..."
+                elif content.startswith(f"[Source {num}] "):
+                    content = content[len(f"[Source {num}] "):]
                 sources.append({
                     "id": num,
                     "text": content[:300],
