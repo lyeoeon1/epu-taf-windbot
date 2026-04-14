@@ -252,7 +252,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
     return () => {
       cancelled = true;
     };
-  }, [stableCode, theme]);
+  }, [stableCode, theme, isExpanded]);
 
   if (error) {
     return (
