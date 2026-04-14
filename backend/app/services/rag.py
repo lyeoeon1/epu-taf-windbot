@@ -116,10 +116,15 @@ class QACorpusFilterPostprocessor(BaseNodePostprocessor):
 
 
 class SourceNumberingPostprocessor(BaseNodePostprocessor):
-    """Number retrieved nodes so the LLM can cite them inline.
+    """Number retrieved nodes with clear boundaries so LLM can cite accurately.
 
-    Prepends [Source N] to each node's content and stores the number
-    in metadata. Must be the LAST postprocessor in the chain.
+    Wraps each node in delimiters:
+        --- [Source N] (filename, p.page) ---
+        content...
+        --- END Source N ---
+
+    This gives the LLM clear visual boundaries to distinguish sources
+    and cite [N] correctly. Must be the LAST postprocessor in the chain.
     """
 
     def _postprocess_nodes(
@@ -131,7 +136,14 @@ class SourceNumberingPostprocessor(BaseNodePostprocessor):
             num = i + 1
             node_ws.node.metadata["source_number"] = num
             original = node_ws.node.get_content()
-            node_ws.node.set_content(f"[Source {num}] {original}")
+            filename = node_ws.node.metadata.get("filename", "")
+            page = node_ws.node.metadata.get("page", "")
+            page_str = f", p.{page}" if page else ""
+            node_ws.node.set_content(
+                f"--- [Source {num}] ({filename}{page_str}) ---\n"
+                f"{original}\n"
+                f"--- END Source {num} ---"
+            )
         return nodes
 
 
