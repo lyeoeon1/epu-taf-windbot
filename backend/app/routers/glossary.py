@@ -1,8 +1,11 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, Query
 from supabase import Client
 
 from app.dependencies import get_supabase
 from app.models.schemas import GlossaryEntry
+from app.services.supabase_retry import with_retry
 
 router = APIRouter(prefix="/api", tags=["glossary"])
 
@@ -15,17 +18,19 @@ async def search_glossary(
     supabase: Client = Depends(get_supabase),
 ) -> list[GlossaryEntry]:
     """Search glossary by term or category."""
-    query = supabase.table("glossary").select("*")
 
-    if term:
-        col = "term_en" if language == "en" else "term_vi"
-        query = query.ilike(col, f"%{term}%")
+    def _query():
+        client = get_supabase()
+        q = client.table("glossary").select("*")
+        if term:
+            col = "term_en" if language == "en" else "term_vi"
+            q = q.ilike(col, f"%{term}%")
+        if category:
+            q = q.eq("category", category)
+        q = q.order("term_en")
+        return q.execute()
 
-    if category:
-        query = query.eq("category", category)
-
-    query = query.order("term_en")
-    result = query.execute()
+    result = await asyncio.to_thread(with_retry, _query)
     return [GlossaryEntry(**row) for row in result.data]
 
 
@@ -35,5 +40,10 @@ async def get_glossary_entry(
     supabase: Client = Depends(get_supabase),
 ) -> GlossaryEntry:
     """Get a single glossary entry by ID."""
-    result = supabase.table("glossary").select("*").eq("id", term_id).single().execute()
+
+    def _fetch():
+        client = get_supabase()
+        return client.table("glossary").select("*").eq("id", term_id).single().execute()
+
+    result = await asyncio.to_thread(with_retry, _fetch)
     return GlossaryEntry(**result.data)

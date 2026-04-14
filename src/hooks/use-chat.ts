@@ -91,11 +91,24 @@ export function useChat(language: string = "vi"): UseChatReturn {
         });
 
         if (!res.ok) {
-          const errorText = await res.text();
+          let friendlyMessage: string;
+          try {
+            const errorJson = await res.json();
+            const detail = errorJson.detail;
+            friendlyMessage =
+              typeof detail === "string" && detail.length < 200 && !detail.includes("<")
+                ? detail
+                : errorLabels[language as keyof typeof errorLabels]?.genericError ||
+                  errorLabels.en.genericError;
+          } catch {
+            friendlyMessage =
+              errorLabels[language as keyof typeof errorLabels]?.genericError ||
+              errorLabels.en.genericError;
+          }
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantMessage.id
-                ? { ...m, content: `Error: ${errorText || res.statusText}` }
+                ? { ...m, content: friendlyMessage }
                 : m
             )
           );

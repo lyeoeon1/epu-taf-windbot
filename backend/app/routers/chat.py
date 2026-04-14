@@ -4,6 +4,8 @@ import logging
 import re
 import threading
 
+import httpcore
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from llama_index.core.llms import ChatMessage, MessageRole
@@ -163,9 +165,24 @@ async def chat(
         )
     except HTTPException:
         raise
+    except (
+        httpcore.RemoteProtocolError,
+        httpx.RemoteProtocolError,
+        httpx.ConnectError,
+        ConnectionError,
+        OSError,
+    ) as e:
+        logger.warning("Transient connection error in chat: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=503,
+            detail="Service temporarily unavailable. Please retry.",
+        )
     except Exception as e:
         logger.error("Chat endpoint failed: %s", e, exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="An internal error occurred. Please try again.",
+        )
 
     async def event_generator():
         full_response = ""
