@@ -76,6 +76,89 @@ def renumber_citations(text: str, source_nodes: list) -> tuple[str, list]:
 
     return new_text, reordered
 
+
+def _extract_keywords(text: str) -> set[str]:
+    """Extract meaningful keywords from text (>2 chars, not stopwords)."""
+    stopwords = {
+        "là", "và", "của", "cho", "trong", "với", "được", "các", "này",
+        "có", "không", "một", "những", "để", "từ", "theo", "khi", "nhưng",
+        "hoặc", "cũng", "đã", "sẽ", "còn", "vì", "nên", "bởi", "qua",
+        "the", "is", "and", "of", "for", "in", "with", "are", "that",
+        "this", "can", "has", "have", "not", "from", "but", "which",
+    }
+    words = re.findall(r'\b\w{3,}\b', text.lower())
+    return {w for w in words if w not in stopwords}
+
+
+def verify_citations(text: str, source_nodes: list) -> str:
+    """Verify each [N] citation actually matches Source N content.
+
+    For each [N] in text:
+    1. Extract the sentence containing [N]
+    2. Compare keywords with Source N content
+    3. If keyword overlap < 2 → remove [N] (better no citation than wrong)
+    4. If better match found in another source → replace [N] with [M]
+
+    Runs BEFORE renumber_citations.
+    """
+    if not source_nodes:
+        return text
+
+    # Build source content map: source_number → keywords
+    source_keywords = {}
+    source_content = {}
+    for node in source_nodes:
+        sn = node.node.metadata.get("source_number")
+        if sn is not None:
+            content = node.node.get_content()
+            source_content[sn] = content
+            source_keywords[sn] = _extract_keywords(content)
+
+    if not source_keywords:
+        return text
+
+    # Find all citations and verify
+    result = text
+    for match in reversed(list(re.finditer(r'\[(\d{1,2})\]', text))):
+        cite_num = int(match.group(1))
+        start, end = match.start(), match.end()
+
+        # Extract surrounding sentence (100 chars before citation)
+        sent_start = max(0, start - 150)
+        sentence = text[sent_start:start].strip()
+        sent_keywords = _extract_keywords(sentence)
+
+        if not sent_keywords:
+            continue
+
+        # Check overlap with cited source
+        if cite_num in source_keywords:
+            overlap = sent_keywords & source_keywords[cite_num]
+            if len(overlap) >= 2:
+                continue  # Citation is valid
+
+            # Check if another source is a better match
+            best_source = None
+            best_overlap = 1  # Minimum 2 to replace
+            for sn, kw in source_keywords.items():
+                o = len(sent_keywords & kw)
+                if o > best_overlap:
+                    best_overlap = o
+                    best_source = sn
+
+            if best_source is not None:
+                # Replace with better source
+                result = result[:start] + f"[{best_source}]" + result[end:]
+            else:
+                # Remove decorative citation
+                result = result[:start] + result[end:]
+        else:
+            # Source number doesn't exist in nodes → remove
+            result = result[:start] + result[end:]
+
+    return result
+
+
 # Cached OpenAI client for suggestions (lazy-initialized)
 _openai_client = None
 
@@ -375,8 +458,9 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Renumber citations sequentially by first appearance
+        # Verify citations match source content, then renumber
         context_nodes = getattr(streaming_response, "source_nodes", None) or []
+        full_response = verify_citations(full_response, context_nodes)
         full_response, context_nodes = renumber_citations(full_response, context_nodes)
 
         # Extract source nodes with renumbered IDs
