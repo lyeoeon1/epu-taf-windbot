@@ -102,6 +102,17 @@ with potential errors.
 "X increases/decreases Y", "X is excited by Y") unless that exact relationship appears \
 in the context below. Physical and engineering relationships are the most common source \
 of factual errors. When in doubt, quote the context directly.
+- SPECIFICITY: When the source contains specific data (measurements, speeds, power \
+ratings, ratios, standards, dimensions, weights, temperatures, percentages), you MUST \
+include those exact numbers in your answer with citation. Do NOT paraphrase numbers \
+into vague descriptions. Example: Write "tốc độ quay 15-20 RPM [3]" NOT "tốc độ thấp [3]". \
+Write "công suất lên đến 12 MW [1]" NOT "công suất lớn [1]".
+- COMPLETENESS: It is better to write a longer, more detailed answer that covers ALL \
+information from sources than a short summary. Include every relevant detail, number, \
+and specification from the retrieved sources. Do not summarize when you can be specific.
+- EXTRACT & QUOTE: For key technical details, QUOTE the exact phrase from the source \
+then explain. Use bold for quoted phrases. Example: Theo tài liệu, **"tốc độ quay \
+rotor khoảng 15-20 vòng/phút"** [3], đây là tốc độ thấp cần hộp số để tăng lên.
 - When your answer contains mathematical formulas, variables, or equations, always \
 use LaTeX syntax. Use $...$ for inline math (e.g., $v_1$, $\alpha$) and $$...$$ \
 for display/block equations (e.g., $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
@@ -219,6 +230,18 @@ nói nhiều nhưng có thể sai.
 "X tăng/giảm Y", "X được kích thích bởi Y") trừ khi quan hệ đó xuất hiện chính xác \
 trong ngữ cảnh bên dưới. Các quan hệ vật lý và kỹ thuật là nguồn lỗi phổ biến nhất. \
 Khi không chắc chắn, hãy trích dẫn trực tiếp từ ngữ cảnh.
+- CỤ THỂ: Khi source chứa số liệu cụ thể (kích thước, tốc độ, công suất, tỷ lệ, \
+tiêu chuẩn, trọng lượng, nhiệt độ, phần trăm), bạn PHẢI nêu chính xác số liệu đó \
+kèm citation. KHÔNG paraphrase số liệu thành mô tả chung. Ví dụ: Viết "tốc độ quay \
+15-20 RPM [3]" KHÔNG viết "tốc độ thấp [3]". Viết "công suất lên đến 12 MW [1]" KHÔNG \
+viết "công suất lớn [1]".
+- ĐẦY ĐỦ: Ưu tiên trả lời dài, chi tiết, đầy đủ TẤT CẢ thông tin từ sources hơn \
+là tóm tắt ngắn gọn. Nêu mọi chi tiết, số liệu, thông số kỹ thuật liên quan từ sources. \
+Không tóm tắt khi có thể nêu cụ thể.
+- TRÍCH DẪN NGUYÊN VĂN: Với các chi tiết kỹ thuật quan trọng, hãy TRÍCH nguyên văn \
+cụm từ chính xác từ source rồi giải thích. Dùng **in đậm** cho phần trích. Ví dụ: \
+Theo tài liệu, **"tốc độ quay rotor khoảng 15-20 vòng/phút"** [3], đây là tốc độ \
+thấp cần hộp số để tăng lên 1500 RPM cho máy phát.
 - Khi câu trả lời có chứa công thức toán học, biến số hoặc phương trình, luôn sử \
 dụng cú pháp LaTeX. Dùng $...$ cho công thức inline (ví dụ: $v_1$, $\\alpha$) và \
 $$...$$ cho công thức block (ví dụ: $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
