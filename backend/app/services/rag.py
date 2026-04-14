@@ -133,7 +133,8 @@ class SourceNumberingPostprocessor(BaseNodePostprocessor):
 
 def configure_settings():
     """Set global LlamaIndex settings."""
-    Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0, additional_kwargs={"seed": 42})
+    Settings.llm = OpenAI(model=app_settings.llm_model, temperature=0, additional_kwargs={"seed": 42})
+    logger.info("LLM model: %s", app_settings.llm_model)
     Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
     Settings.chunk_size = 1024
     Settings.chunk_overlap = 200

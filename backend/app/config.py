@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     dense_top_k: int = 30       # Was 20 — wider net for semantic search
     multi_query_count: int = 2  # Was 3 — reduced to lower latency
 
+    # LLM model selection
+    llm_model: str = "gpt-4o-mini"  # Options: "gpt-4o-mini", "gpt-4.1-mini"
+
     # Vietnamese document priority
     enable_vi_priority: bool = True
     vi_score_boost: float = 2.0       # score multiplier for VN chunks before reranking
