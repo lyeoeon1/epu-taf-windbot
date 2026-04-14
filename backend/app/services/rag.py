@@ -128,9 +128,10 @@ class ContextStrippingPostprocessor(BaseNodePostprocessor):
     Must run BEFORE SourceNumberingPostprocessor.
     """
 
+    # Match [Ngữ cảnh: ...] prefix. Uses [^\]]* (no ] inside) instead of
+    # .*? to avoid issues if prefix ever contains literal ] characters.
     _CONTEXT_PREFIX = re.compile(
-        r"^\[Ngữ cảnh:.*?\]\s*",
-        re.DOTALL,
+        r"^\[Ngữ cảnh:[^\]]*\]\s*",
     )
 
     def _postprocess_nodes(
