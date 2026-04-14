@@ -72,5 +72,5 @@ def get_glossary_expander():
 
 
 def get_reranker():
-    """Get the FlashReranker instance (initialized at startup)."""
+    """Get the reranker instance (ONNX or FlashRank, initialized at startup)."""
     return app_state.get("reranker")

@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     enable_reranking: bool = True
     enable_glossary_expansion: bool = True
 
+    # ONNX reranker settings
+    onnx_model_dir: str = "models/reranker-int8"
+    reranker_threads: int = 4
+
     # Retrieval tuning parameters
     dense_weight: float = 0.5   # Equal weight: BM25 proven to find correct chunks from large PDFs
     sparse_weight: float = 0.5  # Was 0.2 — increased to give BM25 keyword matches fair ranking

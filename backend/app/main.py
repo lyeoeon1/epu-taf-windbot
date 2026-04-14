@@ -16,7 +16,7 @@ if settings.llama_cloud_api_key:
 from app.routers import chat, feedback, glossary, health, ingest, sessions
 from app.services.query_expansion import GlossaryExpander
 from app.services.rag import configure_settings, create_index, create_vector_store
-from app.services.reranker import FlashReranker
+from app.services.reranker import create_reranker
 from app.state import app_state
 
 logger = logging.getLogger(__name__)
@@ -52,13 +52,17 @@ async def lifespan(app: FastAPI):
 
         if settings.enable_reranking:
             try:
-                reranker = FlashReranker()
+                reranker = create_reranker(
+                    onnx_model_dir=settings.onnx_model_dir,
+                    num_threads=settings.reranker_threads,
+                )
                 app_state["reranker"] = reranker
                 logger.info(
-                    "FlashReranker initialized (available=%s)", reranker.is_available
+                    "Reranker initialized: %s (available=%s)",
+                    type(reranker).__name__, reranker.is_available,
                 )
             except Exception as e:
-                logger.warning("Failed to init FlashReranker: %s", e)
+                logger.warning("Failed to init reranker: %s", e)
 
     yield
 
