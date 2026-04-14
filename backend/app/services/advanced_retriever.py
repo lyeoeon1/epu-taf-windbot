@@ -292,9 +292,9 @@ class AdvancedRetriever(BaseRetriever):
                 dense_results_a = [
                     dense_futures_a[q].result(timeout=15) for q in initial_queries
                 ]
-            bm25_results_a = [
-                bm25_futures_a[q].result(timeout=15) for q in initial_queries
-            ]
+                bm25_results_a = [
+                    bm25_futures_a[q].result(timeout=15) for q in initial_queries
+                ]
 
             t_phase_a = time.perf_counter()
             logger.info(
