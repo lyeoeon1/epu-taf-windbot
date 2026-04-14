@@ -111,93 +111,97 @@ export function usePanZoom() {
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try {
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-      if (pointers.current.size === 1) {
-        // Single pointer: start drag/pan
-        dragStart.current = {
-          pointerId: e.pointerId,
-          startX: e.clientX,
-          startY: e.clientY,
-          startTx: stateRef.current.translateX,
-          startTy: stateRef.current.translateY,
-        };
-        setIsPanning(true);
-        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-      } else if (pointers.current.size === 2) {
-        // Two pointers: init pinch
-        const pts = Array.from(pointers.current.values());
-        lastPinchDist.current = getDistance(pts[0], pts[1]);
-        dragStart.current = null;
-        setIsPanning(false);
-      }
+        if (pointers.current.size === 1) {
+          dragStart.current = {
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            startTx: stateRef.current.translateX,
+            startTy: stateRef.current.translateY,
+          };
+          setIsPanning(true);
+          (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+        } else if (pointers.current.size === 2) {
+          const pts = Array.from(pointers.current.values());
+          lastPinchDist.current = getDistance(pts[0], pts[1]);
+          dragStart.current = null;
+          setIsPanning(false);
+        }
+      } catch { /* prevent crash from propagating to error boundary */ }
     },
     []
   );
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent) => {
-      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try {
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-      if (pointers.current.size === 2 && lastPinchDist.current !== null) {
-        // Pinch zoom
-        const pts = Array.from(pointers.current.values());
-        const newDist = getDistance(pts[0], pts[1]);
-        const ratio = newDist / lastPinchDist.current;
-        lastPinchDist.current = newDist;
+        if (pointers.current.size === 2 && lastPinchDist.current !== null) {
+          const pts = Array.from(pointers.current.values());
+          const newDist = getDistance(pts[0], pts[1]);
+          const ratio = newDist / lastPinchDist.current;
+          lastPinchDist.current = newDist;
 
-        setState((prev) => {
-          const newScale = clampScale(prev.scale * ratio);
-          return { ...prev, scale: newScale };
-        });
-        return;
-      }
+          setState((prev) => {
+            const newScale = clampScale(prev.scale * ratio);
+            return { ...prev, scale: newScale };
+          });
+          return;
+        }
 
-      const drag = dragStart.current;
-      if (!drag || e.pointerId !== drag.pointerId) return;
+        const drag = dragStart.current;
+        if (!drag || e.pointerId !== drag.pointerId) return;
 
-      const dx = e.clientX - drag.startX;
-      const dy = e.clientY - drag.startY;
+        const dx = e.clientX - drag.startX;
+        const dy = e.clientY - drag.startY;
 
-      setState((prev) => ({
-        ...prev,
-        translateX: drag.startTx + dx / prev.scale,
-        translateY: drag.startTy + dy / prev.scale,
-      }));
+        setState((prev) => ({
+          ...prev,
+          translateX: drag.startTx + dx / prev.scale,
+          translateY: drag.startTy + dy / prev.scale,
+        }));
+      } catch { /* prevent crash from propagating to error boundary */ }
     },
     []
   );
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
-    pointers.current.delete(e.pointerId);
-    if (pointers.current.size < 2) {
-      lastPinchDist.current = null;
-    }
-    if (pointers.current.size === 0) {
-      dragStart.current = null;
-      setIsPanning(false);
-    }
+    try {
+      pointers.current.delete(e.pointerId);
+      if (pointers.current.size < 2) {
+        lastPinchDist.current = null;
+      }
+      if (pointers.current.size === 0) {
+        dragStart.current = null;
+        setIsPanning(false);
+      }
+    } catch { /* prevent crash from propagating to error boundary */ }
   }, []);
 
   const onWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const container = containerRef.current;
-    if (!container) return;
+    try {
+      e.preventDefault();
+      const container = containerRef.current;
+      if (!container) return;
 
-    const rect = container.getBoundingClientRect();
-    const cursorX = e.clientX - rect.left;
-    const cursorY = e.clientY - rect.top;
+      const rect = container.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
 
-    setState((prev) => {
-      const direction = e.deltaY > 0 ? -1 : 1;
-      const newScale = clampScale(prev.scale + direction * ZOOM_STEP);
+      setState((prev) => {
+        const direction = e.deltaY > 0 ? -1 : 1;
+        const newScale = clampScale(prev.scale + direction * ZOOM_STEP);
 
-      // Zoom toward cursor: adjust translate so cursor point stays fixed
-      const newTx = cursorX / newScale - cursorX / prev.scale + prev.translateX;
-      const newTy = cursorY / newScale - cursorY / prev.scale + prev.translateY;
+        const newTx = cursorX / newScale - cursorX / prev.scale + prev.translateX;
+        const newTy = cursorY / newScale - cursorY / prev.scale + prev.translateY;
 
-      return { scale: newScale, translateX: newTx, translateY: newTy };
-    });
+        return { scale: newScale, translateX: newTx, translateY: newTy };
+      });
+    } catch { /* prevent crash from propagating to error boundary */ }
   }, []);
 
   // Attach wheel listener imperatively with { passive: false } so preventDefault() works.
