@@ -118,6 +118,29 @@ function FitIcon() {
   );
 }
 
+/**
+ * Sanitize Mermaid code to fix common LLM-generated syntax issues.
+ * - Wraps node labels containing special chars (parentheses, diacritics) in quotes
+ * - Fixes Vietnamese text with () inside [] brackets that confuse the parser
+ */
+function sanitizeMermaidCode(raw: string): string {
+  // Fix node labels with parentheses inside brackets: A[text (stuff)] → A["text (stuff)"]
+  // Match: identifier[content with parens] but NOT already quoted identifier["..."]
+  let result = raw.replace(
+    /(\w+)\[(?!")((?:[^\[\]]|\\.)*\([^[\]]*\)[^\[\]]*)\]/g,
+    (_match, id, content) => `${id}["${content}"]`
+  );
+
+  // Also fix labels with Vietnamese diacritics that aren't quoted
+  // Match: identifier[content with diacritics] where content has Vietnamese chars
+  result = result.replace(
+    /(\w+)\[(?!")((?:[^\[\]])*[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ][^\[\]]*)\]/g,
+    (_match, id, content) => `${id}["${content}"]`
+  );
+
+  return result;
+}
+
 export function MermaidBlock({ code }: MermaidBlockProps) {
   const { theme } = useTheme();
   const svgRef = useRef<HTMLDivElement>(null);
@@ -140,7 +163,8 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
       });
 
       try {
-        const { svg } = await mermaid.render(`mermaid-${uniqueId}`, code);
+        const sanitized = sanitizeMermaidCode(code);
+        const { svg } = await mermaid.render(`mermaid-${uniqueId}`, sanitized);
         if (!cancelled && svgRef.current) {
           svgRef.current.innerHTML = svg;
           setError(null);

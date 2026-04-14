@@ -137,25 +137,34 @@ body {
   font-style: italic;
 }
 
-/* Tables - responsive with horizontal scroll */
+/* Tables - responsive with text wrap + horizontal scroll fallback */
 .prose table {
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   margin: 1em 0;
   font-size: 0.875em;
   display: table;
+  table-layout: auto;
 }
 .prose > table,
 .prose > div > table {
   display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
-.prose th,
-.prose td {
+.prose th {
   white-space: nowrap;
   padding: 0.5em 0.75em;
+  min-width: 80px;
+}
+.prose td {
+  white-space: normal;
+  word-wrap: break-word;
+  padding: 0.5em 0.75em;
+  min-width: 80px;
+  max-width: 300px;
 }
 .prose thead {
   border-bottom: 2px solid var(--border);
