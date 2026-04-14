@@ -163,6 +163,69 @@ function sanitizeMermaidCode(raw: string): string {
     .join("\n");
 }
 
+/**
+ * Post-process rendered SVG to fix truncated node labels.
+ * Mermaid calculates node width too small for long text.
+ * This reads actual text width and resizes the node rect/polygon to fit.
+ */
+function fixNodeWidths(container: HTMLDivElement) {
+  const svg = container.querySelector("svg");
+  if (!svg) return;
+
+  const nodes = svg.querySelectorAll(".node");
+  nodes.forEach((node) => {
+    // Get all text elements in this node
+    const texts = node.querySelectorAll("text");
+    if (texts.length === 0) return;
+
+    // Calculate max text width across all lines
+    let maxTextWidth = 0;
+    texts.forEach((text) => {
+      const bbox = text.getBBox();
+      if (bbox.width > maxTextWidth) maxTextWidth = bbox.width;
+    });
+
+    if (maxTextWidth === 0) return;
+
+    const padding = 16; // padding on each side
+    const neededWidth = maxTextWidth + padding * 2;
+
+    // Find the shape element (rect, polygon, or path)
+    const rect = node.querySelector("rect");
+    if (rect) {
+      const currentWidth = parseFloat(rect.getAttribute("width") || "0");
+      if (neededWidth > currentWidth) {
+        const diff = neededWidth - currentWidth;
+        rect.setAttribute("width", String(neededWidth));
+        // Shift rect left by half the diff to keep centered
+        const currentX = parseFloat(rect.getAttribute("x") || "0");
+        rect.setAttribute("x", String(currentX - diff / 2));
+      }
+    }
+
+    // Also handle foreignObject if present (htmlLabels: true fallback)
+    const fo = node.querySelector("foreignObject");
+    if (fo) {
+      const currentWidth = parseFloat(fo.getAttribute("width") || "0");
+      if (neededWidth > currentWidth) {
+        const diff = neededWidth - currentWidth;
+        fo.setAttribute("width", String(neededWidth));
+        const currentX = parseFloat(fo.getAttribute("x") || "0");
+        fo.setAttribute("x", String(currentX - diff / 2));
+      }
+    }
+  });
+
+  // Update SVG viewBox to fit expanded nodes
+  const svgBBox = svg.getBBox();
+  if (svgBBox.width > 0 && svgBBox.height > 0) {
+    const pad = 10;
+    svg.setAttribute("viewBox", `${svgBBox.x - pad} ${svgBBox.y - pad} ${svgBBox.width + pad * 2} ${svgBBox.height + pad * 2}`);
+    svg.setAttribute("width", String(svgBBox.width + pad * 2));
+    svg.setAttribute("height", String(svgBBox.height + pad * 2));
+  }
+}
+
 let mermaidRenderCounter = 0;
 
 export function MermaidBlock({ code }: MermaidBlockProps) {
@@ -219,7 +282,7 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         themeVariables: themeVars,
         flowchart: {
           useMaxWidth: false,
-          htmlLabels: false,
+          htmlLabels: true,
           nodeSpacing: 30,
           rankSpacing: 40,
         },
@@ -231,6 +294,9 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         const { svg } = await mermaid.render(renderId, sanitized);
         if (!cancelled && svgRef.current) {
           svgRef.current.innerHTML = svg;
+
+          // Post-process: fix truncated text by expanding nodes to fit content
+          fixNodeWidths(svgRef.current);
           setError(null);
 
           // Auto-fit after render (use ref to avoid dep cycle)
