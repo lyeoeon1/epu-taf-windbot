@@ -3,9 +3,11 @@ import os
 from contextlib import asynccontextmanager
 
 # Configure root logger so app.* loggers output to stderr (captured by systemd)
+# force=True ensures this works even after uvicorn configures its own loggers
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    force=True,
 )
 
 from fastapi import FastAPI
