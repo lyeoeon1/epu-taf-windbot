@@ -272,6 +272,17 @@ body {
 .mermaid-content svg {
   display: block;
 }
+/* Prevent Mermaid from clipping long node labels */
+.mermaid-content svg .node .label {
+  overflow: visible !important;
+}
+.mermaid-content svg .node foreignObject {
+  overflow: visible !important;
+}
+.mermaid-content svg .node foreignObject div {
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
 .mermaid-toolbar {
   position: absolute;
   top: 8px;
