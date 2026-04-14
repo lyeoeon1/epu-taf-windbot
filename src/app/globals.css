@@ -272,14 +272,6 @@ body {
 .mermaid-content svg {
   display: block;
 }
-/* Center text inside mermaid nodes */
-.mermaid-content svg .node foreignObject div {
-  text-align: center !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 100% !important;
-}
 .mermaid-toolbar {
   position: absolute;
   top: 8px;
