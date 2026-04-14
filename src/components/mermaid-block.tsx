@@ -200,10 +200,11 @@ function fixNodeWidths(container: HTMLDivElement) {
 
         // Center text inside the node
         div.style.textAlign = "center";
-        div.style.display = "flex";
-        div.style.alignItems = "center";
-        div.style.justifyContent = "center";
-        div.style.height = "100%";
+        // Also center all nested spans
+        div.querySelectorAll("span").forEach((span) => {
+          (span as HTMLElement).style.textAlign = "center";
+          (span as HTMLElement).style.display = "block";
+        });
       }
     }
 
@@ -224,14 +225,21 @@ function fixNodeWidths(container: HTMLDivElement) {
       }
     }
 
-    // Expand foreignObject to match
+    // Expand foreignObject to match rect position
     if (fo) {
-      const currentWidth = parseFloat(fo.getAttribute("width") || "0");
-      if (neededWidth > currentWidth) {
-        const diff = neededWidth - currentWidth;
-        fo.setAttribute("width", String(neededWidth));
-        const currentX = parseFloat(fo.getAttribute("x") || "0");
-        fo.setAttribute("x", String(currentX - diff / 2));
+      const rect = node.querySelector("rect");
+      if (rect) {
+        // Sync foreignObject with rect position and size
+        fo.setAttribute("width", rect.getAttribute("width") || fo.getAttribute("width") || "0");
+        fo.setAttribute("x", rect.getAttribute("x") || fo.getAttribute("x") || "0");
+      } else {
+        const currentWidth = parseFloat(fo.getAttribute("width") || "0");
+        if (neededWidth > currentWidth) {
+          const diff = neededWidth - currentWidth;
+          fo.setAttribute("width", String(neededWidth));
+          const currentX = parseFloat(fo.getAttribute("x") || "0");
+          fo.setAttribute("x", String(currentX - diff / 2));
+        }
       }
     }
   });
