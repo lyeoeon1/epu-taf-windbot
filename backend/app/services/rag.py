@@ -5,6 +5,8 @@ import vecs
 from llama_index.core import Settings, VectorStoreIndex
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
 from llama_index.core.chat_engine.types import BaseChatEngine
+
+from app.services.windbot_engine import WindBotChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.postprocessor import SimilarityPostprocessor
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
@@ -20,7 +22,7 @@ from app.config import settings as app_settings
 from app.prompts.system import get_condense_prompt, get_system_prompt
 from app.services.advanced_retriever import AdvancedRetriever
 from app.services.query_expansion import GlossaryExpander
-from app.services.reranker import FlashReranker
+from app.services.reranker import FlashReranker, OnnxReranker
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +196,7 @@ def get_chat_engine(
     chat_history: Optional[list] = None,
     supabase_client: Optional[SupabaseClient] = None,
     glossary_expander: Optional[GlossaryExpander] = None,
-    reranker: Optional[FlashReranker] = None,
+    reranker: Optional[FlashReranker | OnnxReranker] = None,
     question_type: str = "GENERAL",
 ) -> BaseChatEngine:
     """Create a chat engine using condense_plus_context mode.
@@ -280,7 +282,7 @@ def get_chat_engine(
         )
         logger.info("Using AdvancedRetriever (hybrid search + reranking)")
 
-        chat_engine = CondensePlusContextChatEngine.from_defaults(
+        chat_engine = WindBotChatEngine.from_defaults(
             retriever=retriever,
             memory=memory,
             system_prompt=system_prompt,

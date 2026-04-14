@@ -17,6 +17,11 @@ llama-cloud>=1.0
 supabase==2.9.0
 
 # Reranking (cross-encoder for retrieval precision)
+# Primary: ONNX Runtime (fast CPU inference)
+onnxruntime>=1.17.0
+transformers>=4.40.0
+# Export-only (not needed at runtime): pip install optimum[onnxruntime]
+# Fallback: FlashRank (PyTorch-based)
 flashrank>=0.2.0
 
 # Utilities

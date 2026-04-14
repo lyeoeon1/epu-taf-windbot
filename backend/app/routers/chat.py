@@ -12,6 +12,7 @@ from llama_index.core.llms import ChatMessage, MessageRole
 from openai import OpenAI
 from supabase import Client
 
+from app.config import settings as app_settings
 from app.dependencies import get_glossary_expander, get_index, get_reranker, get_supabase
 from app.models.schemas import ChatRequest
 from app.prompts.system import get_suggestion_prompt
@@ -85,6 +86,116 @@ def get_openai_client():
     return _openai_client
 
 
+# Greeting patterns — short messages that don't need RAG
+_GREETING_PATTERNS = re.compile(
+    r"^(xin\s*ch[aà]o|ch[aà]o\s*(bạn|ban|bot|anh|em|chị|chi)?|hello|hi\b|hey\b|good\s*(morning|afternoon|evening))",
+    re.IGNORECASE,
+)
+_GREETING_MAX_LEN = 20  # Messages longer than this are not greetings
+
+
+def _is_greeting(message: str, question_type: str) -> bool:
+    """Check if a message is a simple greeting that can bypass RAG."""
+    if question_type != "GENERAL":
+        return False
+    msg = message.strip()
+    if len(msg) > _GREETING_MAX_LEN:
+        return False
+    return bool(_GREETING_PATTERNS.search(msg))
+
+
+GREETING_SYSTEM_PROMPT = """\
+You are WindBot, a friendly wind turbine knowledge assistant. \
+The user just greeted you. Respond warmly and briefly, then invite them \
+to ask about wind turbine technology, maintenance, or operations. \
+Respond in the SAME language as the user's message."""
+
+
+def _greeting_response(
+    request: ChatRequest,
+    session_id: str,
+    supabase: Client,
+    prior_history: list[dict],
+    question_type: str,
+    classification_method: str,
+) -> StreamingResponse:
+    """Return a streaming greeting response without RAG pipeline."""
+
+    async def greeting_generator():
+        full_response = ""
+
+        # Build minimal context from last 2 exchanges
+        messages = [{"role": "system", "content": GREETING_SYSTEM_PROMPT}]
+        for msg in prior_history[-4:]:  # last 2 exchanges = 4 messages
+            messages.append({"role": msg["role"], "content": msg["content"][:200]})
+        messages.append({"role": "user", "content": request.message})
+
+        # Stream from OpenAI directly (no RAG)
+        try:
+            stream = get_openai_client().chat.completions.create(
+                model=app_settings.llm_model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=300,
+                stream=True,
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta
+                if delta.content:
+                    full_response += delta.content
+                    yield f"data: {json.dumps({'token': delta.content})}\n\n"
+        except Exception as e:
+            logger.error("Greeting streaming failed: %s", e)
+            full_response = "Xin chào! Tôi là WindBot. Hãy hỏi tôi về công nghệ tuabin gió nhé!"
+            yield f"data: {json.dumps({'token': full_response})}\n\n"
+
+        # Save assistant response
+        save_metadata = {
+            "language": request.language,
+            "question_type": question_type,
+            "classification_method": classification_method,
+        }
+        await save_message(
+            supabase, session_id, "assistant", full_response,
+            metadata=save_metadata,
+        )
+
+        yield f"data: {json.dumps({'done': True})}\n\n"
+
+        # Generate follow-up suggestions
+        try:
+            prompt = get_suggestion_prompt(request.language).format(
+                user_message=request.message,
+                assistant_answer=full_response[:500],
+            )
+
+            def fetch_suggestions():
+                completion = get_openai_client().chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.7,
+                    max_tokens=300,
+                )
+                return completion.choices[0].message.content.strip()
+
+            raw = await asyncio.to_thread(fetch_suggestions)
+            suggestions = json.loads(raw)
+            if isinstance(suggestions, list) and len(suggestions) >= 3:
+                yield f"data: {json.dumps({'suggestions': suggestions[:3]})}\n\n"
+        except Exception as e:
+            logger.warning("Greeting suggestions failed: %s", e, exc_info=True)
+
+    return StreamingResponse(
+        greeting_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 @router.post("/chat")
 async def chat(
     request: ChatRequest,
@@ -131,6 +242,15 @@ async def chat(
         prior_history = history[:-1] if history else []
         has_history = len(prior_history) > 0
 
+        # ── Greeting fast-path: bypass RAG entirely ───────────────────
+        if _is_greeting(request.message, question_type):
+            logger.info("Greeting fast-path triggered for: %s", request.message[:50])
+            return _greeting_response(
+                request, session_id, supabase, prior_history,
+                question_type, classification_method,
+            )
+
+        # ── Full RAG pipeline for technical questions ─────────────────
         # Collect cached corrections from prior messages' metadata
         corrections = collect_corrections_from_history(prior_history)
 
