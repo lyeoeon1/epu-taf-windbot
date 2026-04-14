@@ -21,6 +21,7 @@ from supabase import Client as SupabaseClient
 from app.config import settings as app_settings
 from app.prompts.system import get_condense_prompt, get_system_prompt
 from app.services.advanced_retriever import AdvancedRetriever
+from app.services.cached_embedding import CachedOpenAIEmbedding
 from app.services.query_expansion import GlossaryExpander
 from app.services.reranker import FlashReranker, OnnxReranker
 
@@ -153,7 +154,7 @@ def configure_settings():
 
     Settings.llm = OpenAI(model=app_settings.llm_model, temperature=0, additional_kwargs={"seed": 42})
     logger.info("LLM model: %s", app_settings.llm_model)
-    Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+    Settings.embed_model = CachedOpenAIEmbedding(model="text-embedding-3-small", cache_size=200)
     Settings.chunk_size = 1024
     Settings.chunk_overlap = 200
 

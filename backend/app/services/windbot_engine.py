@@ -11,6 +11,7 @@ response generation, ensuring identical output quality.
 import asyncio
 import concurrent.futures
 import logging
+import re
 from typing import List, Optional
 
 from llama_index.core.base.llms.generic_utils import messages_to_history_str
@@ -51,6 +52,46 @@ DEFAULT_CONTEXT_PROMPT_TEMPLATE = """
   Instruction: Based on the above documents, provide a detailed answer for the user question below.
   Answer "don't know" if not present in the document.
   """
+
+# ── Smart condense: skip LLM call for standalone follow-ups ──────
+
+_TECHNICAL_KEYWORDS = re.compile(
+    r"(tuabin|tua-bin|gió|wind|blade|cánh|gearbox|hộp số|nacelle|rotor|tower|trụ|"
+    r"pitch|yaw|generator|máy phát|turbine|điện gió|offshore|onshore|bảo trì|"
+    r"maintenance|inspection|kiểm tra|lắp đặt|installation)",
+    re.IGNORECASE,
+)
+
+_CONTINUATION_PHRASES = re.compile(
+    r"(kể thêm|tiếp đi|chi tiết hơn|nói thêm|giải thích thêm|"
+    r"tell me more|go on|elaborate|continue|more detail)",
+    re.IGNORECASE,
+)
+
+_ANAPHORIC_REFS = re.compile(
+    r"\b(nó|cái đó|loại này|loại đó|cái này|chúng|thế nào|"
+    r"\bit\b|\bthat\b|\bthis one\b|\bthese\b|\bthose\b)",
+    re.IGNORECASE,
+)
+
+
+def _is_standalone_question(message: str) -> bool:
+    """Check if a follow-up message is already a standalone question."""
+    msg = message.strip()
+    length = len(msg)
+
+    if length < 20:
+        return False
+    if _CONTINUATION_PHRASES.search(msg):
+        return False
+    if _ANAPHORIC_REFS.search(msg):
+        return False
+    if length > 50:
+        return True
+    if length > 30 and _TECHNICAL_KEYWORDS.search(msg):
+        return True
+
+    return False
 
 
 class WindBotChatEngine(BaseChatEngine):
@@ -212,9 +253,13 @@ class WindBotChatEngine(BaseChatEngine):
             # First message — no condense needed, direct retrieval
             condensed = message
         else:
-            # Follow-up — condense to standalone question
-            condensed = self._condense_question(memory_history, message)
-            logger.info("Condensed question: %s", condensed[:100])
+            # Follow-up — skip condense if message is already standalone
+            if _is_standalone_question(message):
+                condensed = message
+                logger.info("Smart condense: skipped (standalone question)")
+            else:
+                condensed = self._condense_question(memory_history, message)
+                logger.info("Condensed question: %s", condensed[:100])
 
         # Single retrieval pass with the best query
         context_nodes = self._retrieve_and_postprocess(condensed)
