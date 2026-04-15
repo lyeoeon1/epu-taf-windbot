@@ -159,15 +159,14 @@ const markdownComponents: Components = {
     const lang = match?.[1];
     const codeText = String(children).replace(/\n$/, "");
 
-    // Mermaid blocks: temporarily disabled — show as code block
-    // TODO: re-enable when diagram rendering is polished
-    // if (lang === "mermaid" || (!lang && codeText.includes("\n") && isMermaidCode(codeText))) {
-    //   return (
-    //     <MermaidErrorBoundary code={codeText}>
-    //       <MermaidBlock code={codeText} />
-    //     </MermaidErrorBoundary>
-    //   );
-    // }
+    // Mermaid blocks: render as diagrams
+    if (lang === "mermaid" || (!lang && codeText.includes("\n") && isMermaidCode(codeText))) {
+      return (
+        <MermaidErrorBoundary code={codeText}>
+          <MermaidBlock code={codeText} />
+        </MermaidErrorBoundary>
+      );
+    }
 
     // Inline code (no language class, not inside <pre>)
     if (!className) {
