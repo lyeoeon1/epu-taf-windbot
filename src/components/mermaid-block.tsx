@@ -304,7 +304,9 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
     async function renderDiagram() {
       const { default: mermaid } = await import("mermaid");
 
-      const themeVars = theme === "dark" ? darkThemeVariables : lightThemeVariables;
+      // Detect actual dark mode from DOM (more reliable than React state)
+      const isDark = document.documentElement.classList.contains("dark");
+      const themeVars = isDark ? darkThemeVariables : lightThemeVariables;
 
       mermaid.initialize({
         startOnLoad: false,
@@ -313,8 +315,8 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         flowchart: {
           useMaxWidth: false,
           htmlLabels: true,
-          nodeSpacing: 30,
-          rankSpacing: 40,
+          nodeSpacing: 40,
+          rankSpacing: 50,
         },
       });
 

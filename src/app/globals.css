@@ -288,6 +288,28 @@ body {
 }
 .mermaid-content svg {
   display: block;
+  min-width: 100%;
+}
+/* Force dark mode colors on mermaid SVG elements */
+.dark .mermaid-content svg .node rect,
+.dark .mermaid-content svg .node polygon {
+  fill: #2d3748 !important;
+  stroke: #4a5568 !important;
+}
+.dark .mermaid-content svg .node .label,
+.dark .mermaid-content svg .nodeLabel,
+.dark .mermaid-content svg text {
+  fill: #fafafa !important;
+  color: #fafafa !important;
+}
+.dark .mermaid-content svg .edgePath path {
+  stroke: #a1a1aa !important;
+}
+.dark .mermaid-content svg marker path {
+  fill: #a1a1aa !important;
+}
+.dark .mermaid-viewport {
+  background: #18181b;
 }
 .mermaid-toolbar {
   position: absolute;
