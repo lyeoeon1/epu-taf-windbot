@@ -464,9 +464,8 @@ async def chat(
             full_response += token
             yield f"data: {json.dumps({'token': token})}\n\n"
 
-        # Verify citations match source content, then renumber
+        # Renumber citations sequentially by first appearance
         context_nodes = getattr(streaming_response, "source_nodes", None) or []
-        full_response = verify_citations(full_response, context_nodes)
         full_response, context_nodes = renumber_citations(full_response, context_nodes)
 
         # Extract source nodes with renumbered IDs
