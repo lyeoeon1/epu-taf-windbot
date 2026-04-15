@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     supabase_connection_string: str = ""
 
     frontend_url: str = "http://localhost:3000"
-    backend_port: int = 8000
+    backend_port: int = 8001
 
     # Advanced retrieval feature toggles
     enable_advanced_retrieval: bool = True

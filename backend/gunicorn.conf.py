@@ -7,7 +7,7 @@ import multiprocessing
 import os
 
 # Socket — bind all interfaces for direct access
-bind = "0.0.0.0:" + os.getenv("BACKEND_PORT", "8000")
+bind = "0.0.0.0:" + os.getenv("BACKEND_PORT", "8001")
 backlog = 2048
 
 # Workers — use CPU count for async workers

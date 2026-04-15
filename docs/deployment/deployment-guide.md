@@ -9,7 +9,7 @@ Tài liệu này hướng dẫn cách triển khai BotAI backend lên VPS produc
 ### Kiến trúc
 
 ```
-Vercel (Frontend Next.js) → Cloudflare Tunnel / Ngrok → VPS (port 8000)
+Vercel (Frontend Next.js) → Cloudflare Tunnel / Ngrok → VPS (port 8001)
                                                          ├── botai-backend.service (gunicorn + uvicorn workers)
                                                          └── soop-backend.service  (port 8001, app khác)
 ```
@@ -21,7 +21,7 @@ Vercel (Frontend Next.js) → Cloudflare Tunnel / Ngrok → VPS (port 8000)
 | VPS | Contabo, Ubuntu 24.04, 4 CPU, 8GB RAM |
 | User | `botai` (user riêng, không dùng root) |
 | Repo | `/home/botai/repo/` |
-| Port | 8000 |
+| Port | 8001 |
 | Process | gunicorn + UvicornWorker (multi-worker) |
 | Service | `botai-backend.service` (systemd) |
 
@@ -80,7 +80,7 @@ SUPABASE_URL=https://xxx.supabase.co
 SUPABASE_SERVICE_KEY=eyJ...
 SUPABASE_CONNECTION_STRING=postgresql://...
 FRONTEND_URL=https://your-frontend.vercel.app
-BACKEND_PORT=8000
+BACKEND_PORT=8001
 ```
 
 ---
@@ -91,7 +91,7 @@ Hướng dẫn chạy local cho development.
 
 ## 1. Chuẩn bị Backend (Local)
 
-Trước tiên, hãy đảm bảo backend của bạn đang chạy ổn định ở port 8000.
+Trước tiên, hãy đảm bảo backend của bạn đang chạy ổn định ở port 8001.
 
 ### Bước 1.1: Chạy Backend
 
@@ -103,7 +103,7 @@ cd backend
 # Cài đặt dependencies nếu chưa cài
 pip install -r requirements.txt
 # Chạy server
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8001
 ```
 
 > Lưu ý: Thay `app.main:app` bằng đường dẫn tới file chạy chính của bạn nếu khác.
@@ -137,7 +137,7 @@ ngrok config add-authtoken <TOKEN_CỦA_BẠN>
 Mở một terminal mới (giữ terminal backend chạy) và gõ:
 
 ```bash
-ngrok http 8000
+ngrok http 8001
 ```
 
 Màn hình sẽ hiện ra thông tin, hãy copy dòng Forwarding có dạng `https://xxxx-xxxx.ngrok-free.app`. Đây chính là Public URL của backend.

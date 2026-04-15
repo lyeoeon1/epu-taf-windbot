@@ -67,9 +67,9 @@ systemctl enable "${SERVICE_NAME}"
 echo "[OK] Service installed and enabled"
 
 # 6. Stop old root process if running
-OLD_PID=$(lsof -ti :8000 2>/dev/null || true)
+OLD_PID=$(lsof -ti :8001 2>/dev/null || true)
 if [ -n "${OLD_PID}" ]; then
-    echo "[*] Stopping old process on port 8000 (PID: ${OLD_PID})..."
+    echo "[*] Stopping old process on port 8001 (PID: ${OLD_PID})..."
     kill "${OLD_PID}" 2>/dev/null || true
     sleep 2
     echo "[OK] Old process stopped"

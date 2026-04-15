@@ -41,7 +41,7 @@ Thực trạng: Đã xây dựng hoàn chỉnh:
 
 **Giải pháp / Thực trạng:** ⚠️ Một phần
 
-Thực trạng: Tích hợp Web đã hoàn chỉnh — Next.js 16 frontend với streaming SSE, responsive design, dark/light mode. API backend FastAPI đã mở (OpenAPI docs tại /docs). CORS đã cấu hình whitelist. Đã deploy production: Frontend trên Vercel (https://windbot.vercel.app), Backend trên VPS (62.146.236.156:8000) với Gunicorn + systemd.
+Thực trạng: Tích hợp Web đã hoàn chỉnh — Next.js 16 frontend với streaming SSE, responsive design, dark/light mode. API backend FastAPI đã mở (OpenAPI docs tại /docs). CORS đã cấu hình whitelist. Đã deploy production: Frontend trên Vercel (https://windbot.vercel.app), Backend trên VPS (62.146.236.156:8001) với Gunicorn + systemd.
 
 Còn thiếu: Chưa có đánh giá kỹ thuật chính thức và POC (Proof of Concept) cho VR360. Chưa có tài liệu phân tích feasibility VR.
 
@@ -141,7 +141,7 @@ Thực trạng: Đã có file dataset_card.md theo chuẩn Hugging Face với đ
 
 Thực trạng: Frontend deploy trên Vercel — HTTPS/TLS được cấu hình tự động và miễn phí. CORS trong FastAPI đã whitelist URL frontend cụ thể (không dùng wildcard *). Supabase connection sử dụng HTTPS mặc định.
 
-Còn thiếu: Backend API server trên VPS hiện chạy HTTP (port 8000) không qua reverse proxy. Chưa có HSTS headers. Chưa có certificate pinning.
+Còn thiếu: Backend API server trên VPS hiện chạy HTTP (port 8001) không qua reverse proxy. Chưa có HSTS headers. Chưa có certificate pinning.
 
 Cần làm: Đặt FastAPI backend sau Nginx/Caddy với SSL termination; thêm HSTS header; document quy trình renew certificate.
 
@@ -197,7 +197,7 @@ Cần làm: (1) Thêm auth layer (JWT hoặc Supabase Auth). (2) Rate limiting t
 
 **Giải pháp / Thực trạng:** ⚠️ Một phần
 
-Thực trạng: Tích hợp Web hoàn chỉnh và LIVE — Next.js frontend giao tiếp với FastAPI backend qua SSE streaming, API proxy đã cấu hình trong next.config.ts. Deploy Vercel (https://windbot.vercel.app) + VPS backend (62.146.236.156:8000) với Gunicorn 4 workers + systemd auto-restart.
+Thực trạng: Tích hợp Web hoàn chỉnh và LIVE — Next.js frontend giao tiếp với FastAPI backend qua SSE streaming, API proxy đã cấu hình trong next.config.ts. Deploy Vercel (https://windbot.vercel.app) + VPS backend (62.146.236.156:8001) với Gunicorn 4 workers + systemd auto-restart.
 
 Còn thiếu: VR360 integration chưa có. Chưa có SDK/bridge cho Meta Quest hoặc Pico.
 

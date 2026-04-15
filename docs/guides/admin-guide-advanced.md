@@ -112,7 +112,7 @@ WITH (m=16, ef_construction=64);
 exit  # về root
 systemctl restart botai-backend
 systemctl status botai-backend
-curl -s http://localhost:8000/api/health
+curl -s http://localhost:8001/api/health
 ```
 
 ### Bước 7: Cập nhật metadata
@@ -254,7 +254,7 @@ top -bn1       # CPU/memory processes
 su - botai
 cd ~/botai-backend/repo/backend
 set -a; source .env; set +a
-venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8001
 ```
 6. Đọc error message, xử lý, restart systemd
 
@@ -307,7 +307,7 @@ nano /home/botai/botai-backend/repo/backend/.env
 4. SSH vào VPS, edit .env
 5. Thay dòng `OPENAI_API_KEY=sk-...` bằng key mới
 6. Lưu file, restart backend
-7. Test: `curl -s http://localhost:8000/api/health`
+7. Test: `curl -s http://localhost:8001/api/health`
 8. Xóa key cũ trên OpenAI dashboard
 
 ### Thiết lập spending limit (OpenAI)
@@ -398,7 +398,7 @@ Restart SSH: `systemctl restart sshd`
 ### Firewall cơ bản
 ```bash
 ufw allow 22/tcp    # SSH
-ufw allow 8000/tcp  # Backend API
+ufw allow 8001/tcp  # Backend API
 ufw enable
 ufw status
 ```

@@ -44,8 +44,8 @@ Câu trả lời được stream (gửi từng phần) về cho người dùng
 | Thành phần | URL |
 |---|---|
 | **Frontend** (giao diện chatbot) | https://windbot.vercel.app |
-| **Backend API** (máy chủ xử lý) | `http://[VPS-IP]:8000` |
-| **API Documentation** | `http://[VPS-IP]:8000/docs` |
+| **Backend API** (máy chủ xử lý) | `http://[VPS-IP]:8001` |
+| **API Documentation** | `http://[VPS-IP]:8001/docs` |
 
 ---
 
@@ -59,7 +59,7 @@ Câu trả lời được stream (gửi từng phần) về cho người dùng
 
 ### 2.2. Backend API Documentation
 
-- **URL:** `http://[VPS-IP]:8000/docs`
+- **URL:** `http://[VPS-IP]:8001/docs`
 - Đây là trang tài liệu API tự động (Swagger UI). Quản trị viên có thể xem danh sách các endpoint, tham số, và thử gọi API trực tiếp từ giao diện này.
 
 ### 2.3. Supabase Dashboard
@@ -147,7 +147,7 @@ Hệ thống có sẵn bộ thuật ngữ chuyên ngành tuabin gió để hỗ 
 
 ### Xem danh sách thuật ngữ
 
-Mở trình duyệt tại `http://[VPS-IP]:8000/docs`, tìm endpoint `/api/glossary` và nhấn "Try it out" rồi "Execute".
+Mở trình duyệt tại `http://[VPS-IP]:8001/docs`, tìm endpoint `/api/glossary` và nhấn "Try it out" rồi "Execute".
 
 ### Thêm thuật ngữ mới
 
