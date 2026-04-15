@@ -160,7 +160,7 @@ const markdownComponents: Components = {
     const codeText = String(children).replace(/\n$/, "");
 
     // Mermaid blocks: render as diagrams
-    if (lang === "mermaid" || (!lang && codeText.includes("\n") && isMermaidCode(codeText))) {
+    if (lang === "mermaid" || (!lang && isMermaidCode(codeText))) {
       return (
         <MermaidErrorBoundary code={codeText}>
           <MermaidBlock code={codeText} />
