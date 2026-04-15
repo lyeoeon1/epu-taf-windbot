@@ -226,6 +226,7 @@ Hệ thống sử dụng 3 dịch vụ bên ngoài cần API Key:
 | **Dashboard** | https://cloud.llamaindex.ai/ |
 | **Khi nào cần** | Chỉ cần khi nạp tài liệu mới. Không cần cho chat thông thường. |
 
+> **File mẫu cấu hình:** Xem `backend/.env.example` để biết danh sách đầy đủ các biến môi trường cần thiết.
 > **Quy trình đổi API key (SSH vào VPS):** Xem `docs/guides/admin-guide-advanced.md`, mục "Quản lý API Key".
 
 ---

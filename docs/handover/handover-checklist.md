@@ -29,6 +29,7 @@
 | 17 | Biên bản bàn giao | docs/handover/handover-report.md | ☐ | Cần ký xác nhận |
 | 18 | Thỏa thuận hỗ trợ (SLA) | docs/handover/sla.md | ☐ | Cần ký xác nhận |
 | 19 | Script export data | backend/scripts/export_data.py | ☐ | |
+| 19a | File cấu hình mẫu | backend/.env.example | ☐ | Template biến môi trường |
 | 20 | Access credentials | API keys (OpenAI, Supabase, LlamaCloud), VPS SSH | ☐ | Bàn giao trực tiếp |
 | 21 | Buổi đào tạo | Theo outline docs/handover/training-outline.md | ☐ | 3-3.5 giờ |
 | 22 | Biên bản ký xác nhận | Cả hai bên ký | ☐ | |
