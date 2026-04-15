@@ -238,11 +238,12 @@ body {
   text-decoration-color: rgba(96, 165, 250, 0.8);
 }
 
-/* KaTeX overrides for dark mode */
+/* KaTeX math formulas */
 .prose .katex {
-  font-size: 1.15em;
+  font-size: 1.25em;
   color: inherit;
 }
+/* Block math ($$...$$) — centered, larger */
 .prose .katex-display {
   margin: 1.2em 0;
   overflow-x: auto;
@@ -250,7 +251,16 @@ body {
   text-align: center;
 }
 .prose .katex-display > .katex {
-  font-size: 1.3em;
+  font-size: 1.35em;
+}
+/* Mobile: make all math more readable */
+@media (max-width: 640px) {
+  .prose .katex {
+    font-size: 1.3em;
+  }
+  .prose .katex-display > .katex {
+    font-size: 1.4em;
+  }
 }
 
 /* Mermaid diagrams */
