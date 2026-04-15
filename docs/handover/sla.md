@@ -48,7 +48,7 @@
 
 - **Email:** [placeholder]
 - **GitHub Issues:** [placeholder repo URL]
-- **Giờ hỗ trợ:** 9:00 - 17:00, Thứ 2 - Thứ 6 (trừ lễ/tết)
+- **Giờ hỗ trợ:** 9:00 - 17:00 (GMT+7, giờ Việt Nam), Thứ 2 - Thứ 6 (trừ lễ/tết)
 - **Ngoài giờ:** chỉ xử lý sự cố Critical
 
 ---
@@ -66,13 +66,33 @@ Kết quả thực tế: ...
 Screenshots/Logs (nếu có): ...
 ```
 
+> **Cách thu thập logs:** Xem hướng dẫn tại `docs/guides/admin-guide-advanced.md`, mục "Xử lý sự cố nâng cao".
+
 ---
 
 ## 7. Điều khoản bổ sung
 
-- SLA chỉ áp dụng cho phiên bản phần mềm đã bàn giao
-- Nếu EPU/TAF tự ý sửa đổi source code, SLA không áp dụng cho phần bị sửa
-- Gia hạn SLA: thỏa thuận riêng trước khi hết hạn
+- SLA chỉ áp dụng cho phiên bản phần mềm đã bàn giao.
+- Nếu EPU/TAF tự ý sửa đổi source code, SLA không áp dụng cho phần bị sửa.
+- Gia hạn SLA: thỏa thuận riêng trước khi hết hạn.
+
+### Quy trình escalation
+
+Nếu sự cố không được xử lý trong thời gian cam kết:
+
+1. Gửi email nhắc nhở (reply lại email ban đầu).
+2. Nếu sau 24 giờ (Critical) hoặc 3 ngày làm việc (Normal) vẫn chưa phản hồi, liên hệ trực tiếp lead developer qua điện thoại.
+3. Mọi escalation sẽ được ghi nhận và xử lý ưu tiên.
+
+### Sau khi hết thời hạn SLA
+
+Sau 3 tháng, EPU/TAF có các lựa chọn:
+
+1. **Gia hạn SLA** — Thỏa thuận hợp đồng hỗ trợ mới với phạm vi và chi phí cụ thể.
+2. **Tự vận hành** — Sử dụng tài liệu hướng dẫn đã bàn giao (`docs/guides/admin-guide.md`, `docs/guides/disaster-recovery.md`) để tự quản lý hệ thống.
+3. **Thuê bên thứ 3** — Chuyển giao vận hành cho đơn vị CNTT khác. Toàn bộ source code và tài liệu đã thuộc về EPU/TAF.
+
+> **Khuyến nghị:** Liên hệ ít nhất 2 tuần trước khi SLA hết hạn để thảo luận phương án tiếp theo.
 
 ---
 

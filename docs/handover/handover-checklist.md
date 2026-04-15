@@ -21,6 +21,8 @@
 | 11 | Hướng dẫn quản trị | docs/guides/admin-guide.md | ☐ | Tiếng Việt |
 | 12 | Hướng dẫn correction | docs/guides/correction-learning.md | ☐ | |
 | 13 | Hướng dẫn migration | docs/guides/migration-guide.md | ☐ | |
+| 13a | Hướng dẫn quản trị nâng cao | docs/guides/admin-guide-advanced.md | ☐ | Cho nhân viên kỹ thuật |
+| 13b | Kế hoạch phục hồi sự cố | docs/guides/disaster-recovery.md | ☐ | |
 | 14 | Dataset Card | docs/dataset-card.md | ☐ | Chuẩn Hugging Face |
 | 15 | Yêu cầu nghiệp vụ | docs/product-requirements.md + .xlsx | ☐ | |
 | 16 | Nhật ký thay đổi | docs/changelog.md | ☐ | |
@@ -28,7 +30,7 @@
 | 18 | Thỏa thuận hỗ trợ (SLA) | docs/handover/sla.md | ☐ | Cần ký xác nhận |
 | 19 | Script export data | backend/scripts/export_data.py | ☐ | |
 | 20 | Access credentials | API keys (OpenAI, Supabase, LlamaCloud), VPS SSH | ☐ | Bàn giao trực tiếp |
-| 21 | Buổi đào tạo | Theo outline docs/handover/training-outline.md | ☐ | 2-3 giờ |
+| 21 | Buổi đào tạo | Theo outline docs/handover/training-outline.md | ☐ | 3-3.5 giờ |
 | 22 | Biên bản ký xác nhận | Cả hai bên ký | ☐ | |
 
 ---
