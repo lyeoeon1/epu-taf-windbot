@@ -113,11 +113,34 @@ def get_chatbot_response(index, question, supabase_client, glossary, reranker):
     source_chunks = []
     for node in getattr(result, "source_nodes", []) or []:
         meta = node.node.metadata or {}
+        content = node.node.get_content()
+
+        # Strip SourceNumberingPostprocessor format to get raw content
+        # Format: "--- [Source N] ---\nTài liệu: ...\nNội dung:\n...\n--- END Source N ---"
+        if content.startswith("--- [Source"):
+            lines = content.split("\n")
+            content_lines = []
+            in_content = False
+            for line in lines:
+                if line.startswith("Nội dung:"):
+                    in_content = True
+                    continue
+                if line.startswith("--- END Source"):
+                    break
+                if in_content:
+                    content_lines.append(line)
+            content = "\n".join(content_lines).strip()
+        # Legacy format: "[Source N] content..."
+        elif content.startswith("[Source "):
+            bracket_end = content.find("] ")
+            if bracket_end > 0:
+                content = content[bracket_end + 2:]
+
         source_chunks.append({
             "id": meta.get("source_number", "?"),
             "filename": meta.get("filename", ""),
             "page": meta.get("page"),
-            "text": node.node.get_content()[:500],
+            "text": content[:800],
             "score": round(node.score, 3) if node.score else None,
         })
 
@@ -144,10 +167,10 @@ def judge_existing_metrics(client, question, expected, actual, criteria):
 
 def judge_faithfulness(client, question, response_text, source_chunks):
     """Score factual_grounding, citation_accuracy, hallucination."""
-    # Truncate to avoid token limits
+    # Build source text for judge — use enough content for accurate citation verification
     chunks_text = "\n\n".join(
-        f"[Source {s['id']}] ({s['filename']}, p.{s['page']})\n{s['text'][:300]}"
-        for s in source_chunks[:8]
+        f"[Source {s['id']}] ({s['filename']}, p.{s['page']})\n{s['text'][:600]}"
+        for s in source_chunks[:10]
     )
     if not chunks_text:
         chunks_text = "(No sources retrieved)"
@@ -161,7 +184,7 @@ def judge_faithfulness(client, question, response_text, source_chunks):
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
-        max_tokens=300,
+        max_tokens=500,
         response_format={"type": "json_object"},
     )
     raw = json.loads(response.choices[0].message.content)
