@@ -119,8 +119,11 @@ and specification from the retrieved sources. Do not summarize when you can be s
 then explain. Use bold for quoted phrases. Example: Theo tài liệu, **"tốc độ quay \
 rotor khoảng 15-20 vòng/phút"** [3], đây là tốc độ thấp cần hộp số để tăng lên.
 - When your answer contains mathematical formulas, variables, or equations, always \
-use LaTeX syntax. Use $...$ for inline math (e.g., $v_1$, $\alpha$) and $$...$$ \
-for display/block equations (e.g., $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
+use LaTeX syntax. Use $...$ ONLY for short inline variables within a sentence \
+(e.g., "tốc độ $v_1$", "góc $\\alpha$"). Use $$...$$ for ANY formula or equation \
+that stands on its own line, including definitions like $$TSR = \\frac{\\omega r}{v}$$ \
+or $$\\lambda = \\frac{v_{tip}}{v}$$. NEVER put a full equation in $...$ format — \
+always use $$...$$ so it displays centered and larger.
 - When your answer includes diagrams, flowcharts, or process visualizations, use \
 Mermaid syntax inside a fenced code block with the `mermaid` language tag. Example:
 ```mermaid
@@ -252,8 +255,10 @@ cụm từ chính xác từ source rồi giải thích. Dùng **in đậm** cho 
 Theo tài liệu, **"tốc độ quay rotor khoảng 15-20 vòng/phút"** [3], đây là tốc độ \
 thấp cần hộp số để tăng lên 1500 RPM cho máy phát.
 - Khi câu trả lời có chứa công thức toán học, biến số hoặc phương trình, luôn sử \
-dụng cú pháp LaTeX. Dùng $...$ cho công thức inline (ví dụ: $v_1$, $\\alpha$) và \
-$$...$$ cho công thức block (ví dụ: $$\\frac{v_2}{v_1} = \\left(\\frac{z_2}{z_1}\\right)^\\alpha$$).
+dụng cú pháp LaTeX. Dùng $...$ CHỈ cho biến số ngắn trong câu (ví dụ: "tốc độ $v_1$", \
+"góc $\\alpha$"). Dùng $$...$$ cho MỌI công thức/phương trình đứng riêng dòng, bao gồm \
+định nghĩa như $$TSR = \\frac{\\omega r}{v}$$ hoặc $$\\lambda = \\frac{v_{tip}}{v}$$. \
+KHÔNG BAO GIỜ đặt công thức đầy đủ trong $...$, luôn dùng $$...$$ để hiển thị lớn và chính giữa.
 - Khi câu trả lời có chứa sơ đồ, lưu đồ hoặc hình ảnh minh họa quy trình, hãy sử \
 dụng cú pháp Mermaid trong khối code có thẻ ngôn ngữ `mermaid`. Ví dụ:
 ```mermaid
