@@ -6,7 +6,7 @@
 
 ## 1. Thông tin chung
 
-- **Thời lượng dự kiến:** 2-3 giờ
+- **Thời lượng dự kiến:** 3-3.5 giờ
 - **Hình thức:** Trực tiếp (tại EPU/TAF)
 - **Đối tượng:** Đội ngũ quản lý và vận hành hệ thống
 - **Yêu cầu:** Laptop có kết nối internet, trình duyệt Chrome/Firefox
@@ -29,8 +29,9 @@
 - Thực hành: Xem lịch sử chat trên Supabase
 - Thực hành: Kiểm tra health của hệ thống
 - Quản lý API keys và chi phí
+- Thực hành: Nạp thử 1 file tài liệu mẫu vào knowledge base (demo đầy đủ quy trình)
 
-### Phần 3: Xử lý sự cố (30 phút)
+### Phần 3: Xử lý sự cố (45 phút)
 
 - Các lỗi thường gặp và cách khắc phục
 - Demo: Restart backend service
@@ -50,6 +51,8 @@
 - Giải đáp thắc mắc
 - Xác nhận thông tin liên hệ hỗ trợ
 - Nhắc lại SLA và quy trình báo lỗi
+- Giới thiệu tài liệu phục hồi sự cố (`docs/guides/disaster-recovery.md`)
+- Thảo luận phương án sau khi hết SLA 3 tháng
 
 ---
 
@@ -57,6 +60,7 @@
 
 - Bản in `docs/guides/admin-guide.md`
 - Bản in `docs/handover/sla.md`
+- Bản in `docs/guides/disaster-recovery.md`
 - Thông tin access credentials (bàn giao trực tiếp)
 
 ---
@@ -66,6 +70,7 @@
 - Học viên có thể tự thêm tài liệu mới vào knowledge base
 - Học viên biết cách xử lý các sự cố cơ bản
 - Học viên biết cách liên hệ hỗ trợ khi cần
+- Học viên biết quy trình backup dữ liệu hàng tuần
 
 ---
 

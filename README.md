@@ -2,6 +2,8 @@
 
 AI Chatbot hỗ trợ kiến thức tua-bin gió, sử dụng RAG (Retrieval-Augmented Generation) với hỗ trợ song ngữ Tiếng Việt & English. Dự án thuộc Qualcomm VR Lab.
 
+**Live demo:** https://windbot.vercel.app
+
 ## Tính năng chính
 
 - Chat streaming thời gian thực (SSE)
