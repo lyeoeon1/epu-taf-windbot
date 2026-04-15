@@ -63,6 +63,14 @@ sudo systemctl stop botai-backend
 
 ### Cấu hình .env
 
+Copy file mẫu và điền thông tin thật:
+
+```bash
+cp backend/.env.example backend/.env
+nano backend/.env
+chmod 600 backend/.env
+```
+
 File `.env` tại `/home/botai/repo/backend/.env` cần các biến sau:
 
 ```env

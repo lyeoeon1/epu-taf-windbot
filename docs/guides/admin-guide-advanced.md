@@ -276,7 +276,17 @@ print(f'OK: {len(result.data)} rows')
 
 ## 6. Quản lý API Key (kỹ thuật)
 
-### Vị trí file .env
+### File mẫu
+
+Dự án có sẵn file `backend/.env.example` chứa danh sách đầy đủ các biến cần thiết. Để tạo file `.env` mới:
+
+```bash
+cp backend/.env.example backend/.env
+nano backend/.env  # điền API keys thật
+chmod 600 backend/.env
+```
+
+### Vị trí file .env (trên VPS)
 ```
 /home/botai/botai-backend/repo/backend/.env
 ```

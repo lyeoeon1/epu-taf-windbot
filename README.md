@@ -88,7 +88,13 @@ Chạy file `backend/supabase_schema.sql` trên Supabase Dashboard (SQL Editor).
 
 ### 2. Cấu hình môi trường
 
-Tạo file `backend/.env`:
+Copy file mẫu và điền thông tin:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Chỉnh sửa `backend/.env`:
 
 ```env
 OPENAI_API_KEY=your-key
