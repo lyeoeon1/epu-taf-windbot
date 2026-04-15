@@ -59,7 +59,7 @@ sudo journalctl -u botai-backend --since "1 hour ago" --no-pager | tail -100
 
 Các nguyên nhân thường gặp:
 - **OOM killed**: kiểm tra `dmesg | grep -i oom`
-- **Port conflict**: `sudo lsof -i :8000`
+- **Port conflict**: `sudo lsof -i :8001`
 - **Python error**: lỗi import, thiếu dependency
 
 **Bước 4 — Restart service:**
@@ -74,7 +74,7 @@ sudo systemctl restart botai-backend
 # Chờ 5 giây để service khởi động
 sleep 5
 sudo systemctl status botai-backend
-curl -s http://localhost:8000/health | python3 -m json.tool
+curl -s http://localhost:8001/health | python3 -m json.tool
 ```
 
 Nếu vẫn fail, kiểm tra file `.env` và dependencies:
@@ -153,7 +153,7 @@ usermod -aG sudo botai
 
 # Cấu hình firewall
 ufw allow OpenSSH
-ufw allow 8000
+ufw allow 8001
 ufw enable
 ```
 
@@ -211,7 +211,7 @@ EnvironmentFile=/home/botai/botai-backend/repo/.env
 ExecStart=/home/botai/botai-backend/repo/.venv/bin/gunicorn app.main:app \
     --workers 2 \
     --worker-class uvicorn.workers.UvicornWorker \
-    --bind 0.0.0.0:8000 \
+    --bind 0.0.0.0:8001 \
     --timeout 120
 Restart=always
 RestartSec=5
@@ -229,7 +229,7 @@ sudo systemctl start botai-backend
 
 ```bash
 sudo systemctl status botai-backend
-curl -s http://localhost:8000/health
+curl -s http://localhost:8001/health
 ```
 
 **Bước 8 — Cập nhật DNS / Vercel environment:**
@@ -265,7 +265,7 @@ SELECT count(*) FROM glossary;
 ssh botai@<VPS_IP>
 sudo systemctl restart botai-backend
 sleep 5
-curl -s http://localhost:8000/health
+curl -s http://localhost:8001/health
 ```
 
 ---
@@ -456,7 +456,7 @@ nano .env
 ```bash
 sudo systemctl restart botai-backend
 sleep 5
-curl -s http://localhost:8000/health
+curl -s http://localhost:8001/health
 sudo journalctl -u botai-backend --since "1 min ago" --no-pager | tail -20
 ```
 
@@ -548,7 +548,7 @@ Dùng checklist này khi cần dựng lại toàn bộ hệ thống từ đầu.
 - [ ] 2. SSH vào VPS bằng root, đổi mật khẩu root
 - [ ] 3. Tạo user `botai` với quyền sudo
 - [ ] 4. Cấu hình SSH key authentication cho user `botai`
-- [ ] 5. Cấu hình firewall (UFW): cho phép SSH, port 8000, port 443
+- [ ] 5. Cấu hình firewall (UFW): cho phép SSH, port 8001, port 443
 - [ ] 6. Cài đặt `python3`, `python3-venv`, `git`, `nginx`
 - [ ] 7. Clone repository về `/home/botai/botai-backend/repo/`
 - [ ] 8. Tạo Python virtual environment và cài dependencies

@@ -131,7 +131,7 @@ Kiểm tra:
 
 ```bash
 systemctl status botai-backend
-curl -s http://localhost:8000/api/health
+curl -s http://localhost:8001/api/health
 ```
 
 ## 6. Cập nhật metadata trên Supabase

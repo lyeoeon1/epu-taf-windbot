@@ -103,7 +103,7 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-key
 SUPABASE_CONNECTION_STRING=postgresql://...
 FRONTEND_URL=http://localhost:3000
-BACKEND_PORT=8000
+BACKEND_PORT=8001
 ```
 
 ### 3. Chạy Backend
@@ -111,7 +111,7 @@ BACKEND_PORT=8000
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 ### 4. Chạy Frontend
@@ -134,7 +134,7 @@ npm run dev
 | GET | `/api/health` | Kiểm tra trạng thái |
 | GET | `/docs` | API documentation (Swagger UI) |
 
-API documentation đầy đủ tại: `http://[server]:8000/docs`
+API documentation đầy đủ tại: `http://[server]:8001/docs`
 
 ## Tài liệu
 

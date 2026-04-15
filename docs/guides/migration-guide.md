@@ -178,7 +178,7 @@ pip install vllm
 ```bash
 python -m vllm.entrypoints.openai.api_server \
     --model meta-llama/Llama-3.1-8B-Instruct \
-    --port 8001
+    --port 8002
 ```
 
 **Bước 3: Cấu hình `.env`**
@@ -186,7 +186,7 @@ python -m vllm.entrypoints.openai.api_server \
 Vì vLLM cung cấp OpenAI-compatible API, chỉ cần trỏ OpenAI client sang vLLM server:
 
 ```bash
-OPENAI_API_BASE=http://localhost:8001/v1
+OPENAI_API_BASE=http://localhost:8002/v1
 OPENAI_API_KEY=dummy
 LLM_MODEL=meta-llama/Llama-3.1-8B-Instruct
 ```
