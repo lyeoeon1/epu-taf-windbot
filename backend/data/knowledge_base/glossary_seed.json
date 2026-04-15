@@ -7,9 +7,11 @@
     "category": "structure",
     "abbreviation": null,
     "related_terms": [
-      "Tower",
       "Drivetrain",
-      "Yaw system"
+      "Thùng Nacelle",
+      "Tower",
+      "Yaw system",
+      "thùng nacelle"
     ]
   },
   {
@@ -22,7 +24,10 @@
     "related_terms": [
       "Foundation",
       "Nacelle",
-      "Tower flange"
+      "Tower flange",
+      "Trụ",
+      "cột",
+      "trụ"
     ]
   },
   {
@@ -72,9 +77,12 @@
     "category": "structure",
     "abbreviation": null,
     "related_terms": [
-      "Rotor",
+      "Cánh quạt",
+      "Leading edge",
       "Pitch system",
-      "Leading edge"
+      "Rotor",
+      "canh quat",
+      "cánh quạt"
     ]
   },
   {
@@ -213,9 +221,11 @@
     "category": "components",
     "abbreviation": null,
     "related_terms": [
-      "Gearbox",
       "Drivetrain",
-      "Power converter"
+      "Gearbox",
+      "Máy phát",
+      "Power converter",
+      "máy phát"
     ]
   },
   {
@@ -227,8 +237,11 @@
     "abbreviation": null,
     "related_terms": [
       "Nacelle",
+      "Wind vane",
+      "Yaw",
       "Yaw bearing",
-      "Wind vane"
+      "chỉnh hướng gió",
+      "yaw"
     ]
   },
   {
@@ -240,8 +253,11 @@
     "abbreviation": null,
     "related_terms": [
       "Blade",
+      "Pitch",
+      "Pitch angle",
       "Pitch bearing",
-      "Pitch angle"
+      "góc cánh",
+      "pitch"
     ]
   },
   {
@@ -252,9 +268,12 @@
     "category": "components",
     "abbreviation": null,
     "related_terms": [
-      "Pitch system",
       "Emergency stop",
-      "Rotor"
+      "Phanh",
+      "Pitch system",
+      "Rotor",
+      "phanh",
+      "thắng"
     ]
   },
   {
@@ -278,9 +297,11 @@
     "category": "components",
     "abbreviation": null,
     "related_terms": [
-      "Hub",
       "Gearbox",
-      "Main bearing"
+      "Hub",
+      "Main bearing",
+      "Trục",
+      "trục"
     ]
   },
   {
@@ -395,9 +416,11 @@
     "category": "operations",
     "abbreviation": null,
     "related_terms": [
+      "Cut-in",
       "Cut-out speed",
       "Power curve",
-      "Rated wind speed"
+      "Rated wind speed",
+      "cut-in"
     ]
   },
   {
@@ -409,8 +432,10 @@
     "abbreviation": null,
     "related_terms": [
       "Cut-in speed",
+      "Cut-out",
+      "Emergency stop",
       "Power curve",
-      "Emergency stop"
+      "cut-out"
     ]
   },
   {
@@ -447,9 +472,11 @@
     "category": "operations",
     "abbreviation": "CF",
     "related_terms": [
-      "Rated power",
+      "Annual energy production",
       "Availability",
-      "Annual energy production"
+      "Hệ số",
+      "LCOE",
+      "Rated power"
     ]
   },
   {
@@ -1071,9 +1098,12 @@
     "category": "general",
     "abbreviation": null,
     "related_terms": [
+      "Monopile",
+      "Ngoài khơi",
       "Onshore",
       "Wind farm",
-      "Monopile"
+      "ngoài khơi",
+      "offshore"
     ]
   },
   {
@@ -1084,9 +1114,12 @@
     "category": "general",
     "abbreviation": null,
     "related_terms": [
+      "Foundation",
       "Offshore wind",
+      "Trên bờ",
       "Wind farm",
-      "Foundation"
+      "onshore",
+      "trên bờ"
     ]
   },
   {
@@ -1110,9 +1143,11 @@
     "category": "general",
     "abbreviation": "HAWT",
     "related_terms": [
-      "Vertical axis wind turbine",
+      "HAWT",
+      "Nacelle",
       "Rotor",
-      "Nacelle"
+      "Vertical axis wind turbine",
+      "trục ngang"
     ]
   },
   {
@@ -1124,7 +1159,9 @@
     "abbreviation": "VAWT",
     "related_terms": [
       "Horizontal axis wind turbine",
-      "Rotor"
+      "Rotor",
+      "VAWT",
+      "trục đứng"
     ]
   },
   {
@@ -1148,9 +1185,11 @@
     "category": "general",
     "abbreviation": null,
     "related_terms": [
-      "Wind farm",
+      "Capacity factor",
+      "Ice throw",
       "Turbulence",
-      "Capacity factor"
+      "Wind farm",
+      "ice throw"
     ]
   },
   {
@@ -1164,6 +1203,48 @@
       "Anemometer",
       "Wind farm",
       "Annual energy production"
+    ]
+  },
+  {
+    "term_en": "Doubly-Fed Induction Generator",
+    "term_vi": "Máy phát điện cảm ứng kép",
+    "definition_en": "A type of generator where both rotor and stator are electrically active, commonly used in variable-speed wind turbines.",
+    "definition_vi": "Loại máy phát điện trong đó cả rotor và stator đều hoạt động điện, thường dùng trong tuabin gió tốc độ biến đổi.",
+    "category": "electrical",
+    "abbreviation": "DFIG",
+    "related_terms": [
+      "Generator",
+      "Máy phát",
+      "Power converter",
+      "Slip ring"
+    ]
+  },
+  {
+    "term_en": "Permanent Magnet Synchronous Generator",
+    "term_vi": "Máy phát điện nam châm vĩnh cửu",
+    "definition_en": "A synchronous generator using permanent magnets instead of electromagnets, enabling direct-drive operation without gearbox.",
+    "definition_vi": "Máy phát điện đồng bộ sử dụng nam châm vĩnh cửu, cho phép truyền động trực tiếp không cần hộp số.",
+    "category": "electrical",
+    "abbreviation": "PMSG",
+    "related_terms": [
+      "Generator",
+      "Máy phát",
+      "Direct drive",
+      "Truyền động trực tiếp"
+    ]
+  },
+  {
+    "term_en": "Squirrel Cage Induction Generator",
+    "term_vi": "Máy phát điện cảm ứng lồng sóc",
+    "definition_en": "An induction generator with a squirrel-cage rotor, simple and robust, used in fixed-speed wind turbines.",
+    "definition_vi": "Máy phát điện cảm ứng với rotor lồng sóc, đơn giản và bền, dùng trong tuabin gió tốc độ cố định.",
+    "category": "electrical",
+    "abbreviation": "SCIG",
+    "related_terms": [
+      "Generator",
+      "Máy phát",
+      "Induction generator",
+      "Máy phát không đồng bộ"
     ]
   }
 ]
