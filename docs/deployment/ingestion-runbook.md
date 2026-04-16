@@ -10,10 +10,11 @@
 ## Mục lục
 
 1. [Pre-ingest checklist](#1-pre-ingest-checklist)
-2. [Quy trình ingest](#2-quy-trình-ingest)
-3. [Post-ingest verification](#3-post-ingest-verification)
-4. [Error recovery](#4-error-recovery)
-5. [Escalation](#5-escalation)
+2. [Pre-deploy checks (smoke + citation)](#2-pre-deploy-checks-smoke--citation)
+3. [Quy trình ingest](#3-quy-trình-ingest)
+4. [Post-ingest verification](#4-post-ingest-verification)
+5. [Error recovery](#5-error-recovery)
+6. [Escalation](#6-escalation)
 
 ---
 
@@ -74,7 +75,64 @@ Hoàn thành các check sau **TRƯỚC KHI** bắt đầu ingest.
 
 ---
 
-## 2. Quy trình ingest
+## 2. Pre-deploy checks (smoke + citation)
+
+Hai script tự động bảo vệ trước/sau khi đẩy code mới lên VPS.
+
+### 2.1. Citation logic test (`test_citations.py`)
+
+Pin lại behavior của `renumber_citations` + `verify_citations` + `_extract_keywords`
+ở `backend/app/routers/chat.py`. Dùng pure Python — không cần OpenAI key, Supabase
+hay GPU. Chạy trước mỗi commit động vào citation pipeline.
+
+```bash
+cd /home/botai/botai-backend/repo/backend
+source venv/bin/activate
+python scripts/test_citations.py            # 28 assertions, exit 0 = pass
+python scripts/test_citations.py -v         # show passing tests
+```
+
+Khi assertion fail nghĩa là một trong các hành vi sau đã đổi (cố ý hay vô tình):
+
+- Renumber `[5][9][10]` → `[1][2][3]` theo thứ tự xuất hiện
+- Verify giữ citation khi keyword overlap ≥ 2 với source
+- Verify swap sang source tốt hơn nếu có
+- Verify drop citation khi `source_number` không tồn tại
+- Hyphenated word (`gear-box`) tách thành `gear` + `box` (known limitation)
+- Literal `[__CITE_N__]` trong text bị placeholder collision (known issue)
+
+→ Nếu thay đổi là cố ý, sửa test cho khớp; nếu vô ý, revert code rồi thử lại.
+
+### 2.2. Endpoint smoke test (`smoke.py`)
+
+Sau khi `deploy.sh` restart service, smoke gọi 5 endpoint chính và assert response
+shape. **Bị deploy.sh tự gọi** — chỉ cần chạy thủ công khi debug.
+
+```bash
+# Local backend (dev)
+python backend/scripts/smoke.py http://localhost:8001
+
+# VPS (sau deploy)
+python /home/botai/botai-backend/repo/backend/scripts/smoke.py http://127.0.0.1:8001
+
+# Bỏ qua /api/chat để không tốn OpenAI credit
+python scripts/smoke.py http://127.0.0.1:8001 --skip-chat
+```
+
+| Exit code | Ý nghĩa |
+|---|---|
+| 0 | Mọi endpoint OK |
+| 1 | Có endpoint fail (deploy.sh sẽ abort) |
+| 2 | Backend không reachable (`/api/health` không trả lời) |
+
+Khi smoke fail trong deploy:
+1. Đọc dòng `FAIL` để biết endpoint nào sai
+2. `sudo journalctl -u botai-backend -n 100` xem traceback
+3. Nếu cần fix nhanh: `SKIP_SMOKE=1 sudo bash deploy/deploy.sh` để bypass smoke (chỉ dùng emergency)
+
+---
+
+## 3. Quy trình ingest
 
 Làm theo thứ tự, không được bỏ bước.
 
@@ -150,7 +208,7 @@ systemctl restart botai-backend
 
 ---
 
-## 3. Post-ingest verification
+## 4. Post-ingest verification
 
 Sau khi ingest xong, **bắt buộc** verify các bước sau.
 
@@ -201,7 +259,7 @@ Cập nhật `docs/deployment/ingestion-guide.md`, mục "Lịch sử nạp tài
 
 ---
 
-## 4. Error recovery
+## 5. Error recovery
 
 Bảng xử lý lỗi theo triệu chứng:
 
@@ -246,7 +304,7 @@ Nếu ingest bị crash giữa chừng:
 
 ---
 
-## 5. Escalation
+## 6. Escalation
 
 ### Khi nào liên hệ hỗ trợ (trong thời gian SLA)
 
