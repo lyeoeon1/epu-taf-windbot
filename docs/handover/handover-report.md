@@ -48,6 +48,8 @@
 | 6   | Tài liệu bàn giao                             | Biên bản, SLA, checklist, training outline                                       | Đầy đủ             |
 | 7   | Deploy scripts                                 | deploy.sh, setup-vps.sh, botai-backend.service                                  | Đầy đủ             |
 | 8   | Benchmark & kết quả kiểm thử                  | 150 Q&A benchmark, 46 test cases — 85% pass                                     | Đầy đủ             |
+| 9   | Tài liệu API (OpenAPI 3.0.3)                  | `backend/openapi.yaml` + `docs/api/api-guide.md` — endpoints, params, responses, examples | Đầy đủ             |
+| 10  | Báo cáo kiểm thử pipeline ingestion          | `docs/evaluation/ingestion-test-report.md` + `docs/deployment/ingestion-runbook.md` + script `test_ingestion.py` | Đầy đủ             |
 
 ---
 

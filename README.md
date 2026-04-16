@@ -134,7 +134,10 @@ npm run dev
 | GET | `/api/health` | Kiểm tra trạng thái |
 | GET | `/docs` | API documentation (Swagger UI) |
 
-API documentation đầy đủ tại: `http://[server]:8001/docs`
+**API documentation:**
+- Swagger UI live: `http://[server]:8001/docs` (auto-generated từ FastAPI)
+- OpenAPI spec: `backend/openapi.yaml` (chuẩn OpenAPI 3.0.3)
+- Hướng dẫn sử dụng + examples: `docs/api/api-guide.md`
 
 ## Tài liệu
 
@@ -142,6 +145,8 @@ API documentation đầy đủ tại: `http://[server]:8001/docs`
 |-----------|-----------|-------|
 | Hướng dẫn quản trị | `docs/guides/admin-guide.md` | Quản lý hệ thống hàng ngày |
 | Hướng dẫn triển khai | `docs/deployment/deployment-guide.md` | Deploy production |
+| Hướng dẫn API | `docs/api/api-guide.md` | Sử dụng API với examples (curl, Python, JS) |
+| Runbook ingestion | `docs/deployment/ingestion-runbook.md` | Vận hành pipeline nạp tài liệu |
 | Hướng dẫn nạp tài liệu | `docs/deployment/ingestion-guide.md` | Thêm tài liệu mới |
 | Hướng dẫn migration | `docs/guides/migration-guide.md` | Chuyển sang LLM khác |
 | Yêu cầu nghiệp vụ | `docs/product-requirements.md` | 19 yêu cầu + trạng thái |

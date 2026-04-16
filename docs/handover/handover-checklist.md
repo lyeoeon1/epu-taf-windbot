@@ -23,6 +23,10 @@
 | 13 | Hướng dẫn migration | docs/guides/migration-guide.md | ☐ | |
 | 13a | Hướng dẫn quản trị nâng cao | docs/guides/admin-guide-advanced.md | ☐ | Cho nhân viên kỹ thuật |
 | 13b | Kế hoạch phục hồi sự cố | docs/guides/disaster-recovery.md | ☐ | |
+| 13c | Tài liệu API (OpenAPI spec) | backend/openapi.yaml | ☐ | Chuẩn OpenAPI 3.0.3, import được vào Postman/Swagger |
+| 13d | Hướng dẫn sử dụng API | docs/api/api-guide.md | ☐ | Tiếng Việt, kèm examples curl/Python/JS |
+| 13e | Báo cáo kiểm thử ingestion | docs/evaluation/ingestion-test-report.md | ☐ | Bằng chứng KPI "cập nhật không lỗi" |
+| 13f | Runbook vận hành ingestion | docs/deployment/ingestion-runbook.md | ☐ | Checklist + error recovery |
 | 14 | Dataset Card | docs/dataset-card.md | ☐ | Chuẩn Hugging Face |
 | 15 | Yêu cầu nghiệp vụ | docs/product-requirements.md + .xlsx | ☐ | |
 | 16 | Nhật ký thay đổi | docs/changelog.md | ☐ | |
@@ -30,6 +34,7 @@
 | 18 | Thỏa thuận hỗ trợ (SLA) | docs/handover/sla.md | ☐ | Cần ký xác nhận |
 | 19 | Script export data | backend/scripts/export_data.py | ☐ | |
 | 19a | File cấu hình mẫu | backend/.env.example | ☐ | Template biến môi trường |
+| 19b | Script test ingestion | backend/scripts/test_ingestion.py | ☐ | End-to-end verification, 12 checks |
 | 20 | Access credentials | API keys (OpenAI, Supabase, LlamaCloud), VPS SSH | ☐ | Bàn giao trực tiếp |
 | 21 | Buổi đào tạo | Theo outline docs/handover/training-outline.md | ☐ | 3-3.5 giờ |
 | 22 | Biên bản ký xác nhận | Cả hai bên ký | ☐ | |
