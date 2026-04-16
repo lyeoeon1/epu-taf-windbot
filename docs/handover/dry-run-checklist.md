@@ -132,6 +132,11 @@
 - [ ] `docs/guides/disaster-recovery.md` — kịch bản đủ
 - [ ] `docs/guides/migration-guide.md` — code examples đúng
 - [ ] `backend/.env.example` — đủ biến, đúng format
+- [ ] `backend/openapi.yaml` — validate với `openapi-spec-validator backend/openapi.yaml` → no errors
+- [ ] `docs/api/api-guide.md` — examples curl/Python/JS đúng
+- [ ] `docs/deployment/ingestion-runbook.md` — checklist đầy đủ
+- [ ] `docs/evaluation/ingestion-test-report.md` — số liệu khớp với Supabase
+- [ ] `backend/scripts/test_ingestion.py --dry-run` → all checks PASS
 
 ### E3. Repo GitHub
 - [ ] Repo `epu-taf-windbot` trên GitHub — accessible
