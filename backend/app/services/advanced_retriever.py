@@ -27,6 +27,7 @@ from supabase import Client as SupabaseClient
 
 from app.services.bm25_search import BM25Searcher
 from app.services.hybrid_search import merge_multi_query_results, reciprocal_rank_fusion
+from app.services.qa_chunk import is_qa_chunk
 from app.services.query_expansion import GlossaryExpander
 from app.services.query_generation import generate_query_variants
 from app.services.reranker import FlashReranker, OnnxReranker
@@ -149,17 +150,6 @@ class AdvancedRetriever(BaseRetriever):
             vi_take, len(result) - vi_take, len(result),
         )
         return result
-
-    @staticmethod
-    def _is_qa_chunk(node_ws: NodeWithScore) -> bool:
-        """Check if a node is from the AI-generated QA corpus."""
-        filename = (node_ws.node.metadata.get("filename") or "").lower()
-        if filename.startswith("qa"):
-            return True
-        content = node_ws.node.get_content()[:50].strip()
-        if content.startswith("Q:") or content.startswith("Q :"):
-            return True
-        return False
 
     def _dense_search(self, query: str, top_k: int) -> list[NodeWithScore]:
         """Execute dense vector search via the existing VectorStoreIndex."""
@@ -359,7 +349,7 @@ class AdvancedRetriever(BaseRetriever):
 
         # ── Step 5: Filter QA corpus BEFORE reranking ─────────────────
         pre_filter = len(candidates)
-        candidates = [n for n in candidates if not self._is_qa_chunk(n)]
+        candidates = [n for n in candidates if not is_qa_chunk(n)]
         if len(candidates) < pre_filter:
             logger.info(
                 "Filtered %d QA chunks before reranking, %d remaining",

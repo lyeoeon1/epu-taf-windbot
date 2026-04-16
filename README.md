@@ -144,6 +144,7 @@ npm run dev
 | Tài liệu | Đường dẫn | Mô tả |
 |-----------|-----------|-------|
 | Hướng dẫn quản trị | `docs/guides/admin-guide.md` | Quản lý hệ thống hàng ngày |
+| **Troubleshooting Map** | `docs/guides/troubleshooting-map.md` | **Cho dev sửa code: bảng "lỗi → file:dòng" để fix bug nhanh** |
 | Hướng dẫn triển khai | `docs/deployment/deployment-guide.md` | Deploy production |
 | Hướng dẫn API | `docs/api/api-guide.md` | Sử dụng API với examples (curl, Python, JS) |
 | Runbook ingestion | `docs/deployment/ingestion-runbook.md` | Vận hành pipeline nạp tài liệu |
