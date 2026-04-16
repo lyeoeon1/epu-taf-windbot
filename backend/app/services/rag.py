@@ -23,6 +23,7 @@ from app.config import settings as app_settings
 from app.prompts.system import get_condense_prompt, get_system_prompt
 from app.services.advanced_retriever import AdvancedRetriever
 from app.services.cached_embedding import CachedOpenAIEmbedding
+from app.services.qa_chunk import is_qa_chunk
 from app.services.query_expansion import GlossaryExpander
 from app.services.reranker import FlashReranker, OnnxReranker
 
@@ -90,23 +91,12 @@ class QACorpusFilterPostprocessor(BaseNodePostprocessor):
     Toggle EXCLUDE_QA_CORPUS above to enable/disable.
     """
 
-    def _is_qa_chunk(self, node_ws: NodeWithScore) -> bool:
-        # Check metadata filename
-        filename = (node_ws.node.metadata.get("filename") or "").lower()
-        if filename.startswith("qa"):
-            return True
-        # Check content pattern: AI-generated QA pairs start with "Q: "
-        content = node_ws.node.get_content()[:50]
-        if content.strip().startswith("Q:") or content.strip().startswith("Q :"):
-            return True
-        return False
-
     def _postprocess_nodes(
         self,
         nodes: list[NodeWithScore],
         query_bundle: Optional[QueryBundle] = None,
     ) -> list[NodeWithScore]:
-        filtered = [n for n in nodes if not self._is_qa_chunk(n)]
+        filtered = [n for n in nodes if not is_qa_chunk(n)]
         if len(filtered) < len(nodes):
             logger.info(
                 "QACorpusFilter: removed %d QA chunks, kept %d",

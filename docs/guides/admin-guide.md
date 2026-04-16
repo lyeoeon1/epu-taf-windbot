@@ -192,6 +192,7 @@ Vào Supabase Dashboard → **Table Editor** → bảng `glossary` → **Insert 
 
 > **Hướng dẫn xử lý sự cố nâng cao (SSH, logs, systemd):** Xem `docs/guides/admin-guide-advanced.md`, mục "Xử lý sự cố nâng cao".
 > **Kế hoạch phục hồi khi sự cố nghiêm trọng:** Xem `docs/guides/disaster-recovery.md`.
+> **Cho người sửa code (file:dòng cụ thể):** Xem [`docs/guides/troubleshooting-map.md`](troubleshooting-map.md) — bảng tra triệu chứng → file:dòng để fix bug trong 30 giây thay vì grep mò.
 
 ---
 
