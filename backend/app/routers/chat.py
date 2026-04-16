@@ -6,7 +6,7 @@ import threading
 
 import httpcore
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from llama_index.core.llms import ChatMessage, MessageRole
 from openai import OpenAI
@@ -14,6 +14,7 @@ from supabase import Client
 
 from app.config import settings as app_settings
 from app.dependencies import get_glossary_expander, get_index, get_reranker, get_supabase
+from app.limiter import limiter
 from app.models.schemas import ChatRequest
 from app.prompts.system import get_suggestion_prompt
 from app.services.bm25_search import BM25Searcher
@@ -286,6 +287,24 @@ def _greeting_response(
     )
 
 
+_bm25_call_counter = 0
+_bm25_failure_counter = 0
+_bm25_counter_lock = threading.Lock()
+_BM25_REPORT_EVERY = 100
+
+
+def _record_bm25_attempt(failed: bool) -> tuple[int, int] | None:
+    """Track BM25 reliability. Returns (failures, total) every _BM25_REPORT_EVERY calls."""
+    global _bm25_call_counter, _bm25_failure_counter
+    with _bm25_counter_lock:
+        _bm25_call_counter += 1
+        if failed:
+            _bm25_failure_counter += 1
+        if _bm25_call_counter % _BM25_REPORT_EVERY == 0:
+            return _bm25_failure_counter, _bm25_call_counter
+    return None
+
+
 async def _prefetch_search(index, supabase: Client, message: str):
     """Pre-compute dense + BM25 search in parallel with classification."""
     def _do_search():
@@ -293,15 +312,34 @@ async def _prefetch_search(index, supabase: Client, message: str):
         dense = retriever.retrieve(message)
         try:
             bm25 = BM25Searcher(supabase).search(message, top_k=30)
-        except Exception:
+            failed = False
+        except Exception as e:
+            # Falling back to dense-only is acceptable — log so ops can spot trend.
+            logger.warning(
+                "BM25 search failed, falling back to dense-only retrieval: %s",
+                e,
+                exc_info=True,
+            )
             bm25 = []
+            failed = True
+        report = _record_bm25_attempt(failed)
+        if report is not None:
+            failures, total = report
+            logger.warning(
+                "BM25 reliability: %d failures over last %d calls (%.1f%%)",
+                failures,
+                total,
+                100.0 * failures / total,
+            )
         return dense, bm25
     return await asyncio.to_thread(_do_search)
 
 
 @router.post("/chat")
+@limiter.limit(app_settings.chat_rate_limit)
 async def chat(
-    request: ChatRequest,
+    request: Request,
+    payload: ChatRequest,
     index=Depends(get_index),
     supabase: Client = Depends(get_supabase),
 ):
@@ -311,26 +349,28 @@ async def chat(
     Each event contains either a token or a done signal:
     - data: {"token": "..."}\n\n
     - data: {"done": true}\n\n
+
+    Rate limited per client IP (configured via settings.chat_rate_limit).
     """
     try:
         # Classify question type (Stage 1: regex, <1ms)
         classifier = QuestionClassifier()
-        question_type, regex_confidence = classifier.classify_sync(request.message)
+        question_type, regex_confidence = classifier.classify_sync(payload.message)
         classification_method = "regex"
 
         # Start prefetch search immediately (parallel with save/load/classify)
-        session_id = str(request.session_id)
-        prefetch_task = _prefetch_search(index, supabase, request.message)
+        session_id = str(payload.session_id)
+        prefetch_task = _prefetch_search(index, supabase, payload.message)
 
         if regex_confidence < CONFIDENCE_THRESHOLD:
             # Low confidence — run LLM classification in parallel with I/O
             async def _classify_llm():
                 return await asyncio.to_thread(
-                    classifier.classify_llm, get_openai_client(), request.message
+                    classifier.classify_llm, get_openai_client(), payload.message
                 )
 
             _, history, llm_type, prefetch_results = await asyncio.gather(
-                save_message(supabase, session_id, "user", request.message),
+                save_message(supabase, session_id, "user", payload.message),
                 get_session_messages(supabase, session_id),
                 _classify_llm(),
                 prefetch_task,
@@ -339,7 +379,7 @@ async def chat(
             classification_method = "llm"
         else:
             _, history, prefetch_results = await asyncio.gather(
-                save_message(supabase, session_id, "user", request.message),
+                save_message(supabase, session_id, "user", payload.message),
                 get_session_messages(supabase, session_id),
                 prefetch_task,
             )
@@ -349,10 +389,10 @@ async def chat(
         has_history = len(prior_history) > 0
 
         # ── Greeting fast-path: bypass RAG entirely ───────────────────
-        if _is_greeting(request.message, question_type):
-            logger.info("Greeting fast-path triggered for: %s", request.message[:50])
+        if _is_greeting(payload.message, question_type):
+            logger.info("Greeting fast-path triggered for: %s", payload.message[:50])
             return _greeting_response(
-                request, session_id, supabase, prior_history,
+                payload, session_id, supabase, prior_history,
                 question_type, classification_method,
             )
 
@@ -366,7 +406,7 @@ async def chat(
 
         # Detect if current message is a correction (regex, <1ms)
         detector = CorrectionDetector()
-        is_correction_msg = detector.is_correction(request.message)
+        is_correction_msg = detector.is_correction(payload.message)
 
         # Extract structured correction if detected (~500ms LLM call)
         new_correction = None
@@ -374,7 +414,7 @@ async def chat(
             new_correction = await asyncio.to_thread(
                 extract_correction,
                 get_openai_client(),
-                request.message,
+                payload.message,
                 history,
             )
             if new_correction:
@@ -393,11 +433,11 @@ async def chat(
             )
 
         # Build corrections block (with language hint) and create chat engine
-        lang_hint = detect_input_language(request.message)
+        lang_hint = detect_input_language(payload.message)
         corrections_block = format_corrections_block(corrections, user_language_hint=lang_hint)
         chat_engine = get_chat_engine(
             index,
-            language=request.language,
+            language=payload.language,
             has_history=has_history,
             corrections_block=corrections_block,
             corrections=corrections or None,
@@ -415,7 +455,7 @@ async def chat(
 
         # Stream the response (run blocking call on thread pool)
         streaming_response = await asyncio.to_thread(
-            chat_engine.stream_chat, request.message
+            chat_engine.stream_chat, payload.message
         )
     except HTTPException:
         raise
@@ -507,7 +547,7 @@ async def chat(
 
         # Save complete assistant response (cache corrections + sources in metadata)
         save_metadata = {
-            "language": request.language,
+            "language": payload.language,
             "question_type": question_type,
             "classification_method": classification_method,
         }
@@ -532,8 +572,8 @@ async def chat(
 
         # Generate follow-up suggestions after done signal (non-blocking)
         try:
-            prompt = get_suggestion_prompt(request.language).format(
-                user_message=request.message,
+            prompt = get_suggestion_prompt(payload.language).format(
+                user_message=payload.message,
                 assistant_answer=full_response[:500],
             )
 

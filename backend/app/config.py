@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:3000"
     backend_port: int = 8001
 
+    # Admin auth: required header X-Admin-Key for /api/ingest. Empty disables endpoint (returns 503).
+    admin_api_key: str = ""
+
+    # Rate limit for /api/chat (per-IP). Format: slowapi rate string, e.g. "30/minute".
+    chat_rate_limit: str = "30/minute"
+
     # Advanced retrieval feature toggles
     enable_advanced_retrieval: bool = True
     enable_multi_query: bool = True
