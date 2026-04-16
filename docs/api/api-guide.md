@@ -87,10 +87,11 @@ curl -s "http://localhost:8001/api/glossary?term=nacelle&language=en"
 curl -s "http://localhost:8001/api/glossary?category=structure"
 ```
 
-### Nạp tài liệu
+### Nạp tài liệu (yêu cầu admin key)
 
 ```bash
 curl -X POST http://localhost:8001/api/ingest \
+  -H "X-Admin-Key: $ADMIN_API_KEY" \
   -F "files=@wind_handbook.pdf" \
   -F "language=vi" \
   -F "tier=agentic"
@@ -155,6 +156,10 @@ const {id: sessionId} = await response.json();
 ---
 
 ### 3.3. `POST /api/chat` — Gửi tin nhắn (SSE streaming)
+
+**Rate limit:** mặc định 30 req/phút mỗi IP. Vượt ngưỡng → `429 Too Many Requests`.
+Có thể chỉnh ngưỡng qua biến môi trường `CHAT_RATE_LIMIT` (định dạng slowapi,
+ví dụ `"60/minute"`, `"1000/hour"`).
 
 Request body:
 ```json
@@ -261,9 +266,12 @@ Response:
 
 ---
 
-### 3.5. `POST /api/ingest` — Nạp tài liệu
+### 3.5. `POST /api/ingest` — Nạp tài liệu (admin only)
 
 **Content-Type:** `multipart/form-data`
+
+**Auth:** Bắt buộc header `X-Admin-Key` khớp với biến `ADMIN_API_KEY` trên server.
+Nếu thiếu/sai → `401`. Nếu server chưa cấu hình `ADMIN_API_KEY` → `503`.
 
 Fields:
 - `files` (required): Một hoặc nhiều file
@@ -280,6 +288,7 @@ Response:
 
 **Python example:**
 ```python
+import os
 import requests
 
 files = [
@@ -292,6 +301,7 @@ response = requests.post(
     "http://localhost:8001/api/ingest",
     files=files,
     data=data,
+    headers={"X-Admin-Key": os.environ["ADMIN_API_KEY"]},
 )
 print(response.json())
 ```

@@ -149,6 +149,16 @@ paths:
                     data: {"sources": [{"id": 1, "text": "...", "filename": "wind_handbook.pdf", "page": 12, "score": 0.85}], "content": "Tua-bin gió là..."}
 
                     data: {"suggestions": ["Các bộ phận chính của tua-bin?", "Tua-bin gió có bao nhiêu loại?", "Công suất tua-bin là gì?"]}
+        '429':
+          description: |
+            Vượt quá rate limit (mặc định 30 req/phút mỗi IP — chỉnh qua biến
+            môi trường `CHAT_RATE_LIMIT`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: 'Rate limit exceeded: 30 per 1 minute'
         '503':
           description: Lỗi kết nối tạm thời (retry được)
           content:
@@ -233,9 +243,13 @@ paths:
   /api/ingest:
     post:
       tags: [ingest]
-      summary: Nạp tài liệu vào knowledge base
+      summary: Nạp tài liệu vào knowledge base (admin only)
       description: |
         Upload một hoặc nhiều file tài liệu và nạp vào vector store.
+
+        **Yêu cầu xác thực:** Header `X-Admin-Key` phải khớp với biến môi trường
+        `ADMIN_API_KEY` trên server. Nếu server chưa cấu hình `ADMIN_API_KEY`,
+        endpoint trả về `503`.
 
         **Định dạng hỗ trợ:**
         - `.pdf`, `.docx`, `.pptx`, `.xlsx` — parse qua LlamaParse (chất lượng cao)
@@ -248,6 +262,8 @@ paths:
 
         **Chú ý:** Endpoint này không tự rebuild vector index. Cần chạy SQL rebuild sau khi ingest.
       operationId: postIngest
+      security:
+        - AdminApiKey: []
       requestBody:
         required: true
         content:
@@ -288,12 +304,28 @@ paths:
                 - status: success
                   chunks_created: 50
                   filename: maintenance_guide.docx
+        '401':
+          description: Header `X-Admin-Key` thiếu hoặc sai
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Invalid or missing X-Admin-Key.
         '500':
           description: Lỗi khi parse hoặc ingest
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Endpoint admin bị tắt (server chưa cấu hình `ADMIN_API_KEY`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: 'Admin endpoints disabled: ADMIN_API_KEY not configured on server.'
 
   /api/glossary:
     get:
@@ -421,6 +453,16 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 components:
+  securitySchemes:
+    AdminApiKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
+      description: |
+        Admin API key bắt buộc cho endpoint `/api/ingest`. Sinh khoá bằng:
+        `python -c 'import secrets; print(secrets.token_urlsafe(48))'` rồi cấu
+        hình `ADMIN_API_KEY` trong file `.env` của backend.
+
   schemas:
     HealthResponse:
       type: object

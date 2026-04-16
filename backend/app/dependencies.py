@@ -1,8 +1,9 @@
 import logging
 import os
+import secrets
 import time
 
-from fastapi import HTTPException
+from fastapi import Header, HTTPException
 from supabase import Client, create_client
 
 from app.config import settings
@@ -74,3 +75,21 @@ def get_glossary_expander():
 def get_reranker():
     """Get the reranker instance (ONNX or FlashRank, initialized at startup)."""
     return app_state.get("reranker")
+
+
+def verify_admin_key(x_admin_key: str | None = Header(default=None)) -> None:
+    """Require X-Admin-Key header matching settings.admin_api_key.
+
+    - If admin_api_key is unset on the server, returns 503 (admin endpoints disabled).
+    - If header is missing or mismatched, returns 401.
+    - Uses secrets.compare_digest to mitigate timing attacks.
+    """
+    expected = settings.admin_api_key
+    if not expected:
+        logger.error("Admin endpoint called but ADMIN_API_KEY is not configured")
+        raise HTTPException(
+            status_code=503,
+            detail="Admin endpoints disabled: ADMIN_API_KEY not configured on server.",
+        )
+    if not x_admin_key or not secrets.compare_digest(x_admin_key, expected):
+        raise HTTPException(status_code=401, detail="Invalid or missing X-Admin-Key.")

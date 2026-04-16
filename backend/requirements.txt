@@ -27,3 +27,6 @@ flashrank>=0.2.0
 # Utilities
 python-dotenv==1.0.0
 python-multipart==0.0.9
+
+# Rate limiting (slowapi backed by limits, in-process by default)
+slowapi==0.1.9

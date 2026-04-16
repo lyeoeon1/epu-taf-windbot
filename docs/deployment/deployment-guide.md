@@ -81,7 +81,41 @@ SUPABASE_SERVICE_KEY=eyJ...
 SUPABASE_CONNECTION_STRING=postgresql://...
 FRONTEND_URL=https://your-frontend.vercel.app
 BACKEND_PORT=8001
+
+# Bảo mật
+ADMIN_API_KEY=<chuỗi ngẫu nhiên mạnh, sinh bằng: python -c 'import secrets; print(secrets.token_urlsafe(48))'>
+CHAT_RATE_LIMIT=30/minute
 ```
+
+### Bảo mật API endpoints
+
+Sau khi backend được expose ra public (qua Cloudflare Tunnel hoặc Ngrok), 2 lớp
+bảo vệ tối thiểu đã được áp dụng:
+
+1. **`/api/ingest` yêu cầu header `X-Admin-Key`** — chỉ admin có khoá mới upload
+   được tài liệu mới. Nếu `ADMIN_API_KEY` rỗng, endpoint này sẽ trả 503.
+
+   ```bash
+   # Sinh khoá mới
+   python -c 'import secrets; print(secrets.token_urlsafe(48))'
+
+   # Gọi /api/ingest từ máy admin
+   curl -X POST https://<backend-url>/api/ingest \
+     -H "X-Admin-Key: $ADMIN_API_KEY" \
+     -F "files=@datasheet.pdf" \
+     -F "language=en" \
+     -F "tier=agentic"
+   ```
+
+2. **`/api/chat` được rate-limit theo IP client** (mặc định 30 req/phút). Khi
+   vượt ngưỡng, server trả `429 Too Many Requests`. Có thể chỉnh ngưỡng qua biến
+   `CHAT_RATE_LIMIT` (định dạng slowapi). Backend đọc IP thật từ header
+   `X-Forwarded-For` nên hoạt động đúng sau Cloudflare Tunnel/Ngrok.
+
+   Khi cần điều tra spam, theo dõi log JSON với key `RateLimitExceeded`:
+   ```bash
+   sudo journalctl -u botai-backend -f | grep -i ratelimit
+   ```
 
 ---
 

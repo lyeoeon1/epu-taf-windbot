@@ -3,14 +3,18 @@ import tempfile
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from app.dependencies import get_supabase, get_vector_store
+from app.dependencies import get_supabase, get_vector_store, verify_admin_key
 from app.models.schemas import IngestResponse
 from app.services.ingestion import ingest_documents
 
 router = APIRouter(prefix="/api", tags=["ingest"])
 
 
-@router.post("/ingest", response_model=list[IngestResponse])
+@router.post(
+    "/ingest",
+    response_model=list[IngestResponse],
+    dependencies=[Depends(verify_admin_key)],
+)
 async def ingest(
     files: list[UploadFile] = File(...),
     language: str = Form("en"),
