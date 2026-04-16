@@ -1,0 +1,668 @@
+openapi: 3.0.3
+info:
+  title: WINDBOT API
+  version: 1.0.0
+  description: |
+    AI Chatbot tua-bin gió — RAG + Streaming SSE.
+
+    Backend FastAPI cho hệ thống WINDBOT, hỗ trợ:
+    - Chat streaming qua Server-Sent Events (SSE)
+    - Quản lý phiên chat với lịch sử lưu trữ
+    - Nạp tài liệu (PDF/DOCX/PPTX/XLSX/TXT/MD/CSV) vào knowledge base
+    - Tra cứu thuật ngữ chuyên ngành tua-bin gió (song ngữ Việt-Anh)
+    - Phản hồi (feedback) để cải thiện chất lượng
+
+    Dự án thuộc Qualcomm VR Lab, giao cho EPU/TAF.
+  contact:
+    name: WINDBOT Development Team
+    url: https://github.com/lyeoeon1/epu-taf-windbot
+  license:
+    name: Proprietary
+servers:
+  - url: http://localhost:8001
+    description: Development server (local)
+  - url: http://127.0.0.1:8001
+    description: VPS internal (qua SSH tunnel)
+  - url: https://windbot.vercel.app
+    description: Production frontend (proxy tới backend)
+
+tags:
+  - name: health
+    description: Kiểm tra trạng thái hệ thống
+  - name: chat
+    description: Chat streaming với chatbot
+  - name: sessions
+    description: Quản lý phiên chat
+  - name: ingest
+    description: Nạp tài liệu vào knowledge base
+  - name: glossary
+    description: Tra cứu thuật ngữ chuyên ngành
+  - name: feedback
+    description: Phản hồi của người dùng
+
+paths:
+  /api/health:
+    get:
+      tags: [health]
+      summary: Kiểm tra trạng thái hệ thống
+      description: Endpoint đơn giản để kiểm tra backend đang chạy.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Backend hoạt động bình thường
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                version: 0.1.0
+
+  /api/health/debug:
+    get:
+      tags: [health]
+      summary: Thông tin debug chi tiết
+      description: Trả về trạng thái các thành phần (reranker, glossary, index).
+      operationId: getHealthDebug
+      responses:
+        '200':
+          description: Thông tin debug
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reranker_type:
+                    type: string
+                    nullable: true
+                    example: OnnxReranker
+                  reranker_available:
+                    type: boolean
+                    example: true
+                  glossary_loaded:
+                    type: boolean
+                    example: true
+                  index_loaded:
+                    type: boolean
+                    example: true
+
+  /api/chat:
+    post:
+      tags: [chat]
+      summary: Gửi tin nhắn và nhận response streaming
+      description: |
+        Gửi một tin nhắn tới chatbot và nhận phản hồi qua **Server-Sent Events (SSE)**.
+
+        **Luồng SSE response:**
+        1. Nhiều events `{"token": "..."}` — streaming từng token
+        2. Một event `{"done": true}` — đánh dấu kết thúc streaming
+        3. (Optional) Event `{"sources": [...], "content": "..."}` — source citations
+        4. (Optional) Event `{"suggestions": [...]}` — gợi ý 3 câu hỏi tiếp theo
+
+        **Content-Type của response:** `text/event-stream`
+
+        **Format mỗi event:** `data: <JSON>\n\n`
+      operationId: postChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            examples:
+              vietnamese:
+                summary: Câu hỏi tiếng Việt
+                value:
+                  session_id: 550e8400-e29b-41d4-a716-446655440000
+                  message: Tua-bin gió hoạt động như thế nào?
+                  language: vi
+              english:
+                summary: Câu hỏi tiếng Anh
+                value:
+                  session_id: 550e8400-e29b-41d4-a716-446655440000
+                  message: How does a wind turbine work?
+                  language: en
+      responses:
+        '200':
+          description: Streaming SSE response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Stream of SSE events. Mỗi event có dạng `data: <JSON>\n\n`.
+                  Xem các schema: ChatTokenEvent, ChatDoneEvent, ChatSourcesEvent, ChatSuggestionsEvent.
+              examples:
+                streaming_sequence:
+                  summary: Chuỗi events typical
+                  value: |
+                    data: {"token": "Tua"}
+
+                    data: {"token": "-bin"}
+
+                    data: {"token": " gió"}
+
+                    data: {"token": " là"}
+
+                    data: {"done": true}
+
+                    data: {"sources": [{"id": 1, "text": "...", "filename": "wind_handbook.pdf", "page": 12, "score": 0.85}], "content": "Tua-bin gió là..."}
+
+                    data: {"suggestions": ["Các bộ phận chính của tua-bin?", "Tua-bin gió có bao nhiêu loại?", "Công suất tua-bin là gì?"]}
+        '503':
+          description: Lỗi kết nối tạm thời (retry được)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: Service temporarily unavailable. Please retry.
+        '500':
+          description: Lỗi nội bộ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/chat/sessions:
+    post:
+      tags: [sessions]
+      summary: Tạo phiên chat mới
+      description: Tạo một phiên chat mới với tiêu đề và ngôn ngữ mặc định.
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatSessionCreate'
+            example:
+              title: Hỏi về bảo trì tua-bin
+              language: vi
+      responses:
+        '200':
+          description: Phiên chat đã được tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatSessionResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440000
+                title: Hỏi về bảo trì tua-bin
+                language: vi
+                created_at: 2026-04-16T10:30:00Z
+
+  /api/chat/sessions/{session_id}/messages:
+    get:
+      tags: [sessions]
+      summary: Lấy lịch sử tin nhắn của phiên chat
+      description: Trả về tất cả tin nhắn của một phiên chat, sắp xếp theo thời gian.
+      operationId: getSessionMessages
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID của phiên chat
+          example: 550e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Danh sách tin nhắn
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessageResponse'
+              example:
+                - id: msg-001
+                  role: user
+                  content: Tua-bin gió là gì?
+                  metadata: {}
+                  created_at: 2026-04-16T10:30:00Z
+                - id: msg-002
+                  role: assistant
+                  content: Tua-bin gió là thiết bị chuyển đổi năng lượng gió...
+                  metadata:
+                    language: vi
+                    question_type: TECHNICAL
+                  created_at: 2026-04-16T10:30:05Z
+
+  /api/ingest:
+    post:
+      tags: [ingest]
+      summary: Nạp tài liệu vào knowledge base
+      description: |
+        Upload một hoặc nhiều file tài liệu và nạp vào vector store.
+
+        **Định dạng hỗ trợ:**
+        - `.pdf`, `.docx`, `.pptx`, `.xlsx` — parse qua LlamaParse (chất lượng cao)
+        - `.txt`, `.md`, `.csv` — parse qua SimpleDirectoryReader (nhanh, không tốn credit)
+
+        **Tier chất lượng parsing:**
+        - `cost_effective`: rẻ nhất, phù hợp tài liệu đơn giản
+        - `agentic`: cân bằng (mặc định)
+        - `agentic_plus`: chất lượng cao nhất, chi phí cao
+
+        **Chú ý:** Endpoint này không tự rebuild vector index. Cần chạy SQL rebuild sau khi ingest.
+      operationId: postIngest
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Danh sách file cần nạp
+                language:
+                  type: string
+                  enum: [en, vi]
+                  default: en
+                  description: Ngôn ngữ chính của tài liệu
+                tier:
+                  type: string
+                  enum: [cost_effective, agentic, agentic_plus]
+                  default: agentic
+                  description: Tier parsing LlamaParse
+      responses:
+        '200':
+          description: Kết quả nạp cho từng file
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IngestResponse'
+              example:
+                - status: success
+                  chunks_created: 196
+                  filename: wind_handbook.pdf
+                - status: success
+                  chunks_created: 50
+                  filename: maintenance_guide.docx
+        '500':
+          description: Lỗi khi parse hoặc ingest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/glossary:
+    get:
+      tags: [glossary]
+      summary: Tìm kiếm thuật ngữ trong glossary
+      description: |
+        Tìm thuật ngữ theo partial match, lọc theo category.
+        Glossary chứa 87 thuật ngữ song ngữ Việt-Anh chuyên ngành tua-bin gió.
+      operationId: searchGlossary
+      parameters:
+        - name: term
+          in: query
+          schema:
+            type: string
+          description: Từ khóa tìm kiếm (partial match)
+          example: nacelle
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [structure, components, operations, maintenance, safety, troubleshooting, general]
+          description: Lọc theo category
+          example: structure
+        - name: language
+          in: query
+          schema:
+            type: string
+            enum: [en, vi]
+            default: en
+          description: Ngôn ngữ tìm kiếm
+      responses:
+        '200':
+          description: Danh sách thuật ngữ phù hợp
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GlossaryEntry'
+              example:
+                - id: glo-001
+                  term_en: nacelle
+                  term_vi: vỏ tua-bin
+                  definition_en: The housing at the top of the tower that contains the generator and gearbox
+                  definition_vi: Phần vỏ bọc trên đỉnh tháp chứa máy phát điện và hộp số
+                  category: structure
+                  abbreviation: null
+                  related_terms: [tower, hub]
+
+  /api/glossary/{term_id}:
+    get:
+      tags: [glossary]
+      summary: Lấy chi tiết một thuật ngữ
+      operationId: getGlossaryEntry
+      parameters:
+        - name: term_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của thuật ngữ
+      responses:
+        '200':
+          description: Chi tiết thuật ngữ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlossaryEntry'
+        '404':
+          description: Không tìm thấy thuật ngữ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/feedback:
+    post:
+      tags: [feedback]
+      summary: Gửi phản hồi cho tin nhắn
+      description: |
+        Gửi phản hồi (tích cực/tiêu cực) về một câu trả lời của chatbot.
+        Nếu feedback tích cực, các corrections trong phiên sẽ được promote lên global.
+      operationId: submitFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+            examples:
+              positive:
+                summary: Phản hồi tích cực
+                value:
+                  session_id: 550e8400-e29b-41d4-a716-446655440000
+                  message_content: Tua-bin gió là thiết bị...
+                  feedback_tags: [vote_positive, accurate, helpful]
+                  feedback_text: Câu trả lời rất rõ ràng
+              negative:
+                summary: Phản hồi tiêu cực
+                value:
+                  session_id: 550e8400-e29b-41d4-a716-446655440000
+                  message_content: Câu trả lời chưa chính xác
+                  feedback_tags: [vote_negative, inaccurate]
+                  feedback_text: Thông tin về công suất bị sai
+      responses:
+        '201':
+          description: Feedback đã được lưu
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  id:
+                    type: string
+                    nullable: true
+                    example: fb-001
+        '500':
+          description: Lỗi lưu feedback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+          example: 0.1.0
+
+    ChatRequest:
+      type: object
+      required: [session_id, message]
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          description: UUID của phiên chat
+        message:
+          type: string
+          description: Nội dung câu hỏi
+          example: Tua-bin gió hoạt động như thế nào?
+        language:
+          type: string
+          enum: [en, vi]
+          default: en
+          description: Ngôn ngữ của câu hỏi
+
+    ChatSessionCreate:
+      type: object
+      properties:
+        title:
+          type: string
+          default: New Chat
+          description: Tiêu đề phiên chat
+          example: Hỏi về bảo trì tua-bin
+        language:
+          type: string
+          enum: [en, vi]
+          default: en
+          description: Ngôn ngữ mặc định của phiên
+
+    ChatSessionResponse:
+      type: object
+      required: [id, title, language, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          example: Hỏi về bảo trì tua-bin
+        language:
+          type: string
+          enum: [en, vi]
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-04-16T10:30:00Z
+
+    ChatMessageResponse:
+      type: object
+      required: [id, role, content, created_at]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        metadata:
+          type: object
+          description: |
+            Metadata bổ sung. Có thể chứa:
+            - `language`: ngôn ngữ
+            - `question_type`: TECHNICAL / GENERAL
+            - `classification_method`: regex / llm
+            - `corrections`: danh sách corrections
+            - `sources`: danh sách nguồn tài liệu được cite
+          example:
+            language: vi
+            question_type: TECHNICAL
+            sources:
+              - id: 1
+                text: "..."
+                filename: wind_handbook.pdf
+                page: 12
+                score: 0.85
+        created_at:
+          type: string
+          format: date-time
+
+    IngestResponse:
+      type: object
+      required: [status, chunks_created, filename]
+      properties:
+        status:
+          type: string
+          enum: [success, failed]
+          example: success
+        chunks_created:
+          type: integer
+          description: Số chunks được tạo từ file này
+          example: 196
+        filename:
+          type: string
+          example: wind_handbook.pdf
+
+    GlossaryEntry:
+      type: object
+      required: [id, term_en, term_vi, definition_en, definition_vi, category]
+      properties:
+        id:
+          type: string
+        term_en:
+          type: string
+          example: nacelle
+        term_vi:
+          type: string
+          example: vỏ tua-bin
+        definition_en:
+          type: string
+        definition_vi:
+          type: string
+        category:
+          type: string
+          enum: [structure, components, operations, maintenance, safety, troubleshooting, general]
+        abbreviation:
+          type: string
+          nullable: true
+        related_terms:
+          type: array
+          items:
+            type: string
+
+    FeedbackRequest:
+      type: object
+      required: [session_id, message_content]
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        message_content:
+          type: string
+          description: Nội dung tin nhắn cần feedback (tối đa 2000 ký tự)
+          maxLength: 2000
+        feedback_tags:
+          type: array
+          items:
+            type: string
+            enum:
+              - vote_positive
+              - vote_negative
+              - accurate
+              - inaccurate
+              - helpful
+              - unhelpful
+              - easy_to_understand
+              - hard_to_understand
+          description: |
+            Tags phản hồi. Các tag tích cực (vote_positive, accurate, helpful, easy_to_understand)
+            sẽ trigger promote corrections lên global.
+        feedback_text:
+          type: string
+          description: Ghi chú tự do (tối đa 1000 ký tự)
+          maxLength: 1000
+
+    ChatTokenEvent:
+      type: object
+      description: SSE event trong quá trình streaming (token by token)
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: Token text từ LLM
+          example: "Tua"
+
+    ChatDoneEvent:
+      type: object
+      description: SSE event báo kết thúc streaming
+      required: [done]
+      properties:
+        done:
+          type: boolean
+          example: true
+
+    ChatSourcesEvent:
+      type: object
+      description: SSE event chứa source citations (sau done)
+      properties:
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Số thứ tự citation [N]
+                example: 1
+              text:
+                type: string
+                description: Nội dung trích (tối đa 300 ký tự)
+              filename:
+                type: string
+                example: wind_handbook.pdf
+              page:
+                type: integer
+                nullable: true
+                example: 12
+              score:
+                type: number
+                nullable: true
+                description: Similarity score (0-1)
+                example: 0.85
+        content:
+          type: string
+          description: Full response text với citations đã renumber sequential
+
+    ChatSuggestionsEvent:
+      type: object
+      description: SSE event chứa 3 gợi ý câu hỏi tiếp theo (sau done)
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: string
+          minItems: 3
+          maxItems: 3
+          example:
+            - Các bộ phận chính của tua-bin?
+            - Tua-bin gió có bao nhiêu loại?
+            - Công suất tua-bin là gì?
+
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Mô tả lỗi
+          example: An internal error occurred. Please try again.
