@@ -78,7 +78,7 @@ windbot/
 
 - Node.js >= 18
 - Python >= 3.10
-- Supabase account (với pgvector extension)
+- Supabase account (pgvector extension)
 - OpenAI API key
 - LlamaCloud API key
 
